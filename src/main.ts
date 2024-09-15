@@ -1,8 +1,10 @@
 import * as THREE from 'three';
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { CSS2DObject, CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
-import { cameraProjectionMatrix, color } from 'three/webgpu';
+import { newDiedricPlane } from './diedricPlane';
+
+
+const a = new newDiedricPlane(10, 20)
 
 
 const canvasDiv = document.querySelector<HTMLDivElement>("#main-canvas") as HTMLDivElement
@@ -10,14 +12,11 @@ const canvas = canvasDiv.querySelector<HTMLCanvasElement>("canvas") as HTMLCanva
 const fovSlider = document.querySelector<HTMLInputElement>("#fov-slider")
 const canvasInfo = document.querySelector<HTMLDivElement>("#main-canvas-info") as HTMLDivElement
 
-console.log("canvasInfo", canvasInfo)
-
 const scene = new THREE.Scene()
 const camera = new THREE.PerspectiveCamera(75, canvasDiv.offsetWidth / canvasDiv.offsetHeight, 0.1, 1000)
 scene.background = new THREE.Color("rgb(120, 118, 122)")
 
 const size = 100
-
 
 fovSlider?.addEventListener("input", () => {
     camera.fov = Number(fovSlider.value);
@@ -50,8 +49,6 @@ if (localStorageCamera) {
     camera.rotation.y = cameraConfig.rotation_y
     camera.rotation.z = cameraConfig.rotation_z
     // camera.rotation.set(cameraConfig.rotation_x, cameraConfig.rotation_y, cameraConfig.rotation_z)
-
-
 } else {
     camera.position.setZ(20)
     camera.position.setY(50)
@@ -59,42 +56,6 @@ if (localStorageCamera) {
 }
 
 const controls = new OrbitControls(camera, renderer.domElement)
-
-// const axesHelper = new THREE.AxesHelper(100)
-// scene.add(axesHelper)
-
-// const geometry = new THREE.TorusGeometry(10, 3, 16, 100)
-// const material = new THREE.MeshBasicMaterial({ color: 'rgb(255, 20, 60)', wireframe: false })
-// const torus = new THREE.Mesh(geometry, material)
-// scene.add(torus)
-
-function addMathPlane(vector3: THREE.Vector3, d: number) {
-    const plane = new THREE.Plane(vector3, d)
-    const helper = new THREE.PlaneHelper(plane, 100, 0xffff00);
-    scene.add(helper);
-}
-
-// addPlane(new THREE.Vector3(1, 0, 0), 0)
-// addPlane(new THREE.Vector3(0, 1, 0), 0)
-// addPlane(new THREE.Vector3(0, 0, 1), 0)
-
-function addPlane(position: THREE.Vector3, rotation: THREE.Vector3, color: THREE.ColorRepresentation) {
-
-    const geometry = new THREE.PlaneGeometry(40, 40);
-    const material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 0.6 });
-    const plane = new THREE.Mesh(geometry, material);
-    plane.position.setX(position.x)
-    plane.position.setY(position.y)
-    plane.position.setZ(position.z)
-
-    plane.rotation.x = rotation.x
-    plane.rotation.y = rotation.y
-    plane.rotation.z = rotation.z
-
-    scene.add(plane);
-}
-
-
 
 function addPoint(position: THREE.Vector3, color: THREE.ColorRepresentation = 'black') {
 
@@ -105,44 +66,9 @@ function addPoint(position: THREE.Vector3, color: THREE.ColorRepresentation = 'b
     point.position.x = position.x
     point.position.y = position.y
     point.position.z = position.z
-
-    // const earthLabel = new CSS2DObject(earthDiv);
-    // earthLabel.position.set(1.5 * EARTH_RADIUS, 0, 0);
-    // earthLabel.center.set(0, 1);
-    // earth.add(earthLabel);
-    // earthLabel.layers.set(0);
-
-    // const element = document.createElement('div');
-    // element.textContent = `Some text in the div`;
-    // element.id = "ADSF"
-    // element.style.width = '100px'
-    // element.style.height = '100px'
-    // element.style.backgroundColor = 'red'
-    // element.style.color = "white"
-    // element.style.fontSize = '100px'
-    // element.style.left = '50px'; // positioning works
-
-    // // document.body.appendChild(element)
-
-    // const objectCSS = new CSS2DObject(element);
-    // objectCSS.center.x = 0;
-    // objectCSS.center.y = 0;
-    // // objectCSS.position.set(0, 0, 0)
-
-    // point.add(objectCSS)
 }
 
-const pointLight = new THREE.PointLight('rgb(255, 255, 255)', 4000)
-scene.add(pointLight)
-
 function diedricLine(point1: THREE.Vector3, point2: THREE.Vector3) {
-
-    // const mainMaterial = new THREE.LineBasicMaterial({ color: 0x56d154, linewidth: 10 });
-
-    // const mainGeometry = new THREE.BufferGeometry().setFromPoints([point1, point2]);
-    // const mainLine = new THREE.Line(mainGeometry, mainMaterial);
-    // scene.add(mainLine);
-
 
     const newPoint1 = new THREE.Vector3(point1.x, point1.z, point1.y)
     const newPoint2 = new THREE.Vector3(point2.x, point2.z, point2.y)
@@ -173,8 +99,6 @@ function diedricLine(point1: THREE.Vector3, point2: THREE.Vector3) {
     cylinder.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
     scene.add(cylinder);
 
-
-
     const projectionMaterial = new THREE.LineBasicMaterial({ color: 0x000000, });
     const horizontalProjectionGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(newPoint1.x, 0, newPoint1.z), new THREE.Vector3(newPoint2.x, 0, newPoint2.z)]);
     const horizontalProjectionLine = new THREE.Line(horizontalProjectionGeometry, projectionMaterial);
@@ -185,43 +109,50 @@ function diedricLine(point1: THREE.Vector3, point2: THREE.Vector3) {
     scene.add(verticalProjectionLine);
 }
 
-function diedricPlane(o: number | null, a: number | null, c: number | null) {
+function diedricPlane(o: number | null, a: number | null, c: number | null, color: THREE.ColorRepresentation) {
 
     let point1: THREE.Vector3;
     let point2: THREE.Vector3;
     let point3: THREE.Vector3;
-    let position: THREE.Vector3;
 
+    console.log("alpha", o, a, c)
 
     if (o == null && a == null && c == null) {
-
+        console.error("Unable to create plane")
+        return
     } else if (o == null && a == null) { // Horizontal plane
         c = c as number
         point1 = new THREE.Vector3(2, c, 0)
         point2 = new THREE.Vector3(0, c, 2)
         point3 = new THREE.Vector3(-2, c, 0)
-        position = new THREE.Vector3(0, c, 0)
     } else if (a == null && c == null) { // Profile plane
         o = o as number
         point1 = new THREE.Vector3(o, 0, 0)
         point2 = new THREE.Vector3(o, 0, 50)
         point3 = new THREE.Vector3(o, 50, 0)
-        position = new THREE.Vector3(o, 0, 0)
     } else if (o == null && c == null) { // Vertical plane
         a = a as number
         point1 = new THREE.Vector3(2, 0, a)
         point2 = new THREE.Vector3(0, 2, a)
         point3 = new THREE.Vector3(-2, 0, a)
-        position = new THREE.Vector3(0, 0, a)
     } else if (o == null) { // Parallel  LT
         a = a as number
         c = c as number
         point1 = new THREE.Vector3(0, 0, a)
         point2 = new THREE.Vector3(0, c, 0)
         point3 = new THREE.Vector3(-50, 0, a)
-        position = new THREE.Vector3(0, 0, a)
-    } else if (a == null) { // Perpendicular vertical plane
-    } else if (c == null) { // Perpendicular horizontal plane
+    } else if (a == null) { // Perpendicular to vertical plane
+        o = o as number
+        c = c as number
+        point1 = new THREE.Vector3(o, 0, 0)
+        point2 = new THREE.Vector3(o, 0, 10)
+        point3 = new THREE.Vector3(0, c, 0)
+    } else if (c == null) { // Perpendicular to horizontal plane
+        o = o as number
+        a = a as number
+        point1 = new THREE.Vector3(o, 0, 0)
+        point2 = new THREE.Vector3(o, 10, 0)
+        point3 = new THREE.Vector3(0, 0, a)
     } else {
         o = o as number
         a = a as number
@@ -229,17 +160,12 @@ function diedricPlane(o: number | null, a: number | null, c: number | null) {
         point1 = new THREE.Vector3(o, 0, 0)
         point2 = new THREE.Vector3(0, c, 0)
         point3 = new THREE.Vector3(0, 0, a)
-        position = new THREE.Vector3(o, 0, 0)
     }
 
     point1 = point1 as THREE.Vector3
     point2 = point2 as THREE.Vector3
     point3 = point3 as THREE.Vector3
-    position = position as THREE.Vector3
 
-    // addPoint(point1)
-    // addPoint(point2)
-    // addPoint(point3)
 
     const projectionMaterial = new THREE.LineBasicMaterial({ color: 0x000000, });
     const horizontalProjectionGeometry = new THREE.BufferGeometry().setFromPoints([point1, point2]);
@@ -254,13 +180,6 @@ function diedricPlane(o: number | null, a: number | null, c: number | null) {
     const vector2 = new THREE.Vector3().subVectors(point3, point1);
     const normal = new THREE.Vector3().crossVectors(vector1, vector2).normalize();
 
-
-
-
-
-
-
-
     const d = normal.x * point1.x + normal.y * point1.y + normal.z * point1.z
     const borderPoints: THREE.Vector3[] = []
 
@@ -269,128 +188,47 @@ function diedricPlane(o: number | null, a: number | null, c: number | null) {
         let y: number;
         let z: number;
 
-        y = size
-        z = size
-        x = (d - normal.y * y - normal.z * z) / normal.x
-        if (x < size && x > -size) {
-            addPoint(new THREE.Vector3(x, y, z), "blue")
-            borderPoints.push(new THREE.Vector3(x, y, z))
-        }
-
-        y = size;
-        z = -size;
-        x = (d - normal.y * y - normal.z * z) / normal.x
-        if (x < size && x > -size) {
-            addPoint(new THREE.Vector3(x, y, z), "blue")
-            borderPoints.push(new THREE.Vector3(x, y, z))
-        }
-
-        y = -size;
-        z = size;
-        x = (d - normal.y * y - normal.z * z) / normal.x
-        if (x < size && x > -size) {
-            addPoint(new THREE.Vector3(x, y, z), "blue")
-            borderPoints.push(new THREE.Vector3(x, y, z))
-        }
-
-        y = -size;
-        z = -size;
-        x = (d - normal.y * y - normal.z * z) / normal.x
-        if (x < size && x > -size) {
-            addPoint(new THREE.Vector3(x, y, z), "blue")
-            borderPoints.push(new THREE.Vector3(x, y, z))
+        for (let k of [[size, size], [size, -size], [-size, size], [-size, -size]]) {
+            y = k[0]
+            z = k[1]
+            x = (d - normal.y * y - normal.z * z) / normal.x
+            if (x < size && x > -size) {
+                // addPoint(new THREE.Vector3(x, y, z), "blue")
+                borderPoints.push(new THREE.Vector3(x, y, z))
+            }
         }
     }
-
     if (normal.y != 0) {
         let x: number;
         let y: number;
         let z: number;
+        for (let k of [[size, size], [size, -size], [-size, size], [-size, -size]]) {
 
-        x = size
-        z = size
-        y = (d - normal.x * x - normal.z * z) / normal.y
-        if (y < size && y > -size) {
-            addPoint(new THREE.Vector3(x, y, z), "red")
-            borderPoints.push(new THREE.Vector3(x, y, z))
+            x = k[0]
+            z = k[1]
+            y = (d - normal.x * x - normal.z * z) / normal.y
+            if (y < size && y > -size) {
+                // addPoint(new THREE.Vector3(x, y, z), "red")
+                borderPoints.push(new THREE.Vector3(x, y, z))
+            }
         }
 
-        x = size;
-        z = -size;
-        y = (d - normal.x * x - normal.z * z) / normal.y
-        if (y < size && y > -size) {
-            addPoint(new THREE.Vector3(x, y, z), "red")
-            borderPoints.push(new THREE.Vector3(x, y, z))
-        }
-
-        x = -size;
-        z = size;
-        y = (d - normal.x * x - normal.z * z) / normal.y
-        if (y < size && y > -size) {
-            addPoint(new THREE.Vector3(x, y, z), "red")
-            borderPoints.push(new THREE.Vector3(x, y, z))
-        }
-
-        x = -size;
-        z = -size;
-        y = (d - normal.x * x - normal.z * z) / normal.y
-        if (y < size && y > -size) {
-            addPoint(new THREE.Vector3(x, y, z), "red")
-            borderPoints.push(new THREE.Vector3(x, y, z))
-        }
     }
     if (normal.z != 0) {
         let x: number;
         let y: number;
         let z: number;
+        for (let k of [[size, size], [size, -size], [-size, size], [-size, -size]]) {
 
-        x = size
-        y = size
-        z = (d - normal.x * x - normal.y * y) / normal.z
-        if (z < size && z > -size) {
-            addPoint(new THREE.Vector3(x, y, z))
-            borderPoints.push(new THREE.Vector3(x, y, z))
-        }
-
-        x = size;
-        y = -size;
-        z = (d - normal.x * x - normal.y * y) / normal.z
-        if (z < size && z > -size) {
-            addPoint(new THREE.Vector3(x, y, z))
-            borderPoints.push(new THREE.Vector3(x, y, z))
-        }
-
-        x = -size;
-        y = size;
-        z = (d - normal.x * x - normal.y * y) / normal.z
-        if (z < size && z > -size) {
-            addPoint(new THREE.Vector3(x, y, z))
-            borderPoints.push(new THREE.Vector3(x, y, z))
-        }
-
-        x = -size;
-        y = -size;
-        z = (d - normal.x * x - normal.y * y) / normal.z
-        if (z < size && z > -size) {
-            addPoint(new THREE.Vector3(x, y, z))
-            borderPoints.push(new THREE.Vector3(x, y, z))
+            x = k[0]
+            y = k[1]
+            z = (d - normal.x * x - normal.y * y) / normal.z
+            if (z < size && z > -size) {
+                // addPoint(new THREE.Vector3(x, y, z))
+                borderPoints.push(new THREE.Vector3(x, y, z))
+            }
         }
     }
-
-
-    // const material1 = new THREE.MeshBasicMaterial({ color: 'red', side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
-
-    // const xGeometry = new THREE.BufferGeometry().setFromPoints(
-    //     [
-    //         new THREE.Vector3(10, 10, 0),
-    //         new THREE.Vector3(-10, -5, 5),
-    //         new THREE.Vector3(-20, 10, 5),
-    //         new THREE.Vector3(10, 10, 0)
-    //     ]);
-    // const xLine = new THREE.Line(xGeometry, material1);
-    // scene.add(xLine);
-
-
 
     const finalBorderPoints: THREE.Vector3[] = []
 
@@ -402,39 +240,13 @@ function diedricPlane(o: number | null, a: number | null, c: number | null) {
     for (let i = 0; i < borderPoints.length - 1; i++) {
         closestPoints = borderPoints.sort((a, b) => {
             return currentPoint.distanceTo(a) - currentPoint.distanceTo(b)
-        })
-        if (finalBorderPoints.includes(closestPoints[1])) {
-            finalBorderPoints.push(closestPoints[2])
-            currentPoint = closestPoints[2]
-        } else {
-            finalBorderPoints.push(closestPoints[1])
-            currentPoint = closestPoints[1]
-        }
+        }).filter(a => !finalBorderPoints.includes(a))
+        finalBorderPoints.push(closestPoints[0])
+        currentPoint = closestPoints[0]
     }
 
     // Create a new geometry
     const geometry1 = new THREE.BufferGeometry();
-
-    // Vertices positions for two triangles forming a quad (plane)
-    // const vertices = new Float32Array([
-    //     finalBorderPoints[0].x, finalBorderPoints[0].y, finalBorderPoints[0].z, // First triangle
-    //     finalBorderPoints[1].x, finalBorderPoints[1].y, finalBorderPoints[1].z,
-    //     finalBorderPoints[2].x, finalBorderPoints[2].y, finalBorderPoints[2].z,
-
-    //     finalBorderPoints[0].x, finalBorderPoints[0].y, finalBorderPoints[0].z, // Second triangle
-    //     finalBorderPoints[2].x, finalBorderPoints[2].y, finalBorderPoints[2].z,
-    //     finalBorderPoints[3].x, finalBorderPoints[3].y, finalBorderPoints[3].z,
-
-    //     finalBorderPoints[0].x, finalBorderPoints[0].y, finalBorderPoints[0].z, // Second triangle
-    //     finalBorderPoints[3].x, finalBorderPoints[3].y, finalBorderPoints[3].z,
-    //     finalBorderPoints[4].x, finalBorderPoints[4].y, finalBorderPoints[4].z,
-
-    //     finalBorderPoints[0].x, finalBorderPoints[0].y, finalBorderPoints[0].z, // Second triangle
-    //     finalBorderPoints[4].x, finalBorderPoints[4].y, finalBorderPoints[4].z,
-    //     finalBorderPoints[5].x, finalBorderPoints[5].y, finalBorderPoints[5].z,
-
-    // ]);
-
     const vertices = []
 
     for (let face = 0; face < finalBorderPoints.length - 2; face++) {
@@ -444,41 +256,20 @@ function diedricPlane(o: number | null, a: number | null, c: number | null) {
         }
     }
 
-
     const Float32Vertices = new Float32Array(vertices);
-
 
     // Set the positions to the geometry
     geometry1.setAttribute('position', new THREE.BufferAttribute(Float32Vertices, 3));
 
     // Create a material
-    const material2 = new THREE.MeshBasicMaterial({ color: 'red', side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
+    const material2 = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
 
     // Create a mesh with the geometry and material
     const plane1 = new THREE.Mesh(geometry1, material2);
 
     // Add the plane to the scene
     scene.add(plane1);
-
-
-
-
-
-
-
-
-
-    // const geometry = new THREE.PlaneGeometry(100, 100);
-    // const material = new THREE.MeshBasicMaterial({ color: 'red', side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
-
-    // const plane = new THREE.Mesh(geometry, material);
-    // plane.position.copy(position)
-    // plane.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal)
-
-    // scene.add(plane);
 }
-
-
 
 function Axis() {
 
@@ -583,7 +374,7 @@ const staticLabels: THREE.Mesh<THREE.BoxGeometry, (THREE.MeshBasicMaterial | THR
 function staticLabel(text: string, position: THREE.Vector3) {
     const cv = document.createElement('canvas');
     cv.width = 50
-    cv.height = 50;
+    cv.height = 100;
     const ctx = cv.getContext('2d') as CanvasRenderingContext2D;
 
     // ctx.fillStyle = "rgba(255, 255, 0, 0.5)";
@@ -620,7 +411,9 @@ function staticLabel(text: string, position: THREE.Vector3) {
 // diedricPlane(null, null, 30)
 
 // addPoint(new THREE.Vector3(0, 100, 0))
-diedricPlane(40, -10, 80)
+diedricPlane(20, -40, null, "red")
+diedricPlane(-40, null, 80, "blue")
+diedricPlane(null, 20, 50, "green")
 
 // addPoint(new THREE.Vector3(10, 0, 0))
 // addPoint(new THREE.Vector3(0, 20, 0))
@@ -673,7 +466,6 @@ function animate() {
             mesh.rotation.set(camera.rotation.x, camera.rotation.y, camera.rotation.z)
         }
     }
-
     renderer.render(scene, camera)
 }
 
