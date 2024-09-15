@@ -16,6 +16,7 @@ const scene = new THREE.Scene()
 const camera = new THREE.PerspectiveCamera(75, canvasDiv.offsetWidth / canvasDiv.offsetHeight, 0.1, 1000)
 scene.background = new THREE.Color("rgb(120, 118, 122)")
 
+const size = 100
 
 
 fovSlider?.addEventListener("input", () => {
@@ -59,8 +60,8 @@ if (localStorageCamera) {
 
 const controls = new OrbitControls(camera, renderer.domElement)
 
-const axesHelper = new THREE.AxesHelper(100)
-scene.add(axesHelper)
+// const axesHelper = new THREE.AxesHelper(100)
+// scene.add(axesHelper)
 
 // const geometry = new THREE.TorusGeometry(10, 3, 16, 100)
 // const material = new THREE.MeshBasicMaterial({ color: 'rgb(255, 20, 60)', wireframe: false })
@@ -95,10 +96,10 @@ function addPlane(position: THREE.Vector3, rotation: THREE.Vector3, color: THREE
 
 
 
-function addPoint(position: THREE.Vector3) {
+function addPoint(position: THREE.Vector3, color: THREE.ColorRepresentation = 'black') {
 
     const geometry = new THREE.SphereGeometry(1)
-    const material = new THREE.MeshBasicMaterial({ color: 'black', side: THREE.DoubleSide });
+    const material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
     const point = new THREE.Mesh(geometry, material);
     scene.add(point);
     point.position.x = position.x
@@ -231,6 +232,11 @@ function diedricPlane(o: number | null, a: number | null, c: number | null) {
         position = new THREE.Vector3(o, 0, 0)
     }
 
+    point1 = point1 as THREE.Vector3
+    point2 = point2 as THREE.Vector3
+    point3 = point3 as THREE.Vector3
+    position = position as THREE.Vector3
+
     // addPoint(point1)
     // addPoint(point2)
     // addPoint(point3)
@@ -248,22 +254,269 @@ function diedricPlane(o: number | null, a: number | null, c: number | null) {
     const vector2 = new THREE.Vector3().subVectors(point3, point1);
     const normal = new THREE.Vector3().crossVectors(vector1, vector2).normalize();
 
-    const geometry = new THREE.PlaneGeometry(100, 100);
-    const material = new THREE.MeshBasicMaterial({ color: 'red', side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
-    const plane = new THREE.Mesh(geometry, material);
-    plane.position.copy(position)
-    plane.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal)
 
-    scene.add(plane);
+
+
+
+
+
+
+    const d = normal.x * point1.x + normal.y * point1.y + normal.z * point1.z
+    const borderPoints: THREE.Vector3[] = []
+
+    if (normal.x != 0) {
+        let x: number;
+        let y: number;
+        let z: number;
+
+        y = size
+        z = size
+        x = (d - normal.y * y - normal.z * z) / normal.x
+        if (x < size && x > -size) {
+            addPoint(new THREE.Vector3(x, y, z), "blue")
+            borderPoints.push(new THREE.Vector3(x, y, z))
+        }
+
+        y = size;
+        z = -size;
+        x = (d - normal.y * y - normal.z * z) / normal.x
+        if (x < size && x > -size) {
+            addPoint(new THREE.Vector3(x, y, z), "blue")
+            borderPoints.push(new THREE.Vector3(x, y, z))
+        }
+
+        y = -size;
+        z = size;
+        x = (d - normal.y * y - normal.z * z) / normal.x
+        if (x < size && x > -size) {
+            addPoint(new THREE.Vector3(x, y, z), "blue")
+            borderPoints.push(new THREE.Vector3(x, y, z))
+        }
+
+        y = -size;
+        z = -size;
+        x = (d - normal.y * y - normal.z * z) / normal.x
+        if (x < size && x > -size) {
+            addPoint(new THREE.Vector3(x, y, z), "blue")
+            borderPoints.push(new THREE.Vector3(x, y, z))
+        }
+    }
+
+    if (normal.y != 0) {
+        let x: number;
+        let y: number;
+        let z: number;
+
+        x = size
+        z = size
+        y = (d - normal.x * x - normal.z * z) / normal.y
+        if (y < size && y > -size) {
+            addPoint(new THREE.Vector3(x, y, z), "red")
+            borderPoints.push(new THREE.Vector3(x, y, z))
+        }
+
+        x = size;
+        z = -size;
+        y = (d - normal.x * x - normal.z * z) / normal.y
+        if (y < size && y > -size) {
+            addPoint(new THREE.Vector3(x, y, z), "red")
+            borderPoints.push(new THREE.Vector3(x, y, z))
+        }
+
+        x = -size;
+        z = size;
+        y = (d - normal.x * x - normal.z * z) / normal.y
+        if (y < size && y > -size) {
+            addPoint(new THREE.Vector3(x, y, z), "red")
+            borderPoints.push(new THREE.Vector3(x, y, z))
+        }
+
+        x = -size;
+        z = -size;
+        y = (d - normal.x * x - normal.z * z) / normal.y
+        if (y < size && y > -size) {
+            addPoint(new THREE.Vector3(x, y, z), "red")
+            borderPoints.push(new THREE.Vector3(x, y, z))
+        }
+    }
+    if (normal.z != 0) {
+        let x: number;
+        let y: number;
+        let z: number;
+
+        x = size
+        y = size
+        z = (d - normal.x * x - normal.y * y) / normal.z
+        if (z < size && z > -size) {
+            addPoint(new THREE.Vector3(x, y, z))
+            borderPoints.push(new THREE.Vector3(x, y, z))
+        }
+
+        x = size;
+        y = -size;
+        z = (d - normal.x * x - normal.y * y) / normal.z
+        if (z < size && z > -size) {
+            addPoint(new THREE.Vector3(x, y, z))
+            borderPoints.push(new THREE.Vector3(x, y, z))
+        }
+
+        x = -size;
+        y = size;
+        z = (d - normal.x * x - normal.y * y) / normal.z
+        if (z < size && z > -size) {
+            addPoint(new THREE.Vector3(x, y, z))
+            borderPoints.push(new THREE.Vector3(x, y, z))
+        }
+
+        x = -size;
+        y = -size;
+        z = (d - normal.x * x - normal.y * y) / normal.z
+        if (z < size && z > -size) {
+            addPoint(new THREE.Vector3(x, y, z))
+            borderPoints.push(new THREE.Vector3(x, y, z))
+        }
+    }
+
+
+    // const material1 = new THREE.MeshBasicMaterial({ color: 'red', side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
+
+    // const xGeometry = new THREE.BufferGeometry().setFromPoints(
+    //     [
+    //         new THREE.Vector3(10, 10, 0),
+    //         new THREE.Vector3(-10, -5, 5),
+    //         new THREE.Vector3(-20, 10, 5),
+    //         new THREE.Vector3(10, 10, 0)
+    //     ]);
+    // const xLine = new THREE.Line(xGeometry, material1);
+    // scene.add(xLine);
+
+
+
+    const finalBorderPoints: THREE.Vector3[] = []
+
+    let currentPoint = borderPoints[0]
+    let closestPoints: THREE.Vector3[] = []
+
+    finalBorderPoints.push(currentPoint)
+
+    for (let i = 0; i < borderPoints.length - 1; i++) {
+        closestPoints = borderPoints.sort((a, b) => {
+            return currentPoint.distanceTo(a) - currentPoint.distanceTo(b)
+        })
+        if (finalBorderPoints.includes(closestPoints[1])) {
+            finalBorderPoints.push(closestPoints[2])
+            currentPoint = closestPoints[2]
+        } else {
+            finalBorderPoints.push(closestPoints[1])
+            currentPoint = closestPoints[1]
+        }
+    }
+
+    // Create a new geometry
+    const geometry1 = new THREE.BufferGeometry();
+
+    // Vertices positions for two triangles forming a quad (plane)
+    // const vertices = new Float32Array([
+    //     finalBorderPoints[0].x, finalBorderPoints[0].y, finalBorderPoints[0].z, // First triangle
+    //     finalBorderPoints[1].x, finalBorderPoints[1].y, finalBorderPoints[1].z,
+    //     finalBorderPoints[2].x, finalBorderPoints[2].y, finalBorderPoints[2].z,
+
+    //     finalBorderPoints[0].x, finalBorderPoints[0].y, finalBorderPoints[0].z, // Second triangle
+    //     finalBorderPoints[2].x, finalBorderPoints[2].y, finalBorderPoints[2].z,
+    //     finalBorderPoints[3].x, finalBorderPoints[3].y, finalBorderPoints[3].z,
+
+    //     finalBorderPoints[0].x, finalBorderPoints[0].y, finalBorderPoints[0].z, // Second triangle
+    //     finalBorderPoints[3].x, finalBorderPoints[3].y, finalBorderPoints[3].z,
+    //     finalBorderPoints[4].x, finalBorderPoints[4].y, finalBorderPoints[4].z,
+
+    //     finalBorderPoints[0].x, finalBorderPoints[0].y, finalBorderPoints[0].z, // Second triangle
+    //     finalBorderPoints[4].x, finalBorderPoints[4].y, finalBorderPoints[4].z,
+    //     finalBorderPoints[5].x, finalBorderPoints[5].y, finalBorderPoints[5].z,
+
+    // ]);
+
+    const vertices = []
+
+    for (let face = 0; face < finalBorderPoints.length - 2; face++) {
+        vertices.push(finalBorderPoints[0].x, finalBorderPoints[0].y, finalBorderPoints[0].z)
+        for (let vertice = 0; vertice < 2; vertice++) {
+            vertices.push(finalBorderPoints[vertice + face + 1].x, finalBorderPoints[vertice + face + 1].y, finalBorderPoints[vertice + face + 1].z)
+        }
+    }
+
+
+    const Float32Vertices = new Float32Array(vertices);
+
+
+    // Set the positions to the geometry
+    geometry1.setAttribute('position', new THREE.BufferAttribute(Float32Vertices, 3));
+
+    // Create a material
+    const material2 = new THREE.MeshBasicMaterial({ color: 'red', side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
+
+    // Create a mesh with the geometry and material
+    const plane1 = new THREE.Mesh(geometry1, material2);
+
+    // Add the plane to the scene
+    scene.add(plane1);
+
+
+
+
+
+
+
+
+
+    // const geometry = new THREE.PlaneGeometry(100, 100);
+    // const material = new THREE.MeshBasicMaterial({ color: 'red', side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
+
+    // const plane = new THREE.Mesh(geometry, material);
+    // plane.position.copy(position)
+    // plane.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal)
+
+    // scene.add(plane);
 }
+
+
 
 function Axis() {
 
-    const mainMaterial = new THREE.LineBasicMaterial({ color: 0x56d154, });
 
-    const mainGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-100, 0, 0), new THREE.Vector3(100, 0, 0)]);
-    const mainLine = new THREE.Line(mainGeometry, mainMaterial);
-    scene.add(mainLine);
+    const axesMaterial = new THREE.LineBasicMaterial({ color: 0x56d154, });
+
+    const xGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-size, 0, 0), new THREE.Vector3(size, 0, 0)]);
+    const yGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, -size, 0), new THREE.Vector3(0, size, 0)]);
+    const zGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, -size), new THREE.Vector3(0, 0, size)]);
+    const xLine = new THREE.Line(xGeometry, axesMaterial);
+    const yLine = new THREE.Line(yGeometry, axesMaterial);
+    const zLine = new THREE.Line(zGeometry, axesMaterial);
+    scene.add(xLine, yLine, zLine);
+
+
+    const squareGeometry = new THREE.PlaneGeometry(200, 200)
+    // const facesMaterial = new THREE.LineBasicMaterial({ color: 0x56d154, transparent: true, opacity: 0.1, side: THREE.DoubleSide, forceSinglePass: true });
+    const facesMaterial = new THREE.MeshBasicMaterial({ color: 0x56d154, transparent: true, opacity: 0.1, side: THREE.DoubleSide, forceSinglePass: true, wireframe: true });
+    const face1 = new THREE.Mesh(squareGeometry, facesMaterial)
+    const face2 = new THREE.Mesh(squareGeometry, facesMaterial)
+    const face3 = new THREE.Mesh(squareGeometry, facesMaterial)
+    const face4 = new THREE.Mesh(squareGeometry, facesMaterial)
+    const face5 = new THREE.Mesh(squareGeometry, facesMaterial)
+    const face6 = new THREE.Mesh(squareGeometry, facesMaterial)
+    face1.position.set(0, 0, size)
+    face2.position.set(0, 0, -size)
+
+    face3.rotateX(Math.PI / 2)
+    face3.position.set(0, size, 0)
+    face4.rotateX(Math.PI / 2)
+    face4.position.set(0, -size, 0)
+
+    face5.rotateY(Math.PI / 2)
+    face5.position.set(size, 0, 0)
+    face6.rotateY(Math.PI / 2)
+    face6.position.set(-size, 0, 0)
+
+    scene.add(face1, face2, face3, face4, face5, face6)
 }
 
 Axis()
@@ -275,7 +528,7 @@ function horizontalPlaneLabel() {
     cv.height = 512;
     const ctx = cv.getContext('2d') as CanvasRenderingContext2D;
     ctx.fillStyle = "rgba(255, 255, 0, 0.5)";
-    ctx.fillRect(0, 0, cv.width, cv.height);
+    // ctx.fillRect(0, 0, cv.width, cv.height);
     ctx.fillStyle = '#000000';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
@@ -286,7 +539,7 @@ function horizontalPlaneLabel() {
     const cvTexture = new THREE.Texture(cv);
     cvTexture.needsUpdate = true; // otherwise all black only
     const spineMat = new THREE.MeshPhongMaterial({ color: 0xa5800e, transparent: true, opacity: 0.1 });
-    const cvMaterial = new THREE.MeshBasicMaterial({ map: cvTexture, transparent: true, opacity: 0.1 });
+    const cvMaterial = new THREE.MeshBasicMaterial({ map: cvTexture, transparent: true, opacity: 1 });
     const cvMaterials = [spineMat, spineMat, spineMat, spineMat, cvMaterial, cvMaterial];
     const cvTxtMesh = new THREE.Mesh(txtGeometry, cvMaterials);
     cvTxtMesh.rotation.x = Math.PI / 2; // radiant
@@ -302,7 +555,7 @@ function verticalPlaneLabel() {
     cv.height = 512;
     const ctx = cv.getContext('2d') as CanvasRenderingContext2D;
     ctx.fillStyle = "rgba(255, 255, 0, 0.5)";
-    ctx.fillRect(0, 0, cv.width, cv.height);
+    // ctx.fillRect(0, 0, cv.width, cv.height);
     ctx.fillStyle = '#000000';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
@@ -313,7 +566,7 @@ function verticalPlaneLabel() {
     const cvTexture = new THREE.Texture(cv);
     cvTexture.needsUpdate = true; // otherwise all black only
     const spineMat = new THREE.MeshPhongMaterial({ color: 0xa5800e, transparent: true, opacity: 0.1 });
-    const cvMaterial = new THREE.MeshBasicMaterial({ map: cvTexture });
+    const cvMaterial = new THREE.MeshBasicMaterial({ map: cvTexture, transparent: true, opacity: 1 });
     const cvMaterials = [spineMat, spineMat, spineMat, spineMat, cvMaterial, cvMaterial];
     const cvTxtMesh = new THREE.Mesh(txtGeometry, cvMaterials);
     // cvTxtMesh.rotation.x = Math.PI / 2; // radiant
@@ -322,12 +575,43 @@ function verticalPlaneLabel() {
     scene.add(cvTxtMesh);
 }
 
-
 verticalPlaneLabel()
 horizontalPlaneLabel()
 
+const staticLabels: THREE.Mesh<THREE.BoxGeometry, (THREE.MeshBasicMaterial | THREE.MeshPhongMaterial)[], THREE.Object3DEventMap>[] = []
 
-diedricLine(new THREE.Vector3(-70, -35, 0), new THREE.Vector3(-45, 0, 35))
+function staticLabel(text: string, position: THREE.Vector3) {
+    const cv = document.createElement('canvas');
+    cv.width = 50
+    cv.height = 50;
+    const ctx = cv.getContext('2d') as CanvasRenderingContext2D;
+
+    // ctx.fillStyle = "rgba(255, 255, 0, 0.5)";
+    // ctx.fillRect(0, 0, cv.width, cv.height);
+
+    ctx.fillStyle = '#000000';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.font = '5vh Arial';
+    ctx.fillText(text, cv.width / 2, 0);
+
+    const txtGeometry = new THREE.BoxGeometry(cv.width / 5, cv.height / 5, 0); // w 3 : h 1
+    const cvTexture = new THREE.Texture(cv);
+    cvTexture.needsUpdate = true; // otherwise all black only
+    const spineMat = new THREE.MeshPhongMaterial({ color: 0xa5800e, transparent: true, opacity: 0.1 });
+    const cvMaterial = new THREE.MeshBasicMaterial({ map: cvTexture, transparent: true, opacity: 1 });
+    const cvMaterials = [spineMat, spineMat, spineMat, spineMat, cvMaterial, cvMaterial];
+    const cvTxtMesh = new THREE.Mesh(txtGeometry, cvMaterials);
+    cvTxtMesh.position.copy(position);
+    scene.add(cvTxtMesh);
+
+    staticLabels.push(cvTxtMesh)
+
+    // return cvTxtMesh
+}
+
+
+// diedricLine(new THREE.Vector3(0,0,0), new THREE.Vector3(-40, -10, 40))
 // diedricLine(new THREE.Vector3(0, 0, 0), new THREE.Vector3(40, 30, 10))
 
 
@@ -335,11 +619,16 @@ diedricLine(new THREE.Vector3(-70, -35, 0), new THREE.Vector3(-45, 0, 35))
 // diedricPlane(null, 30, null)
 // diedricPlane(null, null, 30)
 
-diedricPlane(-40, -10, 20)
+// addPoint(new THREE.Vector3(0, 100, 0))
+diedricPlane(40, -10, 80)
 
 // addPoint(new THREE.Vector3(10, 0, 0))
 // addPoint(new THREE.Vector3(0, 20, 0))
 // addPoint(new THREE.Vector3(0, 0, 30))
+
+staticLabel("x", new THREE.Vector3(110, 0, 0))
+staticLabel("y", new THREE.Vector3(0, 110, 0))
+staticLabel("z", new THREE.Vector3(0, 0, 110))
 
 let lastInnerHTML: string;
 
@@ -379,6 +668,10 @@ function animate() {
 
         pointLight.position.set(camera.position.x, camera.position.y, camera.position.z)
 
+        for (let mesh of staticLabels) {
+
+            mesh.rotation.set(camera.rotation.x, camera.rotation.y, camera.rotation.z)
+        }
     }
 
     renderer.render(scene, camera)
