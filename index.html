@@ -16,10 +16,10 @@
 <body class="bg-zinc-800">
 
   <div class="relative h-full grid grid-cols-[400px_1fr] gap-2">
-    <div class="bg-zinc-500 p-1">
-      <div>
-        <label>FOV</label>
-        <input type="range" id="fov-slider" min="10" max="200">
+    <div class="bg-zinc-500 p-1 max-h-full min-h-0">
+      <div class="overflow-x-hidden overflow-y-auto h-[calc(100%_-_40px)]">
+        <div id="expressions" class="items-center flex flex-col gap-2 ">
+        </div>
       </div>
     </div>
     <div id="main-canvas" class="relative">
