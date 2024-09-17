@@ -62,7 +62,13 @@ export class DiedricPoint {
         this.lineToX0Line.computeLineDistances()
         this.lineToY0Line.computeLineDistances()
         this.lineToZ0Line.computeLineDistances()
+    }
 
+    remove() { 
+        this.diedric.scene.remove(this.point)
+        this.diedric.scene.remove(this.lineToX0Line)
+        this.diedric.scene.remove(this.lineToY0Line)
+        this.diedric.scene.remove(this.lineToZ0Line)
     }
 
     set o(o: number) {
