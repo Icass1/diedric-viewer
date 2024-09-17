@@ -1,12 +1,20 @@
 import * as THREE from 'three';
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { DiedricPlane } from './diedricPlane'
+import { DiedricPlane, DiedricPlane3Points } from './diedricPlane'
 import { StaticLabel } from './staticLabel';
+import { DiedricLine, DiedricLine2Points } from './diedricLine';
+import { DiedricPoint } from './diedricPoint';
 
-const canvasDiv = document.querySelector<HTMLDivElement>("#main-canvas") as HTMLDivElement
-const canvas = canvasDiv.querySelector<HTMLCanvasElement>("canvas") as HTMLCanvasElement
-const canvasInfo = document.querySelector<HTMLDivElement>("#main-canvas-info") as HTMLDivElement
+// const canvasDiv = document.querySelector<HTMLDivElement>("#main-canvas") as HTMLDivElement
+// const canvas = canvasDiv.querySelector<HTMLCanvasElement>("canvas") as HTMLCanvasElement
+// const canvasInfo = document.querySelector<HTMLDivElement>("#main-canvas-info") as HTMLDivElement
+
+interface InfoEvent {
+    positionX: number
+    positionY: number
+    positionZ: number
+}
 
 export class Diedric {
 
@@ -18,10 +26,10 @@ export class Diedric {
     staticLabels: StaticLabel[]
     size: number
 
-    constructor(size: number) {
+    constructor(size: number, canvas: HTMLCanvasElement) {
         this.scene = new THREE.Scene()
-        this.camera = new THREE.PerspectiveCamera(75, canvasDiv.offsetWidth / canvasDiv.offsetHeight, 0.1, 1000)
-        this.scene.background = new THREE.Color("rgb(120, 118, 122)")
+        this.camera = new THREE.PerspectiveCamera(75, canvas.offsetWidth / canvas.offsetHeight, 0.1, 1000)
+        this.scene.background = new THREE.Color("rgb(240, 236, 244)")
 
         this.size = size
 
@@ -31,7 +39,7 @@ export class Diedric {
         })
 
         this.renderer.setPixelRatio(window.devicePixelRatio)
-        this.renderer.setSize(canvasDiv.offsetWidth, canvasDiv.offsetHeight)
+        this.renderer.setSize(canvas.offsetWidth, canvas.offsetHeight)
         this.getLocalStorageCameraConfig()
 
         this.controls = new OrbitControls(this.camera, this.renderer.domElement)
@@ -69,7 +77,7 @@ export class Diedric {
             </label>
         `
         if (newInnerHTML != this.lastInnerHTML) {
-            canvasInfo.innerHTML = newInnerHTML
+            // canvasInfo.innerHTML = newInnerHTML
             this.lastInnerHTML = newInnerHTML
             localStorage.setItem("camera", JSON.stringify({
                 rotation_x: Math.round(this.camera.rotation.x * 100) / 100,
@@ -94,7 +102,6 @@ export class Diedric {
         const localStorageCamera = localStorage.getItem("camera")
         if (localStorageCamera) {
             const cameraConfig = JSON.parse(localStorageCamera)
-            console.log(cameraConfig, cameraConfig.position_x == 0)
             if (cameraConfig.position_x == 0) {
                 cameraConfig.position_x = 1
             }
@@ -125,7 +132,7 @@ export class Diedric {
 
         const squareGeometry = new THREE.PlaneGeometry(200, 200)
         // const facesMaterial = new THREE.LineBasicMaterial({ color: 0x56d154, transparent: true, opacity: 0.1, side: THREE.DoubleSide, forceSinglePass: true });
-        const facesMaterial = new THREE.MeshBasicMaterial({ color: 0x56d154, transparent: true, opacity: 0.1, side: THREE.DoubleSide, forceSinglePass: true, wireframe: true });
+        const facesMaterial = new THREE.MeshBasicMaterial({ color: 0x56d154, transparent: true, opacity: 0.2, side: THREE.DoubleSide, forceSinglePass: true, wireframe: true });
         const face1 = new THREE.Mesh(squareGeometry, facesMaterial)
         const face2 = new THREE.Mesh(squareGeometry, facesMaterial)
         const face3 = new THREE.Mesh(squareGeometry, facesMaterial)
@@ -174,7 +181,6 @@ export class Diedric {
         this.scene.add(cvTxtMesh);
     }
 
-
     drawVerticalPlaneLabel() {
         const cv = document.createElement('canvas');
         cv.width = 512 //  3 * 512
@@ -201,6 +207,13 @@ export class Diedric {
         this.scene.add(cvTxtMesh);
     }
 
+    set onUpdateInfo(func: (info: InfoEvent) => {}) {
+        func({
+            positionX: this.camera.position.x,
+            positionY: this.camera.position.y,
+            positionZ: this.camera.position.z
+        })
+    }
 
     createStaticLabel(text: string, position: THREE.Vector3) {
 
@@ -209,22 +222,36 @@ export class Diedric {
 
         return label
     }
-    createDiedricPlane(o: number | null, a: number | null, c: number | null, color: THREE.ColorRepresentation) {
+
+    // Plane methods
+    createPlaneOAC(o: number | null, a: number | null, c: number | null, color: THREE.ColorRepresentation) {
         const plane = new DiedricPlane(this, o, a, c, color)
+        // const plane = new DiedricPlane(this, color)
+        // plane.fromOAC(o, a, c)
         return plane
     }
 
-    createPoint(o: number, a: number, c: number, color: THREE.ColorRepresentation) {
-        const geometry = new THREE.SphereGeometry(1)
-        const material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
-        const point = new THREE.Mesh(geometry, material);
-        this.scene.add(point);
-        point.position.x = o
-        point.position.y = c
-        point.position.z = a
-        return point
+    // createPlaneLineLine(line1: DiedricLine, line2: DiedricLine, color: THREE.ColorRepresentation) {
+    createPlane2Line({ line1, line2, color }: { line1: DiedricLine, line2: DiedricLine, color: THREE.ColorRepresentation }) {
+        console.log(line1, line2, color)
+        // const plane = new DiedricPlane(this, o, a, c, color)
+        // return plane
+    }
+    createPlane3Points({ point1, point2, point3, color }: { point1: DiedricPoint, point2: DiedricPoint, point3: DiedricPoint, color: THREE.ColorRepresentation }) {
+        return new DiedricPlane3Points(this, point1, point2, point3, color)
+    }
+    createPlaneLinePoint({ line, point }: { line: DiedricLine, point: DiedricPoint }) {
+        // const plane = new DiedricPlane(this, o, a, c, color)
+        // return plane
+    }
+
+    // Point methods
+    createPoint({ o, a, c, color }: { o: number, a: number, c: number, color: THREE.ColorRepresentation }) {
+        return new DiedricPoint(this, o, a, c, color)
+    }
+    // Line methods
+    createLine2Points({ point1, point2, color }: { point1: DiedricPoint, point2: DiedricPoint, color: THREE.ColorRepresentation }) {
+        const line = new DiedricLine2Points(this, point1, point2, color)
+        return line
     }
 }
-
-
-
