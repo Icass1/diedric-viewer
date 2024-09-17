@@ -132,15 +132,18 @@ function Line2PointsExpression({ expression, updateValue }: { expression: Expres
     )
 }
 
-function Expression({ children, expression }: { children: ReactNode, expression: Expression<DiedricLine | DiedricPlane3Points | DiedricPoint> }) {
+function Expression({ children, expression, removeExpression }: { children: ReactNode, expression: Expression<DiedricLine | DiedricPlane3Points | DiedricPoint>, removeExpression: (expression: Expression<DiedricLine | DiedricPlane3Points | DiedricPoint>) => {} }) {
 
     return (
-        <div className="w-full border border-neutral-400 text-black rounded grid grid-cols-[40px_1fr] ">
-            <div className=" bg-zinc-800/50 rounded-tl rounded-bl">
+        <div className="w-full border border-neutral-400 text-black rounded grid grid-cols-[40px_1fr_20px] items-center min-h-12 pr-2">
+            <div className=" bg-zinc-800/50 rounded-tl rounded-bl h-full">
                 <div className="bg-red-300 h-8 w-8 rounded-full relative top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ backgroundColor: expression.value.color.toString() }}></div>
             </div>
             <div className="relative w-full p-2 min-w-0">
                 {children}
+            </div>
+            <div className="h-5 w-5 bg-red-500" onClick={() => { removeExpression(expression) }}>
+
             </div>
         </div>
     )
@@ -281,7 +284,7 @@ export default function App({ canvasRef }: { canvasRef: RefObject<HTMLCanvasElem
         }
     }
 
-    const updateValue = useCallback((id: string, key: string, value: string | number) => {
+    const updateValue = useCallback((id: string, key: string | undefined, value: string | number | undefined) => {
         const expression = expressions.find(expression => expression.id == id)
         if (!expression) {
             console.warn(`Expression with id ${id} not found`)
@@ -292,6 +295,8 @@ export default function App({ canvasRef }: { canvasRef: RefObject<HTMLCanvasElem
             Object.keys(expression.parameters).map(param => {
                 if (expression.parameters[param] == id) {
                     expression.value.update()
+                    console.log(expression.id)
+                    updateValue(expression.id, undefined, undefined)
                 }
             })
         })
@@ -336,11 +341,16 @@ export default function App({ canvasRef }: { canvasRef: RefObject<HTMLCanvasElem
         }
     }, [diedric, expressions])
 
+    const removeExpression = useCallback((expression: Expression<DiedricPoint>) => {
+        expression.value.remove()
+        updateValue(expression.id, undefined, undefined)
+    }, [diedric, expressions])
+
     return (
         <div className="h-full overflow-y-auto p-3">
             <div className="flex flex-col items-center gap-2">
                 {expressions.map(((expression, index) => (
-                    <Expression key={index} expression={expression as Expression<DiedricPoint | DiedricLine | DiedricPlane>}>
+                    <Expression key={index} expression={expression as Expression<DiedricPoint | DiedricLine | DiedricPlane>} removeExpression={removeExpression}>
                         {renderExpression(expression as Expression<DiedricPoint | DiedricLine | DiedricPlane>, index)}
                     </Expression>
                 )))}
