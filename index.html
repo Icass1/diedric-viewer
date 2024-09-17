@@ -1,34 +1,13 @@
 <!doctype html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Diedric</title>
-
-  <link rel="stylesheet" type="text/css" href="src/style.css" />
-
-
-
-</head>
-
-<body class="bg-zinc-800">
-
-  <div class="relative h-full grid grid-cols-[400px_1fr] gap-2">
-    <div class="bg-zinc-500 p-1 max-h-full min-h-0">
-      <div class="overflow-x-hidden overflow-y-auto h-[calc(100%_-_40px)]">
-        <div id="expressions" class="items-center flex flex-col gap-2 ">
-        </div>
-      </div>
-    </div>
-    <div id="main-canvas" class="relative">
-      <canvas class="absolute top-0"></canvas>
-      <div class="absolute flex flex-col p-1 m-1 bg-slate-600/50 rounded-lg text-sm" id="main-canvas-info"></div>
-    </div>
-  </div>
-
-  <script type="module" src="/src/main.ts"></script>
-</body>
-
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diedric</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
