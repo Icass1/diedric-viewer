@@ -1,44 +1,50 @@
-import { BaseSyntheticEvent, ChangeEvent, ReactNode, RefObject, useCallback, useEffect, useState } from "react"
+import { ChangeEvent, createContext, ReactNode, RefObject, useContext, useEffect, useState } from "react"
 import { Diedric } from "./utils/diedric"
 import * as THREE from 'three';
-import { DiedricPlane, DiedricPlane3Points } from "./utils/diedricPlane";
+import { DiedricPlane3Points, DiedricPlanePointLine } from "./utils/diedricPlane";
 import { DiedricPoint } from "./utils/diedricPoint";
-import { DiedricLine, DiedricLine2Points } from "./utils/diedricLine";
+import { DiedricLine2Points, } from "./utils/diedricLine";
 
+type PosibleExpressions = DiedricLine2Points | DiedricPlane3Points | DiedricPoint | DiedricPlanePointLine
 interface Expression<T> {
     id: string
-    type: "point" | "line-2-pto" | "plane-3-pto"
+    type: "point" | "line-2-pto" | "plane-3-pto" | "plane-pto-line"
     value: T
-    parameters: any
+    params: any
+    hidden: boolean
 }
 
-function PointExpresssion({ expression, updateValue }: { expression: Expression<DiedricPoint>, updateValue: (id: string, key: string, value: string | number) => void }) {
+interface a {
+    expressions: Expression<PosibleExpressions | null>[]
+    setExpressions: React.Dispatch<React.SetStateAction<Expression<PosibleExpressions | null>[]>>
+}
 
-    const [o, setO] = useState(expression.parameters.o)
-    const [a, setA] = useState(expression.parameters.a)
-    const [c, setC] = useState(expression.parameters.c)
+const ExpressionsContext = createContext<a>({ expressions: [], setExpressions: () => { } })
+
+function PointExpresssion({ expression }: { expression: Expression<DiedricPoint> }) {
+
+    const [o, setO] = useState(expression.params.o)
+    const [a, setA] = useState(expression.params.a)
+    const [c, setC] = useState(expression.params.c)
 
     const handleOChange = (e: ChangeEvent<HTMLInputElement>) => {
         setO(e.target.value)
         expression.value.o = Number(e.target.value)
-        updateValue(expression.id, "o", Number(e.target.value))
     }
 
     const handleAChange = (e: ChangeEvent<HTMLInputElement>) => {
         setA(e.target.value)
         expression.value.a = Number(e.target.value)
-        updateValue(expression.id, "a", Number(e.target.value))
     }
     const handleCChange = (e: ChangeEvent<HTMLInputElement>) => {
         setC(e.target.value)
         expression.value.c = Number(e.target.value)
-        updateValue(expression.id, "c", Number(e.target.value))
     }
 
     return (
         <>
             <div className="flex flex-row">
-                <input defaultValue={expression.id} className="bg-transparent border-b border-neutral-300 focus:outline-none w-10" />
+                <input defaultValue={expression.id} className="bg-transparent border-b border-neutral-300 focus:outline-none w-16 text-center" />
                 <label className="border-b border-neutral-300 w-full min-w-0"> = (O, A, C)</label>
             </div>
             <div className="flex flex-row justify-between gap-4">
@@ -58,29 +64,50 @@ function PointExpresssion({ expression, updateValue }: { expression: Expression<
         </>
     )
 }
-function Plane3PointsExpression({ expression, updateValue }: { expression: Expression<DiedricLine>, updateValue: (id: string, key: string, value: string | number) => void }) {
+function Plane3PointsExpression({ expression }: { expression: Expression<DiedricPlane3Points> }) {
+
+    const { expressions } = useContext(ExpressionsContext)
+
 
     const [id, setId] = useState(expression.id)
-    const [point1Id, setPoint1Id] = useState(expression.parameters.point1)
-    const [point2Id, setPoint2Id] = useState(expression.parameters.point2)
-    const [point3Id, setPoint3Id] = useState(expression.parameters.point3)
+    const [point1Id, setPoint1Id] = useState(expression.params.point1)
+    const [point2Id, setPoint2Id] = useState(expression.params.point2)
+    const [point3Id, setPoint3Id] = useState(expression.params.point3)
 
     const handleIdChange = (e: ChangeEvent<HTMLInputElement>) => {
         setId(e.target.value)
-        updateValue(expression.id, "id", e.target.value)
+
     }
 
     const handlePoint1Change = (e: ChangeEvent<HTMLInputElement>) => {
         setPoint1Id(e.target.value)
-        updateValue(expression.id, "point1", e.target.value)
+        let parsedPoint = expressions.find(exp => (exp.id == e.target.value))
+
+        if (parsedPoint?.value instanceof DiedricPoint) {
+            expression.value.point1 = parsedPoint.value as DiedricPoint | undefined
+        } else {
+            expression.value.point1 = undefined
+        }
     }
     const handlePoint2Change = (e: ChangeEvent<HTMLInputElement>) => {
         setPoint2Id(e.target.value)
-        updateValue(expression.id, "point2", e.target.value)
+        let parsedPoint = expressions.find(exp => (exp.id == e.target.value))
+
+        if (parsedPoint?.value instanceof DiedricPoint) {
+            expression.value.point2 = parsedPoint.value as DiedricPoint | undefined
+        } else {
+            expression.value.point2 = undefined
+        }
     }
     const handlePoint3Change = (e: ChangeEvent<HTMLInputElement>) => {
         setPoint3Id(e.target.value)
-        updateValue(expression.id, "point2", e.target.value)
+        let parsedPoint = expressions.find(exp => (exp.id == e.target.value))
+
+        if (parsedPoint?.value instanceof DiedricPoint) {
+            expression.value.point3 = parsedPoint.value as DiedricPoint | undefined
+        } else {
+            expression.value.point3 = undefined
+        }
     }
 
     return (
@@ -98,24 +125,38 @@ function Plane3PointsExpression({ expression, updateValue }: { expression: Expre
         </>
     )
 }
-function Line2PointsExpression({ expression, updateValue }: { expression: Expression<DiedricLine>, updateValue: (id: string, key: string, value: string | number) => void }) {
+function Line2PointsExpression({ expression }: { expression: Expression<DiedricLine2Points> }) {
 
     const [id, setId] = useState(expression.id)
-    const [point1Id, setPoin1Id] = useState(expression.parameters.point1)
-    const [point2Id, setPoin2Id] = useState(expression.parameters.point2)
+    const [point1Id, setPoin1Id] = useState(expression.params.point1)
+    const [point2Id, setPoin2Id] = useState(expression.params.point2)
+
+    const { expressions } = useContext(ExpressionsContext)
 
     const handleIdChange = (e: ChangeEvent<HTMLInputElement>) => {
         setId(e.target.value)
-        updateValue(expression.id, "id", e.target.value)
     }
 
     const handlePoint1Change = (e: ChangeEvent<HTMLInputElement>) => {
         setPoin1Id(e.target.value)
-        updateValue(expression.id, "point1", e.target.value)
+        let parsedPoint = expressions.find(exp => (exp.id == e.target.value))
+
+        if (parsedPoint?.value instanceof DiedricPoint) {
+            expression.value.point1 = parsedPoint.value as DiedricPoint | undefined
+        } else {
+            expression.value.point1 = undefined
+        }
     }
     const handlePoint2Change = (e: ChangeEvent<HTMLInputElement>) => {
         setPoin2Id(e.target.value)
-        updateValue(expression.id, "point2", e.target.value)
+
+        let parsedPoint = expressions.find(exp => (exp.id == e.target.value))
+
+        if (parsedPoint?.value instanceof DiedricPoint) {
+            expression.value.point2 = parsedPoint.value as DiedricPoint | undefined
+        } else {
+            expression.value.point2 = undefined
+        }
     }
 
     return (
@@ -132,7 +173,20 @@ function Line2PointsExpression({ expression, updateValue }: { expression: Expres
     )
 }
 
-function Expression({ children, expression, removeExpression }: { children: ReactNode, expression: Expression<DiedricLine | DiedricPlane3Points | DiedricPoint>, removeExpression: (expression: Expression<DiedricLine | DiedricPlane3Points | DiedricPoint>) => {} }) {
+function Expression({ children, expression }: { children: ReactNode, expression: Expression<PosibleExpressions> }) {
+    const { expressions, setExpressions } = useContext(ExpressionsContext)
+
+
+    const removeExpression = () => {
+
+        expression.value.remove()
+        let index = expressions.indexOf(expression)
+        console.log(index)
+        let newExpressions = [...expressions]
+        newExpressions.splice(index, 1)
+        console.log(newExpressions)
+        setExpressions(newExpressions)
+    }
 
     return (
         <div className="w-full border border-neutral-400 text-black rounded grid grid-cols-[40px_1fr_20px] items-center min-h-12 pr-2">
@@ -142,7 +196,7 @@ function Expression({ children, expression, removeExpression }: { children: Reac
             <div className="relative w-full p-2 min-w-0">
                 {children}
             </div>
-            <div className="h-5 w-5 bg-red-500" onClick={() => { removeExpression(expression) }}>
+            <div className="h-5 w-5 bg-red-500" onClick={removeExpression}>
 
             </div>
         </div>
@@ -152,60 +206,89 @@ function Expression({ children, expression, removeExpression }: { children: Reac
 export default function App({ canvasRef }: { canvasRef: RefObject<HTMLCanvasElement> }) {
 
     const [diedric, setDiedric] = useState<Diedric>()
-    const [expressions, setExpressions] = useState<Expression<DiedricLine | DiedricPoint | DiedricPlane | null>[]>([])
+    const [expressions, setExpressions] = useState<Expression<PosibleExpressions | null>[]>([])
 
-    const savedExpressions: Expression<DiedricLine | DiedricPoint | DiedricPlane | null>[] = [
+    const savedExpressions: Expression<PosibleExpressions | null>[] = [
         {
-            id: "P_1",
+            id: "r_1",
             type: "point",
             value: null,
-            parameters: {
+            hidden: false,
+            params: {
                 o: 60,
                 a: 30,
-                c: -45,
+                c: 45,
                 color: "red",
-            }
+            },
         },
         {
-            id: "P_2",
+            id: "r_2",
             type: "point",
             value: null,
-            parameters: {
+            hidden: false,
+            params: {
                 o: -60,
-                a: -45,
-                c: 30,
+                a: -12,
+                c: 50,
                 color: "blue",
             }
         },
         {
-            id: "P_3",
+            id: "beta_p",
             type: "point",
             value: null,
-            parameters: {
-                o: -80,
+            hidden: false,
+            params: {
+                o: 50,
                 a: -60,
-                c: -30,
+                c: 87,
                 color: "yellow",
             }
         },
         {
-            id: "P_4",
+            id: "alpha_1",
             type: "point",
             value: null,
-            parameters: {
-                o: -34,
-                a: 45,
-                c: 30,
+            hidden: false,
+            params: {
+                o: -43,
+                a: 0,
+                c: 0,
                 color: "black",
             }
         },
         {
-            id: "r",
+            id: "alpha_2",
+            type: "point",
+            value: null,
+            hidden: false,
+            params: {
+                o: 0,
+                a: 0,
+                c: 50,
+                color: "black",
+            }
+        },
+        {
+            id: "alpha_3",
+            type: "point",
+            value: null,
+            hidden: false,
+            params: {
+                o: 0,
+                a: 0,
+                c: 0,
+                color: "black",
+            }
+        },
+        {
+            id: "beta_r",
             type: "line-2-pto",
             value: null,
-            parameters: {
-                point1: "P_1",
-                point2: "P_2",
+            hidden: false,
+            params: {
+                point1: "r_1",
+                point2: "r_2",
                 color: "green",
             }
         },
@@ -213,13 +296,25 @@ export default function App({ canvasRef }: { canvasRef: RefObject<HTMLCanvasElem
             id: "alpha",
             type: "plane-3-pto",
             value: null,
-            parameters: {
-                point1: "P_1",
-                point2: "P_2",
-                point3: "P_3",
+            hidden: false,
+            params: {
+                point1: "alpha_1",
+                point2: "alpha_2",
+                point3: "alpha_3",
                 color: "gray",
-            }
-        }
+            },
+        },
+        // {
+        //     id: "beta",
+        //     type: "plane-pto-line",
+        //     value: null,
+        //     hidden: false,
+        //     params: {
+        //         point: "beta_p",
+        //         line: "beta_r",
+        //         color: "tomato",
+        //     }
+        // }
     ]
 
     useEffect(() => {
@@ -240,120 +335,74 @@ export default function App({ canvasRef }: { canvasRef: RefObject<HTMLCanvasElem
     useEffect(() => {
         if (!diedric) { return }
 
-        let newExpressions: Expression<DiedricLine | DiedricPoint | DiedricPlane | null>[] = []
+        console.log("getting saved expressions")
+
+        let newExpressions: Expression<PosibleExpressions | null>[] = []
         savedExpressions.map((savedExpression) => {
             let value
+
+            const parsedParams: any = {}
+
+            Object.keys(savedExpression.params).map(param => {
+                const value = savedExpression.params[param]
+                if (param == "color") {
+                    parsedParams.color = value
+                } else if (typeof value == "number") {
+                    parsedParams[param] = value
+                } else if (typeof value == "string") {
+                    let parsed = newExpressions.find((expression) => expression.id == value)
+                    parsedParams[param] = parsed?.value
+                }
+            })
+
+
             if (savedExpression.type == "point") {
-                value = diedric.createPoint(savedExpression.parameters)
+                value = diedric.createPoint(parsedParams)
             } else if (savedExpression.type == "line-2-pto") {
-                let point1 = newExpressions.find((expression) => expression.id == savedExpression.parameters.point1) as Expression<DiedricPoint>
-                let point2 = newExpressions.find((expression) => expression.id == savedExpression.parameters.point2) as Expression<DiedricPoint>
-                if (point1?.value && point2?.value) {
-                    value = diedric.createLine2Points({ point1: point1.value, point2: point2.value, color: savedExpression.parameters.color })
-                }
+                value = diedric.createLine2Points(parsedParams)
             } else if (savedExpression.type == "plane-3-pto") {
-                let point1 = newExpressions.find((expression) => expression.id == savedExpression.parameters.point1) as Expression<DiedricPoint>
-                let point2 = newExpressions.find((expression) => expression.id == savedExpression.parameters.point2) as Expression<DiedricPoint>
-                let point3 = newExpressions.find((expression) => expression.id == savedExpression.parameters.point3) as Expression<DiedricPoint>
-                if (point1?.value && point2?.value && point3?.value) {
-                    value = diedric.createPlane3Points({ point1: point1.value, point2: point2.value, point3: point3.value, color: savedExpression.parameters.color })
-                }
+                value = diedric.createPlane3Points(parsedParams)
             } else {
-                console.warn(savedExpression.type, "Not implemented")
+                // console.warn(savedExpression.type, "Not implemented")
+                value = diedric.createPlanePointLine(parsedParams)
             }
+
             if (!value) return
+
+            value.hidden = savedExpression.hidden
 
             newExpressions.push({
                 id: savedExpression.id,
                 type: savedExpression.type,
                 value: value,
-                parameters: savedExpression.parameters,
+                params: savedExpression.params,
+                hidden: savedExpression.hidden
             })
         })
         setExpressions(newExpressions)
 
     }, [diedric])
 
-    const renderExpression = (expression: Expression<DiedricPoint | DiedricLine | DiedricPlane>, index: number) => {
+    const renderExpression = (expression: Expression<PosibleExpressions>, index: number) => {
         if (expression.type == "point") {
-            return <PointExpresssion key={index} expression={expression as Expression<DiedricPoint>} updateValue={updateValue} />
+            return <PointExpresssion key={index} expression={expression as Expression<DiedricPoint>} />
         } else if (expression.type == "plane-3-pto") {
-            return <Plane3PointsExpression key={index} expression={expression as Expression<DiedricLine>} updateValue={updateValue} />
+            return <Plane3PointsExpression key={index} expression={expression as Expression<DiedricPlane3Points>} />
         } else if (expression.type == "line-2-pto") {
-            return <Line2PointsExpression key={index} expression={expression as Expression<DiedricLine>} updateValue={updateValue} />
+            return <Line2PointsExpression key={index} expression={expression as Expression<DiedricLine2Points>} />
         }
     }
 
-    const updateValue = useCallback((id: string, key: string | undefined, value: string | number | undefined) => {
-        const expression = expressions.find(expression => expression.id == id)
-        if (!expression) {
-            console.warn(`Expression with id ${id} not found`)
-            return
-        }
-
-        expressions.map(expression => {
-            Object.keys(expression.parameters).map(param => {
-                if (expression.parameters[param] == id) {
-                    expression.value.update()
-                    console.log(expression.id)
-                    updateValue(expression.id, undefined, undefined)
-                }
-            })
-        })
-
-        if (expression.value instanceof DiedricLine2Points) {
-            const newPoint = expressions.find(expression => expression.id == value)
-            if (!newPoint || !(newPoint.value instanceof DiedricPoint)) {
-                expression.value.hidden = true
-                return
-            }
-            expression.value.hidden = false
-
-            if (key == "point1") {
-                expression.value.point1 = newPoint.value
-                expression.parameters.point1 = newPoint.id
-
-            } else if (key == "point2") {
-                expression.value.point2 = newPoint.value
-                expression.parameters.point2 = newPoint.id
-            }
-        } else if (expression.value instanceof DiedricPlane3Points) {
-            const newPoint = expressions.find(expression => expression.id == value)
-            if (!newPoint || !(newPoint.value instanceof DiedricPoint)) {
-                expression.value.hidden = true
-                return
-            }
-            expression.value.hidden = false
-
-            if (key == "point1") {
-                expression.value.point1 = newPoint.value
-                expression.parameters.point1 = newPoint.id
-
-            } else if (key == "point2") {
-                expression.value.point3 = newPoint.value
-                expression.parameters.point3 = newPoint.id
-            } else if (key == "point3") {
-                expression.value.point2 = newPoint.value
-                expression.parameters.point2 = newPoint.id
-            }
-
-
-        }
-    }, [diedric, expressions])
-
-    const removeExpression = useCallback((expression: Expression<DiedricPoint>) => {
-        expression.value.remove()
-        updateValue(expression.id, undefined, undefined)
-    }, [diedric, expressions])
-
     return (
-        <div className="h-full overflow-y-auto p-3">
+        <div className="h-full overflow-y-auto p-1">
             <div className="flex flex-col items-center gap-2">
-                {expressions.map(((expression, index) => (
-                    <Expression key={index} expression={expression as Expression<DiedricPoint | DiedricLine | DiedricPlane>} removeExpression={removeExpression}>
-                        {renderExpression(expression as Expression<DiedricPoint | DiedricLine | DiedricPlane>, index)}
-                    </Expression>
-                )))}
+                <ExpressionsContext.Provider value={{ expressions, setExpressions }}>
+                    {expressions.map(((expression, index) => (
+                        <Expression key={expression.id} expression={expression as Expression<PosibleExpressions>}>
+                            {renderExpression(expression as Expression<PosibleExpressions>, index)}
+                        </Expression>
+                    )))}
+                </ExpressionsContext.Provider>
                 <div className="h-16 w-16 border rounded border-neutral-400 hover:bg-green-400">
 
                 </div>

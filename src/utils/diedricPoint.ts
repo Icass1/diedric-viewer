@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Diedric } from './diedric';
-import { DiedricPlane } from './diedricPlane';
-import { DiedricLine } from './diedricLine';
+import { DiedricPlane3Points, DiedricPlanePointLine } from './diedricPlane';
+import { DiedricLine2Points } from './diedricLine';
 
 export class DiedricPoint {
     private point: THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial, THREE.Object3DEventMap>
@@ -16,6 +16,7 @@ export class DiedricPoint {
     private lineToZ0Geometry;
 
     private _color: THREE.ColorRepresentation
+    children: (DiedricPlane3Points | DiedricLine2Points | DiedricPlanePointLine)[] = []
 
     constructor(diedric: Diedric, o: number, a: number, c: number, color: THREE.ColorRepresentation) {
 
@@ -53,8 +54,8 @@ export class DiedricPoint {
         this.diedric.scene.add(this.lineToX0Line);
         this.diedric.scene.add(this.lineToY0Line);
         this.diedric.scene.add(this.lineToZ0Line);
-
     }
+
     update() {
         this.lineToY0Geometry.setFromPoints([this.point.position, new THREE.Vector3(this.point.position.x, 0, this.point.position.z)])
         this.lineToX0Geometry.setFromPoints([new THREE.Vector3(this.point.position.x, 0, this.point.position.z), new THREE.Vector3(0, 0, this.point.position.z)])
@@ -62,13 +63,33 @@ export class DiedricPoint {
         this.lineToX0Line.computeLineDistances()
         this.lineToY0Line.computeLineDistances()
         this.lineToZ0Line.computeLineDistances()
+
+        this.children.map((child => child.update()))
     }
 
-    remove() { 
+    remove() {
         this.diedric.scene.remove(this.point)
         this.diedric.scene.remove(this.lineToX0Line)
         this.diedric.scene.remove(this.lineToY0Line)
         this.diedric.scene.remove(this.lineToZ0Line)
+
+        this.children.map((child => child.removeParent(this)))
+
+
+    }
+
+    set hidden(value: boolean) {
+        if (value) {
+            this.diedric.scene.remove(this.point)
+            this.diedric.scene.remove(this.lineToX0Line)
+            this.diedric.scene.remove(this.lineToY0Line)
+            this.diedric.scene.remove(this.lineToZ0Line)
+        } else {
+            this.diedric.scene.add(this.point)
+            this.diedric.scene.add(this.lineToX0Line)
+            this.diedric.scene.add(this.lineToY0Line)
+            this.diedric.scene.add(this.lineToZ0Line)
+        }
     }
 
     set o(o: number) {
