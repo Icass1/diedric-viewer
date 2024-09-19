@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import { Diedric } from './diedric';
-import { DiedricPlane3Points, DiedricPlanePointLine } from './diedricPlane';
-import { DiedricLine2Points } from './diedricLine';
+import { DiedricLine2Point } from './diedricLine2Point';
+import { DiedricLinePointParallelLine } from './diedricLinePointParallelLine';
+import { DiedricPlane3Point } from './diedricPlane3Point';
+import { DiedricPlanePointLine } from './diedricPlanePointLine';
 
 export class DiedricPoint {
     private point: THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial, THREE.Object3DEventMap>
@@ -16,7 +18,7 @@ export class DiedricPoint {
     private lineToZ0Geometry;
 
     private _color: THREE.ColorRepresentation
-    children: (DiedricPlane3Points | DiedricLine2Points | DiedricPlanePointLine)[] = []
+    children: (DiedricPlane3Point | DiedricLine2Point | DiedricPlanePointLine | DiedricLinePointParallelLine)[] = []
 
     constructor(diedric: Diedric, o: number, a: number, c: number, color: THREE.ColorRepresentation) {
 
@@ -55,7 +57,9 @@ export class DiedricPoint {
         this.diedric.scene.add(this.lineToY0Line);
         this.diedric.scene.add(this.lineToZ0Line);
     }
-
+    getSuper() {
+        return this
+    }
     update() {
         this.lineToY0Geometry.setFromPoints([this.point.position, new THREE.Vector3(this.point.position.x, 0, this.point.position.z)])
         this.lineToX0Geometry.setFromPoints([new THREE.Vector3(this.point.position.x, 0, this.point.position.z), new THREE.Vector3(0, 0, this.point.position.z)])

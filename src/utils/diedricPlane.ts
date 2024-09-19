@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { Diedric } from './diedric';
-import { DiedricPoint } from './diedricPoint';
-import { DiedricLine } from './diedricLine';
+import { DiedricLine2Plane } from './diedricLine2Plane';
 
 export class DiedricPlane {
     private size: number
@@ -20,7 +19,7 @@ export class DiedricPlane {
     private horizontalProjectionLine: THREE.Line<THREE.BufferGeometry<THREE.NormalBufferAttributes>, THREE.LineBasicMaterial, THREE.Object3DEventMap>
     private plane: THREE.Mesh<THREE.BufferGeometry<THREE.NormalBufferAttributes>, THREE.MeshBasicMaterial, THREE.Object3DEventMap>
 
-    children = []
+    children: (DiedricLine2Plane)[] = []
 
     constructor(diedric: Diedric, normal: THREE.Vector3 | undefined, d: number | undefined, color: THREE.ColorRepresentation) {
 
@@ -42,18 +41,9 @@ export class DiedricPlane {
         this.diedric.scene.add(this.verticalProjectionLine);
 
         this.calc()
-        // let vertices = this.calc()
-        // if (!vertices) {
-        //     console.error("No vertices")
-        // } else {
-        //     const Float32Vertices = new Float32Array(vertices);
-
-        //     // Set the positions to the geometry
-        //     this.geometry.setAttribute('position', new THREE.BufferAttribute(Float32Vertices, 3));
-        // }
 
         // Create a material
-        this.material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
+        this.material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 0.1 });
 
         // Create a mesh with the geometry and material
         this.plane = new THREE.Mesh(this.geometry, this.material);
@@ -63,13 +53,11 @@ export class DiedricPlane {
     }
 
     calc() {
-        console.log("AAAAAAAAAAAAAAAAA", this._d, this._normal)
-        if (!(this._d && this._normal)) {
+        if (!(this._d !== undefined && this._normal)) {
             this.hidden = true
 
             return
-        } 
-        console.log("BBBBBBBBBBBBBB")
+        }
 
         this.hidden = false
 
@@ -185,19 +173,12 @@ export class DiedricPlane {
         const finalBorderPoints: THREE.Vector3[] = []
 
         let currentPoint = borderPoints[0]
-        let closestPoints: THREE.Vector3[] = []
 
         finalBorderPoints.push(currentPoint)
 
         let facesDone: string[] = []
 
         for (let i = 0; i < borderPoints.length - 1; i++) {
-            // closestPoints = borderPoints.sort((a, b) => {
-            //     return currentPoint.distanceTo(a) - currentPoint.distanceTo(b)
-            // }).filter(a => !finalBorderPoints.includes(a))
-            // finalBorderPoints.push(closestPoints[0])
-            // currentPoint = closestPoints[0]
-
 
             if (currentPoint.x == size && !facesDone.includes("A")) {
 
@@ -288,6 +269,7 @@ export class DiedricPlane {
             this.geometry.setAttribute('position', new THREE.BufferAttribute(Float32Vertices, 3));
         }
 
+        this.children.map(child => child.update())
 
         // return vertices
     }
@@ -296,6 +278,9 @@ export class DiedricPlane {
         this.diedric.scene.remove(this.plane)
         this.diedric.scene.remove(this.horizontalProjectionLine)
         this.diedric.scene.remove(this.verticalProjectionLine)
+    }
+    getSuper() {
+        return this
     }
 
     set d(d: number | undefined) {
@@ -356,220 +341,8 @@ export class DiedricPlane {
 
 }
 
-export class DiedricPlane3Points extends DiedricPlane {
-    private _color: THREE.ColorRepresentation
-    private _point1: DiedricPoint | undefined
-    private _point2: DiedricPoint | undefined
-    private _point3: DiedricPoint | undefined
-
-    constructor(diedric: Diedric, point1: DiedricPoint | undefined, point2: DiedricPoint | undefined, point3: DiedricPoint | undefined, color: THREE.ColorRepresentation) {
-        super(diedric, undefined, undefined, color)
-
-        this._color = color
-        this._point1 = point1
-        this._point2 = point2
-        this._point3 = point3
-
-        this._point1?.children.push(this)
-        this._point2?.children.push(this)
-        this._point3?.children.push(this)
-        this.update()
-    }
-
-    removeParent(parent: DiedricPoint) {
-        if (this._point1 === parent) {
-            this.point1 = undefined
-        } else if (this._point2 == parent) {
-            this.point2 = undefined
-        } else if (this._point3 == parent) {
-            this.point3 = undefined            
-        }
-        this.update()
-    }
-    remove() {
-
-        this._point1 = undefined
-        this._point2 = undefined
-        this._point3 = undefined
-        super.remove()
-    }
-
-    update() {
-        console.log(this._point1, this._point2, this._point3)
-        if (this._point1 && this._point2 && this._point3) {
-            console.log("A")
-            const pointA = new THREE.Vector3(this._point1.o, this._point1.c, this._point1.a)
-            const pointB = new THREE.Vector3(this._point2.o, this._point2.c, this._point2.a)
-            const pointC = new THREE.Vector3(this._point3.o, this._point3.c, this._point3.a)
-
-            const vector1 = new THREE.Vector3().subVectors(pointB, pointA);
-            const vector2 = new THREE.Vector3().subVectors(pointC, pointA);
-
-            super.normal = new THREE.Vector3().crossVectors(vector1, vector2).normalize();
-
-            super.d = super.normal.x * pointA.x + super.normal.y * pointA.y + super.normal.z * pointA.z
-
-        } else {
-            console.log("B")
-            super.normal = undefined
-            super.d = undefined
-        }
-    }
-    get color(): THREE.ColorRepresentation {
-        return this._color
-    }
-    set point1(point: DiedricPoint | undefined) {
 
 
-        if (this._point1) {
-            let indexInChildren = this._point1.children.indexOf(this)
-            if (indexInChildren == -1) {
-                console.error("This should never happen", this, "is not in point1 children")
-            } else {
-                this._point1.children.splice(indexInChildren, 1)
-            }
-        }
-
-
-        this._point1 = point
-        this.update()
-
-        if (this._point1) {
-            this._point1.children.push(this)
-        }
-    }
-    set point2(point: DiedricPoint | undefined) {
-
-        if (this._point2) {
-            let indexInChildren = this._point2.children.indexOf(this)
-            if (indexInChildren == -1) {
-                console.error("This should never happen", this, "is not in point2 children")
-            } else {
-                this._point2.children.splice(indexInChildren, 1)
-            }
-        }
-
-
-        this._point2 = point
-        this.update()
-
-        if (this._point2) {
-            this._point2.children.push(this)
-        }
-    }
-    set point3(point: DiedricPoint | undefined) {
-        if (this._point3) {
-            let indexInChildren = this._point3.children.indexOf(this)
-            if (indexInChildren == -1) {
-                console.error("This should never happen", this, "is not in point3 children")
-            } else {
-                this._point3.children.splice(indexInChildren, 1)
-            }
-        }
-
-
-        this._point3 = point
-        this.update()
-
-        if (this._point3) {
-            this._point3.children.push(this)
-        }
-    }
-}
-
-export class DiedricPlanePointLine extends DiedricPlane {
-
-    private _color: THREE.ColorRepresentation
-    private _point: DiedricPoint | undefined
-    private _line: DiedricLine | undefined
-
-    constructor(diedirc: Diedric, point: DiedricPoint | undefined, line: DiedricLine | undefined, color: THREE.ColorRepresentation) {
-        super(diedirc, undefined, undefined, color)
-
-        this._color = color
-        this._point = point
-        this._line = line
-
-        this._point?.children.push(this)
-        this._line?.children.push(this)
-        this.update()
-
-    }
-    removeParent(parent: DiedricPoint | DiedricLine) {
-        if (this._point === parent) {
-            this._point = undefined
-        } else if (this._line == parent) {
-            this._line = undefined
-        }
-        this.update()
-    }
-    remove() {
-        this._point = undefined
-        this._line = undefined
-
-        super.remove()
-    }
-
-    update() {
-
-        if (this._point && this._line?.vector && this._line?.point) {
-
-            const pointA = new THREE.Vector3(this._point.o, this._point.c, this._point.a)
-            const pointB = this._line.point
-            const pointC = new THREE.Vector3().copy(this._line.point).add(this._line.vector)
-
-            const vector1 = new THREE.Vector3().subVectors(pointB, pointA);
-            const vector2 = new THREE.Vector3().subVectors(pointC, pointA);
-
-            super.normal = new THREE.Vector3().crossVectors(vector1, vector2).normalize();
-
-            super.d = super.normal.x * pointA.x + super.normal.y * pointA.y + super.normal.z * pointA.z
-
-        } else {
-            super.normal = undefined
-            super.d = undefined
-        }
-    }
-    get color() {
-        return this._color
-    }
-    set point(point: DiedricPoint | undefined) {
-        if (this._point) {
-            let indexInChildren = this._point.children.indexOf(this)
-            if (indexInChildren == -1) {
-                console.error("This should never happen", this, "is not in point3 children")
-            } else {
-                this._point.children.splice(indexInChildren, 1)
-            }
-        }
-
-
-        this._point = point
-        this.update()
-
-        if (this._point) {
-            this._point.children.push(this)
-        }
-    }
-    set line(line: DiedricLine | undefined) {
-        if (this._line) {
-            let indexInChildren = this._line.children.indexOf(this)
-            if (indexInChildren == -1) {
-                console.error("This should never happen", this, "is not in point3 children")
-            } else {
-                this._line.children.splice(indexInChildren, 1)
-            }
-        }
-
-        this._line = line
-        this.update()
-
-        if (this._line) {
-            this._line.children.push(this)
-        }
-    }
-
-}
 
 // export class DiedridPlaneOAC extends DiedricPlane {
 //     constructor(diedric: Diedric, o: number, a: number, c: number) {

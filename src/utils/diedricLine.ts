@@ -1,27 +1,28 @@
 import { Diedric } from "./diedric";
-import { DiedricPlanePointLine } from "./diedricPlane";
-import { DiedricPoint } from "./diedricPoint";
+import { DiedricLinePointParallelLine } from "./diedricLinePointParallelLine";
 
 import * as THREE from 'three';
+import { DiedricPlane2Line } from "./diedricPlane2Line";
+import { DiedricPlanePointLine } from "./diedricPlanePointLine";
 
 export class DiedricLine {
     private diedric: Diedric
     private cylinder: THREE.Mesh<THREE.CylinderGeometry, THREE.MeshBasicMaterial, THREE.Object3DEventMap>
-    private _point: THREE.Vector3 | undefined
+    private __point: THREE.Vector3 | undefined
     private _vector: THREE.Vector3 | undefined
 
-    children: (DiedricPlanePointLine)[] = []
+    children: (DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPlane2Line)[] = []
 
     constructor(diedric: Diedric, point: THREE.Vector3 | undefined, vector: THREE.Vector3 | undefined, color: THREE.ColorRepresentation) {
 
         this.diedric = diedric
-        this._point = point
+        this.__point = point
         this._vector = vector
 
         const geometry = new THREE.CylinderGeometry()
 
         // Create the cylinder material
-        const material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
+        const material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 1 });
 
         // Create the cylinder mesh
         this.cylinder = new THREE.Mesh(geometry, material);
@@ -32,7 +33,8 @@ export class DiedricLine {
     }
     calc() {
 
-        if (!(this._vector && this._point)) {
+
+        if (!(this._vector && this.__point)) {
             this.hidden = true
             this.children.map((child => child.update()))
             return
@@ -44,67 +46,67 @@ export class DiedricLine {
 
         let points: THREE.Vector3[] = []
         if (this._vector.x != 0) {
-            lambda1 = (this.diedric.size - this._point.x) / this._vector.x
-            lambda2 = (-this.diedric.size - this._point.x) / this._vector.x
+            lambda1 = (this.diedric.size - this.__point.x) / this._vector.x
+            lambda2 = (-this.diedric.size - this.__point.x) / this._vector.x
 
             let x
             let y
             let z
 
             x = this.diedric.size
-            y = this._vector.y * lambda1 + this._point.y
-            z = this._vector.z * lambda1 + this._point.z
+            y = this._vector.y * lambda1 + this.__point.y
+            z = this._vector.z * lambda1 + this.__point.z
             if (y >= -this.diedric.size && y <= this.diedric.size && z >= -this.diedric.size && z <= this.diedric.size) {
                 points.push(new THREE.Vector3(x, y, z))
             }
 
             x = -this.diedric.size
-            y = this._vector.y * lambda2 + this._point.y
-            z = this._vector.z * lambda2 + this._point.z
+            y = this._vector.y * lambda2 + this.__point.y
+            z = this._vector.z * lambda2 + this.__point.z
             if (y >= -this.diedric.size && y <= this.diedric.size && z >= -this.diedric.size && z <= this.diedric.size) {
                 points.push(new THREE.Vector3(x, y, z))
             }
 
         }
         if (this._vector.y != 0) {
-            lambda1 = (this.diedric.size - this._point.y) / this._vector.y
-            lambda2 = (-this.diedric.size - this._point.y) / this._vector.y
+            lambda1 = (this.diedric.size - this.__point.y) / this._vector.y
+            lambda2 = (-this.diedric.size - this.__point.y) / this._vector.y
 
             let x
             let y
             let z
 
-            x = this._vector.x * lambda1 + this._point.x
+            x = this._vector.x * lambda1 + this.__point.x
             y = this.diedric.size
-            z = this._vector.z * lambda1 + this._point.z
+            z = this._vector.z * lambda1 + this.__point.z
             if (x >= -this.diedric.size && x <= this.diedric.size && z >= -this.diedric.size && z <= this.diedric.size) {
                 points.push(new THREE.Vector3(x, y, z))
             }
 
-            x = this._vector.x * lambda2 + this._point.x
+            x = this._vector.x * lambda2 + this.__point.x
             y = -this.diedric.size
-            z = this._vector.z * lambda2 + this._point.z
+            z = this._vector.z * lambda2 + this.__point.z
             if (x >= -this.diedric.size && x <= this.diedric.size && z >= -this.diedric.size && z <= this.diedric.size) {
                 points.push(new THREE.Vector3(x, y, z))
             }
         }
         if (this._vector.z != 0) {
-            lambda1 = (this.diedric.size - this._point.z) / this._vector.z
-            lambda2 = (-this.diedric.size - this._point.z) / this._vector.z
+            lambda1 = (this.diedric.size - this.__point.z) / this._vector.z
+            lambda2 = (-this.diedric.size - this.__point.z) / this._vector.z
 
             let x
             let y
             let z
 
-            x = this._vector.x * lambda1 + this._point.x
-            y = this._vector.y * lambda1 + this._point.y
+            x = this._vector.x * lambda1 + this.__point.x
+            y = this._vector.y * lambda1 + this.__point.y
             z = this.diedric.size
             if (x >= -this.diedric.size && x <= this.diedric.size && z >= -this.diedric.size && z <= this.diedric.size) {
                 points.push(new THREE.Vector3(x, y, z))
             }
 
-            x = this._vector.x * lambda2 + this._point.x
-            y = this._vector.y * lambda2 + this._point.y
+            x = this._vector.x * lambda2 + this.__point.x
+            y = this._vector.y * lambda2 + this.__point.y
             z = - this.diedric.size
             if (x >= -this.diedric.size && x <= this.diedric.size && y >= -this.diedric.size && y <= this.diedric.size) {
                 points.push(new THREE.Vector3(x, y, z))
@@ -141,9 +143,13 @@ export class DiedricLine {
 
     }
     remove() {
+        console.warn("remove line")
+        console.warn("implementation missing")
 
     }
-
+    getSuper() {
+        return this
+    }
     set hidden(value: boolean) {
         if (value == true) {
             this.diedric.scene.remove(this.cylinder)
@@ -152,136 +158,18 @@ export class DiedricLine {
         }
     }
 
-    set point(point: THREE.Vector3 | undefined) {
-        this._point = point
+    set bPoint(point: THREE.Vector3 | undefined) {
+        this.__point = point
         this.calc()
     }
-    set vector(vector: THREE.Vector3 | undefined) {
+    set bVector(vector: THREE.Vector3 | undefined) {
         this._vector = vector
         this.calc()
     }
-    get point(): THREE.Vector3 | undefined {
-        return this._point
+    get bPoint(): THREE.Vector3 | undefined {
+        return this.__point
     }
-    get vector(): THREE.Vector3 | undefined {
+    get bVector(): THREE.Vector3 | undefined {
         return this._vector
     }
-
-
 }
-
-
-export class DiedricLine2Points extends DiedricLine {
-    private _color: THREE.ColorRepresentation
-    private _point1: DiedricPoint | undefined
-    private _point2: DiedricPoint | undefined
-    constructor(diedric: Diedric, point1: DiedricPoint | undefined, point2: DiedricPoint | undefined, color: THREE.ColorRepresentation) {
-
-        if (point1 && point2) {
-            super(diedric, new THREE.Vector3(point1.o, point1.c, point1.a), new THREE.Vector3(point1.o - point2.o, point1.c - point2.c, point1.a - point2.a), color)
-
-        } else {
-            super(diedric, undefined, undefined, color)
-        }
-
-
-        this._point1 = point1
-        this._point2 = point2
-        this._color = color
-
-        this._point1?.children.push(this)
-        this._point2?.children.push(this)
-    }
-    removeParent(parent: DiedricPoint) {
-        if (this._point1 === parent) {
-            this._point1 = undefined
-        } else if (this._point2 == parent) {
-            this._point2 = undefined
-        }
-        this.update()
-    }
-
-    remove() {
-
-        this.point1 = undefined
-        this.point2 = undefined
-        super.remove()
-    }
-    update() {
-        if (this._point1 && this._point2) {
-
-            super.point = new THREE.Vector3(this._point1.o, this._point1.c, this._point1.a)
-            super.vector = new THREE.Vector3(this._point1.o - this._point2.o, this._point1.c - this._point2.c, this._point1.a - this._point2.a)
-        } else {
-            super.point = undefined
-            super.vector = undefined
-        }
-    }
-    set point1(point: DiedricPoint | undefined) {
-
-        if (this._point1) {
-            let indexInChildren = this._point1.children.indexOf(this)
-            if (indexInChildren == -1) {
-                console.error("This should never happen", this, "is not in point1 children")
-            } else {
-                this._point1.children.splice(indexInChildren, 1)
-            }
-        }
-
-
-        this._point1 = point
-        if (this._point1 && this._point2) {
-            super.point = new THREE.Vector3(this._point1.o, this._point1.c, this._point1.a)
-            super.vector = new THREE.Vector3(this._point1.o - this._point2.o, this._point1.c - this._point2.c, this._point1.a - this._point2.a)
-        } else {
-            super.point = undefined
-            super.vector = undefined
-        }
-
-        if (this._point1) {
-            this._point1.children.push(this)
-        }
-    }
-
-    set point2(point: DiedricPoint | undefined) {
-        if (this._point2) {
-            let indexInChildren = this._point2.children.indexOf(this)
-            if (indexInChildren == -1) {
-                console.error("This should never happen", this, "is not in point2 children")
-            } else {
-                this._point2.children.splice(indexInChildren, 1)
-            }
-        }
-
-        this._point2 = point
-        if (this._point1 && this._point2) {
-            super.point = new THREE.Vector3(this._point1.o, this._point1.c, this._point1.a)
-            super.vector = new THREE.Vector3(this._point1.o - this._point2.o, this._point1.c - this._point2.c, this._point1.a - this._point2.a)
-        } else {
-            super.point = undefined
-            super.vector = undefined
-        }
-
-        if (this._point2) {
-            this._point2.children.push(this)
-        }
-    }
-
-    get point1() {
-        return this._point1
-    }
-
-    get point2() {
-        return this._point2
-    }
-
-    get color() {
-        return this._color
-    }
-}
-
-// export class DiedricLine2Planes extends DiedricLine {
-//     constructor(diedric: Diedric, plane1: DiedricPlane, plane2: DiedricPlane, color: THREE.ColorRepresentation) {
-
-//     }
-// }

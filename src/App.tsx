@@ -1,13 +1,21 @@
 import { ChangeEvent, createContext, ReactNode, RefObject, useCallback, useContext, useEffect, useRef, useState } from "react"
-import { Diedric } from "./utils/diedric"
-import * as THREE from 'three';
-import { DiedricPlane, DiedricPlane2Lines, DiedricPlane3Points, DiedricPlanePointLine } from "./utils/diedricPlane";
-import { DiedricPoint } from "./utils/diedricPoint";
-import { DiedricLine, DiedricLine2Plane, DiedricLine2Points, DiedricLinePointParallelLine, } from "./utils/diedricLine";
-// import { debounce, DebouncedFunc } from "lodash"
 import { Trash2, Plus, Save } from 'lucide-react';
 
-type PosibleExpressions = DiedricLine2Points | DiedricPlane3Points | DiedricPoint | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPlane2Lines | DiedricLine2Plane
+import { Diedric } from "./utils/diedric"
+
+import { DiedricPoint } from "./utils/diedricPoint";
+
+import { DiedricLine } from "./utils/diedricLine";
+import { DiedricLine2Point } from "./utils/diedricLine2Point";
+import { DiedricLinePointParallelLine } from "./utils/diedricLinePointParallelLine";
+import { DiedricLine2Plane } from "./utils/diedricLine2Plane";
+
+import { DiedricPlane, } from "./utils/diedricPlane";
+import { DiedricPlane3Point } from "./utils/diedricPlane3Point";
+import { DiedricPlanePointLine } from "./utils/diedricPlanePointLine";
+import { DiedricPlane2Line } from "./utils/diedricPlane2Line";
+
+type PosibleExpressions = DiedricLine2Point | DiedricPlane3Point | DiedricPoint | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPlane2Line | DiedricLine2Plane
 interface Expression<DiedricObject> {
     id: string
     type: "point" | "line-2-pto" | "plane-3-pto" | "plane-pto-line" | "line-pto-parallel-line" | "plane-2-line" | "line-2-plane"
@@ -127,7 +135,7 @@ function PointExpresssion({ expression }: { expression: Expression<DiedricPoint>
         </>
     )
 }
-function Plane3PointsExpression({ expression }: { expression: Expression<DiedricPlane3Points> }) {
+function Plane3PointsExpression({ expression }: { expression: Expression<DiedricPlane3Point> }) {
 
     const { expressions } = useContext(ExpressionsContext)
 
@@ -188,7 +196,7 @@ function Plane3PointsExpression({ expression }: { expression: Expression<Diedric
         </>
     )
 }
-function Line2PointsExpression({ expression }: { expression: Expression<DiedricLine2Points> }) {
+function Line2PointsExpression({ expression }: { expression: Expression<DiedricLine2Point> }) {
 
     const [id, setId] = useState(expression.id)
     const [point1Id, setPoin1Id] = useState(expression.params.point1)
@@ -287,7 +295,7 @@ function LinePointParallelLineExpression({ expression }: { expression: Expressio
 
 }
 
-function Plane2LineExpression({ expression }: { expression: Expression<DiedricPlane2Lines> }) {
+function Plane2LineExpression({ expression }: { expression: Expression<DiedricPlane2Line> }) {
 
     const [id, setId] = useState(expression.id)
     const [line1Id, setLine1Id] = useState(expression.params.line1)
@@ -614,9 +622,9 @@ export default function App({ canvasRef }: { canvasRef: RefObject<HTMLCanvasElem
             if (savedExpression.type == "point") {
                 value = diedric.createPoint(parsedParams)
             } else if (savedExpression.type == "line-2-pto") {
-                value = diedric.createLine2Points(parsedParams)
+                value = diedric.createLine2Point(parsedParams)
             } else if (savedExpression.type == "plane-3-pto") {
-                value = diedric.createPlane3Points(parsedParams)
+                value = diedric.createPlane3Point(parsedParams)
             } else if (savedExpression.type == "plane-pto-line") {
                 value = diedric.createPlanePointLine(parsedParams)
             } else if (savedExpression.type == "line-pto-parallel-line") {
@@ -648,15 +656,15 @@ export default function App({ canvasRef }: { canvasRef: RefObject<HTMLCanvasElem
         if (expression.type == "point") {
             return <PointExpresssion key={index} expression={expression as Expression<DiedricPoint>} />
         } else if (expression.type == "plane-3-pto") {
-            return <Plane3PointsExpression key={index} expression={expression as Expression<DiedricPlane3Points>} />
+            return <Plane3PointsExpression key={index} expression={expression as Expression<DiedricPlane3Point>} />
         } else if (expression.type == "line-2-pto") {
-            return <Line2PointsExpression key={index} expression={expression as Expression<DiedricLine2Points>} />
+            return <Line2PointsExpression key={index} expression={expression as Expression<DiedricLine2Point>} />
         } else if (expression.type == "line-2-plane") {
             return <Line2PlaneExpression key={index} expression={expression as Expression<DiedricLine2Plane>} />
         } else if (expression.type == "line-pto-parallel-line") {
             return <LinePointParallelLineExpression key={index} expression={expression as Expression<DiedricLinePointParallelLine>} />
         } else if (expression.type == "plane-2-line") {
-            return <Plane2LineExpression key={index} expression={expression as Expression<DiedricPlane2Lines>} />
+            return <Plane2LineExpression key={index} expression={expression as Expression<DiedricPlane2Line>} />
         } else {
             console.warn("Type not known", expression.type)
         }
