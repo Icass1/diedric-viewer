@@ -1,14 +1,10 @@
 import * as THREE from 'three';
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { DiedricPlane, DiedricPlane3Points, DiedricPlanePointLine } from './diedricPlane'
+import { DiedricPlane, DiedricPlane2Lines, DiedricPlane3Points, DiedricPlanePointLine } from './diedricPlane'
 import { StaticLabel } from './staticLabel';
-import { DiedricLine, DiedricLine2Points } from './diedricLine';
+import { DiedricLine, DiedricLine2Plane, DiedricLine2Points, DiedricLinePointParallelLine } from './diedricLine';
 import { DiedricPoint } from './diedricPoint';
-
-// const canvasDiv = document.querySelector<HTMLDivElement>("#main-canvas") as HTMLDivElement
-// const canvas = canvasDiv.querySelector<HTMLCanvasElement>("canvas") as HTMLCanvasElement
-// const canvasInfo = document.querySelector<HTMLDivElement>("#main-canvas-info") as HTMLDivElement
 
 interface InfoEvent {
     positionX: number
@@ -130,7 +126,7 @@ export class Diedric {
         const zLine = new THREE.Line(zGeometry, axesMaterial);
         this.scene.add(xLine, yLine, zLine);
 
-        const squareGeometry = new THREE.PlaneGeometry(200, 200)
+        const squareGeometry = new THREE.PlaneGeometry(2 * this.size, 2 * this.size)
         // const facesMaterial = new THREE.LineBasicMaterial({ color: 0x56d154, transparent: true, opacity: 0.1, side: THREE.DoubleSide, forceSinglePass: true });
         const facesMaterial = new THREE.MeshBasicMaterial({ color: 0x56d154, transparent: true, opacity: 0.2, side: THREE.DoubleSide, forceSinglePass: true, wireframe: true });
         const face1 = new THREE.Mesh(squareGeometry, facesMaterial)
@@ -229,9 +225,9 @@ export class Diedric {
 
     }
     createPlane2Line({ line1, line2, color }: { line1: DiedricLine | undefined, line2: DiedricLine | undefined, color: THREE.ColorRepresentation }) {
-        console.warn("Not implemented: createPlane2Line", line1, line2, color)
+        return new DiedricPlane2Lines(this, line1, line2, color)
     }
-    createPlane3Points({ point1, point2, point3, color }: { point1: DiedricPoint, point2: DiedricPoint | undefined, point3: DiedricPoint | undefined, color: THREE.ColorRepresentation }) {
+    createPlane3Points({ point1, point2, point3, color }: { point1: DiedricPoint | undefined, point2: DiedricPoint | undefined, point3: DiedricPoint | undefined, color: THREE.ColorRepresentation }) {
         return new DiedricPlane3Points(this, point1, point2, point3, color)
     }
     createPlanePointLine({ point, line, color }: { line: DiedricLine | undefined, point: DiedricPoint | undefined, color: THREE.ColorRepresentation }) {
@@ -247,5 +243,11 @@ export class Diedric {
     // Line methods
     createLine2Points({ point1, point2, color }: { point1: DiedricPoint | undefined, point2: DiedricPoint | undefined, color: THREE.ColorRepresentation }) {
         return new DiedricLine2Points(this, point1, point2, color)
+    }
+    createLinePointParallelLine({ point, line, color }: { point: DiedricPoint | undefined, line: DiedricLine | undefined, color: THREE.ColorRepresentation }) {
+        return new DiedricLinePointParallelLine(this, point, line, color)
+    }
+    createLine2Plane({ plane1, plane2, color }: { plane1: DiedricPlane, plane2: DiedricPlane, color: THREE.ColorRepresentation }) {
+        return new DiedricLine2Plane(this, plane1, plane2, color)
     }
 }
