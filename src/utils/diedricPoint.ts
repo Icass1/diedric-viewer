@@ -20,6 +20,10 @@ export class DiedricPoint {
     private _color: THREE.ColorRepresentation
     children: (DiedricPlane3Point | DiedricLine2Point | DiedricPlanePointLine | DiedricLinePointParallelLine)[] = []
 
+    static params = {"o": "number", "a": "number", "c": "number"}
+    static type = "point"
+
+
     constructor(diedric: Diedric, o: number, a: number, c: number, color: THREE.ColorRepresentation) {
 
         this.diedric = diedric

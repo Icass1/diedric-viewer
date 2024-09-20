@@ -21,6 +21,9 @@ export class DiedricPlane {
 
     children: (DiedricLine2Plane)[] = []
 
+    static type = "plane"
+
+
     constructor(diedric: Diedric, normal: THREE.Vector3 | undefined, d: number | undefined, color: THREE.ColorRepresentation) {
 
         this.diedric = diedric

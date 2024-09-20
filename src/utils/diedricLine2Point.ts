@@ -4,18 +4,17 @@ import { Diedric } from './diedric';
 import { DiedricLine } from './diedricLine';
 
 export class DiedricLine2Point extends DiedricLine {
+
     private _color: THREE.ColorRepresentation
     private _point1: DiedricPoint | undefined
     private _point2: DiedricPoint | undefined
+
+    static params = { 'point1': DiedricPoint, 'point2': DiedricPoint }
+    static type = "line-2-pto"
+
     constructor(diedric: Diedric, point1: DiedricPoint | undefined, point2: DiedricPoint | undefined, color: THREE.ColorRepresentation) {
 
-        if (point1 && point2) {
-            super(diedric, new THREE.Vector3(point1.o, point1.c, point1.a), new THREE.Vector3(point1.o - point2.o, point1.c - point2.c, point1.a - point2.a), color)
-
-        } else {
-            super(diedric, undefined, undefined, color)
-        }
-
+        super(diedric, undefined, undefined, color)
 
         this._point1 = point1
         this._point2 = point2
@@ -23,6 +22,8 @@ export class DiedricLine2Point extends DiedricLine {
 
         this._point1?.children.push(this)
         this._point2?.children.push(this)
+
+        this.update()
     }
     removeParent(parent: DiedricPoint) {
         if (this._point1 === parent) {
