@@ -1,5 +1,5 @@
-import { ChangeEvent, createContext, ReactNode, RefObject, useCallback, useContext, useEffect, useRef, useState } from "react"
-import { Trash2, Plus, Save } from 'lucide-react';
+import { ChangeEvent, createContext, RefObject, useCallback, useContext, useEffect, useRef, useState } from "react"
+import { Trash2, Plus, Save, TriangleAlert } from 'lucide-react';
 
 import { Diedric } from "./utils/diedric"
 
@@ -16,6 +16,13 @@ import { DiedricPlanePointLine } from "./utils/diedricPlanePointLine";
 import { DiedricPlane2Line } from "./utils/diedricPlane2Line";
 
 type PosibleExpressions = DiedricLine2Point | DiedricPlane3Point | DiedricPoint | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPlane2Line | DiedricLine2Plane
+
+const DiedricObjects = [
+    DiedricPoint,
+    DiedricLine2Plane,
+    DiedricLine2Point
+]
+
 interface Expression<DiedricObject> {
     id: string
     type: "point" | "line-2-pto" | "plane-3-pto" | "plane-pto-line" | "line-pto-parallel-line" | "plane-2-line" | "line-2-plane"
@@ -30,6 +37,18 @@ interface ExpressionsContextInterface {
 }
 
 const ExpressionsContext = createContext<ExpressionsContextInterface>({ expressions: [], setExpressions: () => { } })
+
+function createId(length: number) {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    let counter = 0;
+    while (counter < length) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        counter += 1;
+    }
+    return result;
+}
 
 function TextInput({
     defaultValue,
@@ -92,6 +111,9 @@ function TextInput({
 }
 
 function PointExpresssion({ expression }: { expression: Expression<DiedricPoint> }) {
+
+    console.log(DiedricPoint.params)
+
 
     const [o, setO] = useState(expression.params.o)
     const [a, setA] = useState(expression.params.a)
@@ -292,7 +314,6 @@ function LinePointParallelLineExpression({ expression }: { expression: Expressio
             </div>
         </>
     )
-
 }
 
 function Plane2LineExpression({ expression }: { expression: Expression<DiedricPlane2Line> }) {
@@ -343,7 +364,6 @@ function Plane2LineExpression({ expression }: { expression: Expression<DiedricPl
             </div>
         </>
     )
-
 }
 
 function Line2PlaneExpression({ expression }: { expression: Expression<DiedricLine2Plane> }) {
@@ -355,6 +375,13 @@ function Line2PlaneExpression({ expression }: { expression: Expression<DiedricLi
 
     const [params, setParams] = useState(expression.params)
     const { expressions } = useContext(ExpressionsContext)
+
+
+    // Object.keys(expression.value.params).map((param) => {
+    //     console.log(param, expression.value.params[param])
+    //     console.log(expression.value.plane1)
+    //     console.log(expression.value.plane1 instanceof expression.value.params[param])
+    // })
 
     const onParamChange = (paramKey: string, e: ChangeEvent<HTMLInputElement>) => {
         let newParams = { ...params }
@@ -386,11 +413,14 @@ function Line2PlaneExpression({ expression }: { expression: Expression<DiedricLi
     )
 }
 
-function Expression({ children, expression }: { children: ReactNode, expression: Expression<PosibleExpressions> }) {
+function Expression({ expression }: { expression: Expression<PosibleExpressions> }) {
     const { expressions, setExpressions } = useContext(ExpressionsContext)
+    const [value, setValue] = useState("")
+    const [warn, setWarn] = useState(false)
+
+    // console.log(expression)
 
     const removeExpression = () => {
-
         expression.value.remove()
         let index = expressions.indexOf(expression)
         let newExpressions = [...expressions]
@@ -398,13 +428,120 @@ function Expression({ children, expression }: { children: ReactNode, expression:
         setExpressions(newExpressions)
     }
 
+    const handleValueChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const text = e.target.value.replace(/ /g, '')
+        setValue(e.target.value)
+        if (!text.includes("=")) {
+            setWarn(true)
+            return
+        }
+
+        let expressionName = text.split("=")[0]
+        let expressionText = text.split("=")[1]
+
+        // console.log('expressionName', `'${expressionName}'`)
+        // console.log('expressionText', `'${expressionText}'`)
+
+        if (!expressionName || !expressionText || !expressionText.startsWith("(") || !expressionText.endsWith(")")) {
+            setWarn(true)
+            return
+        }
+
+        let parsingError = false
+        // let params = expressionText.slice(1, expressionText.length - 1).split(",").map(parseParams)
+        // console.log(params)
+
+
+        const parseParams = (paramsText: string) => {
+
+            let output: any[] = []
+            let lastOpenBracketIndex: number | undefined
+            let bracketCount = 0
+            let outputIndex = 0
+
+            paramsText.split("").map((char, index) => {
+                if (lastOpenBracketIndex === undefined && char == "(") {
+                    lastOpenBracketIndex = index
+                }
+                if (char == "(") {
+                    bracketCount++
+                    return
+                } else if (char == ")") {
+                    bracketCount--
+                }
+
+                if (char == ")" && bracketCount == 0 && lastOpenBracketIndex !== undefined) {
+                    console.log(paramsText.slice(lastOpenBracketIndex + 1, index))
+                    output.push(parseParams(paramsText.slice(lastOpenBracketIndex + 1, index)))
+                    lastOpenBracketIndex = undefined
+                } else if (lastOpenBracketIndex === undefined && bracketCount == 0) {
+                    if (char == ",") {
+                        outputIndex++
+                        // output.push("")
+                    } else if (output[outputIndex] == undefined) {
+                        output.push(char)
+                        if (!Number.isNaN(Number(output[outputIndex]))) {
+                            output[outputIndex] = Number(output[outputIndex])
+                        }
+                    } else {
+                        output[outputIndex] += char
+
+                        if (!Number.isNaN(Number(output[outputIndex]))) {
+                            output[outputIndex] = Number(output[outputIndex])
+                        }
+                    }
+                }
+            })
+            if (bracketCount !== 0 || lastOpenBracketIndex !== undefined) {
+                parsingError = true
+            }
+
+            const a = {
+
+            }
+
+            DiedricObjects.map(DiedricObject => {
+                a[DiedricObject.type] = Object.values(DiedricObject.params)
+                // console.log(DiedricObject.params)
+            })
+
+            console.log(a)
+
+            output.map(param => {
+                if (typeof param == "number") {
+                    let c = Object.keys(a).find(b => 
+                        a[b].includes("number")
+                    )
+                    console.log(c)
+                }
+            })
+
+            return output
+        }
+        let params = parseParams(expressionText.slice(1, expressionText.length - 1))
+
+        if (parsingError) {
+            setWarn(true)
+            return
+        }
+
+        console.log(params)
+
+        setWarn(false)
+    }
+
     return (
         <div className="w-full border border-neutral-400 text-black rounded grid grid-cols-[40px_1fr_20px] items-center min-h-12 pr-2">
             <div className=" bg-zinc-800/50 rounded-tl rounded-bl h-full">
-                <div className="bg-red-300 h-8 w-8 rounded-full relative top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ backgroundColor: expression.value.color.toString() }}></div>
+                {warn ?
+                    <TriangleAlert className="h-6 w-6 relative top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-neutral-900/40"></TriangleAlert>
+                    :
+                    <div className="bg-red-300 h-8 w-8 rounded-full relative top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ backgroundColor: expression?.params.color?.toString() }}></div>
+                }
             </div>
-            <div className="relative w-full p-2 min-w-0">
-                {children}
+            <div className="relative w-full p-2 min-w-0 flex flex-col">
+                {/* <label className="font-semibold">{diedricObject?.type}</label> */}
+                <TextInput value={value} onChange={handleValueChange} className="bg-transparent focus:outline-none"></TextInput>
             </div>
             <Trash2 className="h-5 w-5 text-red-500 cursor-pointer hover:scale-105" onClick={removeExpression} />
             {/* <div className="h-5 w-5 bg-red-500" onClick={removeExpression}> */}
@@ -421,165 +558,174 @@ export default function App({ canvasRef }: { canvasRef: RefObject<HTMLCanvasElem
 
     const savedExpressions: Expression<PosibleExpressions | null>[] = [
         {
-            id: "A",
-            type: "point",
+            id: createId(8),
+            type: null,
             value: null,
             hidden: false,
             params: {
-                o: 0,
-                a: 55,
-                c: 55,
-                color: "aquamarine",
-            },
-        },
-        {
-            id: "B",
-            type: "point",
-            value: null,
-            hidden: false,
-            params: {
-                o: 55,
-                a: 0,
-                c: 0,
-                color: "aquamarine",
+                color: "red"
             }
-        },
-        {
-            id: "r",
-            type: "line-2-pto",
-            value: null,
-            hidden: false,
-            params: {
-                point1: "A",
-                point2: "B",
-                color: "aquamarine",
-            }
-        },
-        {
-            id: "C",
-            type: "point",
-            value: null,
-            hidden: false,
-            params: {
-                o: 25,
-                a: 50,
-                c: 0,
-                color: "brown",
-            },
-        },
-        {
-            id: "D",
-            type: "point",
-            value: null,
-            hidden: false,
-            params: {
-                o: -25,
-                a: 0,
-                c: 50,
-                color: "brown",
-            }
-        },
-        {
-            id: "s",
-            type: "line-2-pto",
-            value: null,
-            hidden: false,
-            params: {
-                point1: "C",
-                point2: "D",
-                color: "brown",
-            }
-        },
-        {
-            id: "E",
-            type: "point",
-            value: null,
-            hidden: false,
-            params: {
-                o: 0,
-                a: 90,
-                c: 90,
-                color: "darkseagreen",
-            },
-        },
-        {
-            id: "F",
-            type: "point",
-            value: null,
-            hidden: false,
-            params: {
-                o: -50,
-                a: 90,
-                c: 40,
-                color: "darkseagreen",
-            }
-        },
-        {
-            id: "t",
-            type: "line-2-pto",
-            value: null,
-            hidden: false,
-            params: {
-                point1: "E",
-                point2: "F",
-                color: "darkseagreen",
-            }
-        },
-        {
-            id: "u",
-            type: "line-pto-parallel-line",
-            value: null,
-            hidden: false,
-            params: {
-                point: "A",
-                line: "t",
-                color: "salmon",
-            }
-        },
-        {
-            id: "j",
-            type: "line-pto-parallel-line",
-            value: null,
-            hidden: false,
-            params: {
-                point: "D",
-                line: "t",
-                color: "salmon",
-            }
-        },
-        {
-            id: "alpha",
-            type: "plane-2-line",
-            value: null,
-            hidden: false,
-            params: {
-                line1: "j",
-                line2: "s",
-                color: "salmon",
-            }
-        },
-        {
-            id: "beta",
-            type: "plane-2-line",
-            value: null,
-            hidden: false,
-            params: {
-                line1: "u",
-                line2: "r",
-                color: "tomato",
-            }
-        },
-        {
-            id: "sol",
-            type: "line-2-plane",
-            value: null,
-            hidden: false,
-            params: {
-                plane1: "alpha",
-                plane2: "beta",
-                color: "orange",
-            }
-        },
+        }
+        // {
+        //     id: "A",
+        //     type: "point",
+        //     value: null,
+        //     hidden: false,
+        //     params: {
+        //         o: 0,
+        //         a: 55,
+        //         c: 55,
+        //         color: "aquamarine",
+        //     },
+        // },
+        // {
+        //     id: "B",
+        //     type: "point",
+        //     value: null,
+        //     hidden: false,
+        //     params: {
+        //         o: 55,
+        //         a: 0,
+        //         c: 0,
+        //         color: "aquamarine",
+        //     }
+        // },
+        // {
+        //     id: "r",
+        //     type: "line-2-pto",
+        //     value: null,
+        //     hidden: false,
+        //     params: {
+        //         point1: "A",
+        //         point2: "B",
+        //         color: "aquamarine",
+        //     }
+        // },
+        // {
+        //     id: "C",
+        //     type: "point",
+        //     value: null,
+        //     hidden: false,
+        //     params: {
+        //         o: 25,
+        //         a: 50,
+        //         c: 0,
+        //         color: "brown",
+        //     },
+        // },
+        // {
+        //     id: "D",
+        //     type: "point",
+        //     value: null,
+        //     hidden: false,
+        //     params: {
+        //         o: -25,
+        //         a: 0,
+        //         c: 50,
+        //         color: "brown",
+        //     }
+        // },
+        // {
+        //     id: "s",
+        //     type: "line-2-pto",
+        //     value: null,
+        //     hidden: false,
+        //     params: {
+        //         point1: "C",
+        //         point2: "D",
+        //         color: "brown",
+        //     }
+        // },
+        // {
+        //     id: "E",
+        //     type: "point",
+        //     value: null,
+        //     hidden: false,
+        //     params: {
+        //         o: 0,
+        //         a: 90,
+        //         c: 90,
+        //         color: "darkseagreen",
+        //     },
+        // },
+        // {
+        //     id: "F",
+        //     type: "point",
+        //     value: null,
+        //     hidden: false,
+        //     params: {
+        //         o: -50,
+        //         a: 90,
+        //         c: 40,
+        //         color: "darkseagreen",
+        //     }
+        // },
+        // {
+        //     id: "t",
+        //     type: "line-2-pto",
+        //     value: null,
+        //     hidden: false,
+        //     params: {
+        //         point1: "E",
+        //         point2: "F",
+        //         color: "darkseagreen",
+        //     }
+        // },
+        // {
+        //     id: "u",
+        //     type: "line-pto-parallel-line",
+        //     value: null,
+        //     hidden: false,
+        //     params: {
+        //         point: "A",
+        //         line: "t",
+        //         color: "salmon",
+        //     }
+        // },
+        // {
+        //     id: "j",
+        //     type: "line-pto-parallel-line",
+        //     value: null,
+        //     hidden: false,
+        //     params: {
+        //         point: "D",
+        //         line: "t",
+        //         color: "salmon",
+        //     }
+        // },
+        // {
+        //     id: "alpha",
+        //     type: "plane-2-line",
+        //     value: null,
+        //     hidden: false,
+        //     params: {
+        //         line1: "j",
+        //         line2: "s",
+        //         color: "salmon",
+        //     }
+        // },
+        // {
+        //     id: "beta",
+        //     type: "plane-2-line",
+        //     value: null,
+        //     hidden: false,
+        //     params: {
+        //         line1: "u",
+        //         line2: "r",
+        //         color: "tomato",
+        //     }
+        // },
+        // {
+        //     id: "sol",
+        //     type: "line-2-plane",
+        //     value: null,
+        //     hidden: false,
+        //     params: {
+        //         plane1: "alpha",
+        //         plane2: "beta",
+        //         color: "orange",
+        //     }
+        // },
     ]
     useEffect(() => {
         if (!canvasRef.current) return
@@ -588,13 +734,18 @@ export default function App({ canvasRef }: { canvasRef: RefObject<HTMLCanvasElem
         setDiedric(newDiedric)
     }, [canvasRef])
 
-    // useEffect(() => {
-    //     if (!diedric) { return }
 
-    //     diedric.createStaticLabel("x", new THREE.Vector3(100, 0, 0));
-    //     diedric.createStaticLabel("y", new THREE.Vector3(0, 100, 0));
-    //     diedric.createStaticLabel("z", new THREE.Vector3(0, 0, 100));
-    // }, [diedric])
+    // useEffect(() => {
+
+    //     DiedricObjects.map(DiedricObject => {
+    //         console.log(DiedricObject, DiedricObject.type)
+
+    //         Object.keys(DiedricObject.params).map(param => {
+    //             console.log(param, DiedricObject.params[param].type)
+    //         })
+    //     })
+
+    // }, [])
 
     useEffect(() => {
         if (!diedric) { return }
@@ -634,6 +785,7 @@ export default function App({ canvasRef }: { canvasRef: RefObject<HTMLCanvasElem
             } else if (savedExpression.type == "line-2-plane") {
                 value = diedric.createLine2Plane(parsedParams)
             } else {
+                newExpressions.push(savedExpression)
                 console.warn("Type not known", savedExpression.type)
             }
             if (!value) return
@@ -672,8 +824,6 @@ export default function App({ canvasRef }: { canvasRef: RefObject<HTMLCanvasElem
 
     const saveExpressions = useCallback(() => {
 
-
-
     }, [expressions])
 
 
@@ -682,9 +832,9 @@ export default function App({ canvasRef }: { canvasRef: RefObject<HTMLCanvasElem
         <div className="h-full overflow-y-auto p-1 relative">
             <div className="flex flex-col items-center gap-2">
                 <ExpressionsContext.Provider value={{ expressions, setExpressions }}>
-                    {expressions.map(((expression, index) => (
+                    {expressions.map(((expression) => (
                         <Expression key={expression.id} expression={expression as Expression<PosibleExpressions>}>
-                            {renderExpression(expression as Expression<PosibleExpressions>, index)}
+                            {/* {renderExpression(expression as Expression<PosibleExpressions>, index)} */}
                         </Expression>
                     )))}
                 </ExpressionsContext.Provider>
