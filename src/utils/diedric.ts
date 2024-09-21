@@ -32,7 +32,7 @@ export class Diedric {
 
     constructor(size: number, canvas: HTMLCanvasElement) {
         this.scene = new THREE.Scene()
-        this.camera = new THREE.PerspectiveCamera(75, canvas.offsetWidth / canvas.offsetHeight, 0.1, 1000)
+        this.camera = new THREE.PerspectiveCamera(75, canvas.offsetWidth / canvas.offsetHeight, 0.1, 10000)
         this.scene.background = new THREE.Color("rgb(240, 236, 244)")
 
         this.size = size
