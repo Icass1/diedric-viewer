@@ -20,7 +20,8 @@ type PosibleExpressions = DiedricLine2Point | DiedricPlane3Point | DiedricPoint 
 const DiedricObjects = [
     DiedricPoint,
     DiedricLine2Plane,
-    DiedricLine2Point
+    DiedricLine2Point,
+    DiedricPlane3Point,
 ]
 
 interface Expression<DiedricObject> {
@@ -451,7 +452,6 @@ function Expression({ expression }: { expression: Expression<PosibleExpressions>
         // let params = expressionText.slice(1, expressionText.length - 1).split(",").map(parseParams)
         // console.log(params)
 
-
         const parseParams = (paramsText: string) => {
 
             let output: any[] = []
@@ -496,37 +496,46 @@ function Expression({ expression }: { expression: Expression<PosibleExpressions>
                 parsingError = true
             }
 
-            const a = {
-
-            }
+            const DiedricObjectParams = {}
 
             DiedricObjects.map(DiedricObject => {
-                a[DiedricObject.type] = Object.values(DiedricObject.params)
-                // console.log(DiedricObject.params)
+                DiedricObjectParams[DiedricObject.type] = Object.values(DiedricObject.params)
             })
 
-            console.log(a)
+            let finalParams = {}
 
             output.map(param => {
                 if (typeof param == "number") {
-                    let c = Object.keys(a).find(b => 
-                        a[b].includes("number")
-                    )
-                    console.log(c)
+                    Object.keys(DiedricObjectParams).map(b => {
+                        let index = DiedricObjectParams[b].indexOf("number")
+                        if (index == -1) {
+                            delete DiedricObjectParams[b]
+                        } else {
+                            DiedricObjectParams[b].splice(index, 1)
+                        }
+                    })
                 }
             })
+
+            console.log(output)
+            let newObjectConstructor = DiedricObjects.find(DiedricObject => DiedricObject.type == Object.keys(DiedricObjectParams)[0] )
+            if (newObjectConstructor) {
+                // let newDiedricObject = new newObjectConstructor()
+                console.log(newObjectConstructor)
+            }
+
+            console.log(DiedricObjectParams)
 
             return output
         }
         let params = parseParams(expressionText.slice(1, expressionText.length - 1))
 
+        console.log("params", params)
+
         if (parsingError) {
             setWarn(true)
             return
         }
-
-        console.log(params)
-
         setWarn(false)
     }
 
@@ -565,7 +574,7 @@ export default function App({ canvasRef }: { canvasRef: RefObject<HTMLCanvasElem
             params: {
                 color: "red"
             }
-        }
+        },
         // {
         //     id: "A",
         //     type: "point",
