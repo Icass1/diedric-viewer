@@ -9,23 +9,8 @@ export class DiedricPlane3Point extends DiedricPlane {
     private _point2: DiedricPoint | undefined
     private _point3: DiedricPoint | undefined
 
-    params = [
-        {
-            "point1": [
-                DiedricPoint
-            ]
-        },
-        {
-            "point2": [
-                DiedricPoint
-            ]
-        },
-        {
-            "point3": [
-                DiedricPoint
-            ]
-        },
-    ]
+    static params = { 'point1': DiedricPoint, 'point2': DiedricPoint, 'point3': DiedricPoint }
+    static type = "plane-3-pto"
 
     constructor(diedric: Diedric, point1: DiedricPoint | undefined, point2: DiedricPoint | undefined, point3: DiedricPoint | undefined, color: THREE.ColorRepresentation) {
         super(diedric, undefined, undefined, color)
