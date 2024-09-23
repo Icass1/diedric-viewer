@@ -20,11 +20,11 @@ export class DiedricPoint {
     private _color: THREE.ColorRepresentation
     children: (DiedricPlane3Point | DiedricLine2Point | DiedricPlanePointLine | DiedricLinePointParallelLine)[] = []
 
-    static params = {"o": "number", "a": "number", "c": "number"}
+    static params = { "o": "number", "a": "number", "c": "number" }
     static type = "point"
 
 
-    constructor(diedric: Diedric, o: number, a: number, c: number, color: THREE.ColorRepresentation) {
+    constructor({ diedric, o, a, c, color }: { diedric: Diedric, o: number, a: number, c: number, color: THREE.ColorRepresentation }) {
 
         this.diedric = diedric
         this._color = color
@@ -61,9 +61,7 @@ export class DiedricPoint {
         this.diedric.scene.add(this.lineToY0Line);
         this.diedric.scene.add(this.lineToZ0Line);
     }
-    getSuper() {
-        return this
-    }
+
     update() {
         this.lineToY0Geometry.setFromPoints([this.point.position, new THREE.Vector3(this.point.position.x, 0, this.point.position.z)])
         this.lineToX0Geometry.setFromPoints([new THREE.Vector3(this.point.position.x, 0, this.point.position.z), new THREE.Vector3(0, 0, this.point.position.z)])
@@ -75,6 +73,12 @@ export class DiedricPoint {
         this.children.map((child => child.update()))
     }
 
+    setAttributes(attr: { o?: number, a?: number, c?: number, color?: THREE.ColorRepresentation }) {
+        Object.entries(attr).map(attrEntry => {
+            this[attrEntry[0]] = attrEntry[1]
+        })
+    }
+
     remove() {
         this.diedric.scene.remove(this.point)
         this.diedric.scene.remove(this.lineToX0Line)
@@ -82,8 +86,6 @@ export class DiedricPoint {
         this.diedric.scene.remove(this.lineToZ0Line)
 
         this.children.map((child => child.removeParent(this)))
-
-
     }
 
     set hidden(value: boolean) {

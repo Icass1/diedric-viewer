@@ -9,8 +9,14 @@ export class DiedricPlane2Line extends DiedricPlane {
     private _line1: DiedricLine | undefined
     private _line2: DiedricLine | undefined
 
-    constructor(diedirc: Diedric, line1: DiedricLine | undefined, line2: DiedricLine | undefined, color: THREE.ColorRepresentation) {
-        super(diedirc, undefined, undefined, color)
+    static type = 'plane-2-line'
+    static params = {
+        'line1': DiedricLine,
+        'line2': DiedricLine
+    }
+
+    constructor({ diedric, line1, line2, color }: { diedric: Diedric, line1: DiedricLine | undefined, line2: DiedricLine | undefined, color: THREE.ColorRepresentation }) {
+        super(diedric, undefined, undefined, color)
 
         this._color = color
         this._line1 = line1

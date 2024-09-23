@@ -10,8 +10,12 @@ export class DiedricPlanePointLine extends DiedricPlane {
     private _point: DiedricPoint | undefined
     private _line: DiedricLine | undefined
 
-    constructor(diedirc: Diedric, point: DiedricPoint | undefined, line: DiedricLine | undefined, color: THREE.ColorRepresentation) {
-        super(diedirc, undefined, undefined, color)
+    static type = "plane-point-line"
+    static params = { 'point': DiedricPoint, 'line': DiedricLine }
+
+    constructor({ diedric, point, line, color }: { diedric: Diedric, point: DiedricPoint | undefined, line: DiedricLine | undefined, color: THREE.ColorRepresentation }) {
+
+        super(diedric, undefined, undefined, color)
 
         this._color = color
         this._point = point

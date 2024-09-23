@@ -5,12 +5,10 @@ import { Diedric } from "./utils/diedric"
 
 import { DiedricPoint } from "./utils/diedricPoint";
 
-import { DiedricLine } from "./utils/diedricLine";
 import { DiedricLine2Point } from "./utils/diedricLine2Point";
 import { DiedricLinePointParallelLine } from "./utils/diedricLinePointParallelLine";
 import { DiedricLine2Plane } from "./utils/diedricLine2Plane";
 
-import { DiedricPlane, } from "./utils/diedricPlane";
 import { DiedricPlane3Point } from "./utils/diedricPlane3Point";
 import { DiedricPlanePointLine } from "./utils/diedricPlanePointLine";
 import { DiedricPlane2Line } from "./utils/diedricPlane2Line";
@@ -19,25 +17,35 @@ type PosibleExpressions = DiedricLine2Point | DiedricPlane3Point | DiedricPoint 
 
 const DiedricObjects = [
     DiedricPoint,
-    DiedricLine2Plane,
+
     DiedricLine2Point,
+    DiedricLine2Plane,
+    DiedricLinePointParallelLine,
+
+    DiedricPlanePointLine,
     DiedricPlane3Point,
+    DiedricPlane2Line,
 ]
 
-interface Expression<DiedricObject> {
+interface Expression {
     id: string
-    type: "point" | "line-2-pto" | "plane-3-pto" | "plane-pto-line" | "line-pto-parallel-line" | "plane-2-line" | "line-2-plane"
-    value: DiedricObject
-    params: any
-    hidden: boolean
+    expressionText: string
+    expressionName: string | null
+    value: PosibleExpressions | null
+    params: {
+        hidden: boolean
+        color: string
+    }
 }
 
 interface ExpressionsContextInterface {
-    expressions: Expression<PosibleExpressions | null>[]
-    setExpressions: React.Dispatch<React.SetStateAction<Expression<PosibleExpressions | null>[]>>
+    expressions: Expression[]
+    setExpressions: React.Dispatch<React.SetStateAction<Expression[]>>
+    diedric: Diedric | undefined
+    setDiedric: React.Dispatch<React.SetStateAction<Diedric | undefined>>
 }
 
-const ExpressionsContext = createContext<ExpressionsContextInterface>({ expressions: [], setExpressions: () => { } })
+const ExpressionsContext = createContext<ExpressionsContextInterface>({ expressions: [], setExpressions: () => { }, diedric: undefined, setDiedric: () => { } })
 
 function createId(length: number) {
     let result = '';
@@ -104,360 +112,71 @@ function TextInput({
         adjustWidth()
     }
 
-    useEffect(adjustWidth, [inputRef])
+    useEffect(adjustWidth, [inputRef, value])
 
     return (
         <input ref={inputRef} type={type} className={className} value={value === undefined ? defaultValue : value} onChange={handleChange} />
     )
 }
 
-function PointExpresssion({ expression }: { expression: Expression<DiedricPoint> }) {
-
-    console.log(DiedricPoint.params)
-
-
-    const [o, setO] = useState(expression.params.o)
-    const [a, setA] = useState(expression.params.a)
-    const [c, setC] = useState(expression.params.c)
-
-    const handleOChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setO(e.target.value)
-        expression.value.o = Number(e.target.value)
-    }
-
-    const handleAChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setA(e.target.value)
-        expression.value.a = Number(e.target.value)
-    }
-    const handleCChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setC(e.target.value)
-        expression.value.c = Number(e.target.value)
-    }
-
-    return (
-        <>
-            <label className="font-semibold">Point OAC</label>
-            <div className="flex flex-row border-b border-neutral-300 gap-1">
-                <TextInput defaultValue={expression.id} className="bg-transparent focus:outline-none w-16" />
-                <label className=" w-full min-w-0"> = (O, A, C)</label>
-            </div>
-            <div className="flex flex-row justify-between gap-4">
-                <div className="flex flex-row min-w-0 gap-2">
-                    <label className="">O:</label>
-                    <TextInput type="number" className="bg-transparent border-b border-neutral-300 focus:outline-none min-w-0" value={o} onChange={handleOChange} />
-                </div>
-                <div className="flex flex-row min-w-0 gap-2">
-                    <label>A:</label>
-                    <TextInput type="number" className="bg-transparent border-b border-neutral-300 focus:outline-none min-w-0" value={a} onChange={handleAChange} />
-                </div>
-                <div className="flex flex-row min-w-0 gap-2">
-                    <label>C:</label>
-                    <TextInput type="number" className="bg-transparent border-b border-neutral-300 focus:outline-none min-w-0" value={c} onChange={handleCChange} />
-                </div>
-            </div>
-        </>
-    )
-}
-function Plane3PointsExpression({ expression }: { expression: Expression<DiedricPlane3Point> }) {
-
-    const { expressions } = useContext(ExpressionsContext)
-
-    const [id, setId] = useState(expression.id)
-    const [point1Id, setPoint1Id] = useState(expression.params.point1)
-    const [point2Id, setPoint2Id] = useState(expression.params.point2)
-    const [point3Id, setPoint3Id] = useState(expression.params.point3)
-
-    const handleIdChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setId(e.target.value)
-    }
-
-    const handlePoint1Change = (e: ChangeEvent<HTMLInputElement>) => {
-        setPoint1Id(e.target.value)
-        let parsedPoint = expressions.find(exp => (exp.id == e.target.value))
-
-        if (parsedPoint?.value instanceof DiedricPoint) {
-            expression.value.point1 = parsedPoint.value as DiedricPoint | undefined
-        } else {
-            expression.value.point1 = undefined
-        }
-
-    }
-    const handlePoint2Change = (e: ChangeEvent<HTMLInputElement>) => {
-        setPoint2Id(e.target.value)
-        let parsedPoint = expressions.find(exp => (exp.id == e.target.value))
-
-        if (parsedPoint?.value instanceof DiedricPoint) {
-            expression.value.point2 = parsedPoint.value as DiedricPoint | undefined
-        } else {
-            expression.value.point2 = undefined
-        }
-    }
-    const handlePoint3Change = (e: ChangeEvent<HTMLInputElement>) => {
-        setPoint3Id(e.target.value)
-        let parsedPoint = expressions.find(exp => (exp.id == e.target.value))
-
-        if (parsedPoint?.value instanceof DiedricPoint) {
-            expression.value.point3 = parsedPoint.value as DiedricPoint | undefined
-        } else {
-            expression.value.point3 = undefined
-        }
-    }
-
-    return (
-        <>
-            <label className="font-semibold">Plane 3 points</label>
-            <div className="flex flex-row gap-1 border-b border-neutral-300">
-                <TextInput value={id} onChange={handleIdChange} className="bg-transparent  focus:outline-none w-10 text-center" />
-                <label className=" w-fit"> = (</label>
-                <TextInput value={point1Id} onChange={handlePoint1Change} className="bg-transparent  focus:outline-none w-10 text-center" />
-                <label className=" w-fit">, </label>
-                <TextInput value={point2Id} onChange={handlePoint2Change} className="bg-transparent  focus:outline-none w-10 text-center" />
-                <label className=" w-fit ">, </label>
-                <TextInput value={point3Id} onChange={handlePoint3Change} className="bg-transparent  focus:outline-none w-10 text-center" />
-                <label className=" w-fit ">)</label>
-            </div>
-        </>
-    )
-}
-function Line2PointsExpression({ expression }: { expression: Expression<DiedricLine2Point> }) {
-
-    const [id, setId] = useState(expression.id)
-    const [point1Id, setPoin1Id] = useState(expression.params.point1)
-    const [point2Id, setPoin2Id] = useState(expression.params.point2)
-
-    const { expressions } = useContext(ExpressionsContext)
-
-    const handleIdChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setId(e.target.value)
-    }
-
-    const handlePoint1Change = (e: ChangeEvent<HTMLInputElement>) => {
-        setPoin1Id(e.target.value)
-        let parsedPoint = expressions.find(exp => (exp.id == e.target.value))
-
-        if (parsedPoint?.value instanceof DiedricPoint) {
-            expression.value.point1 = parsedPoint.value as DiedricPoint | undefined
-        } else {
-            expression.value.point1 = undefined
-        }
-    }
-    const handlePoint2Change = (e: ChangeEvent<HTMLInputElement>) => {
-        setPoin2Id(e.target.value)
-
-        let parsedPoint = expressions.find(exp => (exp.id == e.target.value))
-
-        if (parsedPoint?.value instanceof DiedricPoint) {
-            expression.value.point2 = parsedPoint.value as DiedricPoint | undefined
-        } else {
-            expression.value.point2 = undefined
-        }
-    }
-
-    return (
-        <>
-            <label className="font-semibold">Line 2 points</label>
-            <div className="flex flex-row gap-1 border-b border-neutral-300">
-                <TextInput value={id} onChange={handleIdChange} className="bg-transparent  focus:outline-none w-10" />
-                <label className=" w-fit"> = (</label>
-                <TextInput value={point1Id} onChange={handlePoint1Change} className="bg-transparent focus:outline-none w-10" />
-                <label className=" w-fit">, </label>
-                <TextInput value={point2Id} onChange={handlePoint2Change} className="bg-transparent focus:outline-none w-10" />
-                <label className=" w-fit ">)</label>
-            </div>
-        </>
-    )
-}
-function LinePointParallelLineExpression({ expression }: { expression: Expression<DiedricLinePointParallelLine> }) {
-
-    const [id, setId] = useState(expression.id)
-    const [lineId, setLineId] = useState(expression.params.line)
-    const [pointId, setPointId] = useState(expression.params.point)
-
-    const { expressions } = useContext(ExpressionsContext)
-
-    const handleIdChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setId(e.target.value)
-    }
-
-    const handleLineChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setLineId(e.target.value)
-
-        let parsedPoint = expressions.find(exp => (exp.id == e.target.value))
-
-        if (parsedPoint?.value instanceof DiedricLine) {
-            expression.value.line = parsedPoint.value as DiedricLine | undefined
-        } else {
-            expression.value.line = undefined
-        }
-    }
-    const handlePointChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setPointId(e.target.value)
-
-        let parsedPoint = expressions.find(exp => (exp.id == e.target.value))
-
-        if (parsedPoint?.value instanceof DiedricPoint) {
-            expression.value.point = parsedPoint.value as DiedricPoint | undefined
-        } else {
-            expression.value.point = undefined
-        }
-
-    }
-    return (
-        <>
-            <label className="font-semibold truncate min-w-0 max-w-full block" title="Line parallel to another one passing through a point">Line parallel to another one passing through a point</label>
-            <div className="flex flex-row gap-1 border-b border-neutral-300">
-                <TextInput value={id} onChange={handleIdChange} className="bg-transparent  focus:outline-none w-10" />
-                <label className=" w-fit"> = (</label>
-                <TextInput value={lineId} onChange={handleLineChange} className="bg-transparent focus:outline-none w-10" />
-                <label className=" w-fit">, </label>
-                <TextInput value={pointId} onChange={handlePointChange} className="bg-transparent focus:outline-none w-10" />
-                <label className=" w-fit ">)</label>
-            </div>
-        </>
-    )
-}
-
-function Plane2LineExpression({ expression }: { expression: Expression<DiedricPlane2Line> }) {
-
-    const [id, setId] = useState(expression.id)
-    const [line1Id, setLine1Id] = useState(expression.params.line1)
-    const [line2Id, setLine2Id] = useState(expression.params.line2)
-
-    const { expressions } = useContext(ExpressionsContext)
-
-    const handleIdChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setId(e.target.value)
-    }
-
-    const handleLine1Change = (e: ChangeEvent<HTMLInputElement>) => {
-        setLine1Id(e.target.value)
-
-        let parsedPoint = expressions.find(exp => (exp.id == e.target.value))
-
-        if (parsedPoint?.value instanceof DiedricLine) {
-            expression.value.line1 = parsedPoint.value as DiedricLine | undefined
-        } else {
-            expression.value.line1 = undefined
-        }
-    }
-    const handleLine2Change = (e: ChangeEvent<HTMLInputElement>) => {
-        setLine2Id(e.target.value)
-
-        let parsedPoint = expressions.find(exp => (exp.id == e.target.value))
-
-        if (parsedPoint?.value instanceof DiedricLine) {
-            expression.value.line2 = parsedPoint.value as DiedricLine | undefined
-        } else {
-            expression.value.line2 = undefined
-        }
-    }
-
-    return (
-        <>
-            <label className="font-semibold truncate min-w-0 max-w-full block" title="Plane 2 lines">Plane 2 lines</label>
-            <div className="flex flex-row gap-1 border-b border-neutral-300">
-                <TextInput value={id} onChange={handleIdChange} className="bg-transparent  focus:outline-none w-10" />
-                <label className=" w-fit"> = (</label>
-                <TextInput value={line1Id} onChange={handleLine1Change} className="bg-transparent focus:outline-none w-10" />
-                <label className=" w-fit">, </label>
-                <TextInput value={line2Id} onChange={handleLine2Change} className="bg-transparent focus:outline-none w-10" />
-                <label className=" w-fit ">)</label>
-            </div>
-        </>
-    )
-}
-
-function Line2PlaneExpression({ expression }: { expression: Expression<DiedricLine2Plane> }) {
-    const [id, setId] = useState(expression.id)
-
-    const handleIdChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setId(e.target.value)
-    }
-
-    const [params, setParams] = useState(expression.params)
-    const { expressions } = useContext(ExpressionsContext)
-
-
-    // Object.keys(expression.value.params).map((param) => {
-    //     console.log(param, expression.value.params[param])
-    //     console.log(expression.value.plane1)
-    //     console.log(expression.value.plane1 instanceof expression.value.params[param])
-    // })
-
-    const onParamChange = (paramKey: string, e: ChangeEvent<HTMLInputElement>) => {
-        let newParams = { ...params }
-        newParams[paramKey] = e.target.value
-
-        setParams(newParams)
-
-        let parsedObject = expressions.find(exp => (exp.id == e.target.value))
-
-        if (parsedObject?.value instanceof DiedricPlane) {
-            expression.value[paramKey] = parsedObject.value as DiedricPlane | undefined
-        } else {
-            expression.value[paramKey] = undefined
-        }
-    }
-
-    return (
-        <>
-            <label className="font-semibold">Line 2 planes</label>
-            <div className="flex flex-row gap-1 border-b border-neutral-300">
-                <TextInput value={id} onChange={handleIdChange} className="bg-transparent  focus:outline-none w-10" />
-                <label className=" w-fit"> = (</label>
-                <TextInput value={params.plane1} onChange={(e) => { onParamChange("plane1", e) }} className="bg-transparent focus:outline-none w-10" />
-                <label className=" w-fit">, </label>
-                <TextInput value={params.plane2} onChange={(e) => { onParamChange("plane2", e) }} className="bg-transparent focus:outline-none w-10" />
-                <label className=" w-fit ">)</label>
-            </div>
-        </>
-    )
-}
-
-function Expression({ expression }: { expression: Expression<PosibleExpressions> }) {
-    const { expressions, setExpressions } = useContext(ExpressionsContext)
-    const [value, setValue] = useState("")
+function Expression({ expression }: { expression: Expression }) {
+    const { expressions, diedric } = useContext(ExpressionsContext)
+    const [value, setValue] = useState(expression.expressionText)
     const [warn, setWarn] = useState(false)
 
-    // console.log(expression)
+    const expressionObjects = useRef<any>({})
+
 
     const removeExpression = () => {
-        expression.value.remove()
-        let index = expressions.indexOf(expression)
-        let newExpressions = [...expressions]
-        newExpressions.splice(index, 1)
-        setExpressions(newExpressions)
+        console.log("removeExpression")
     }
 
     const handleValueChange = (e: ChangeEvent<HTMLInputElement>) => {
+        expression.expressionText = e.target.value
+
+        let parsingError = false
+
         const text = e.target.value.replace(/ /g, '')
         setValue(e.target.value)
         if (!text.includes("=")) {
+            console.log("error 1")
+
+            Object.entries(expressionObjects.current).map((entry) => {
+                let value = entry[1] as PosibleExpressions
+                delete expressionObjects.current[entry[0]]
+                value.remove()
+            })
+
             setWarn(true)
             return
         }
 
         let expressionName = text.split("=")[0]
         let expressionText = text.split("=")[1]
-
-        // console.log('expressionName', `'${expressionName}'`)
-        // console.log('expressionText', `'${expressionText}'`)
+        expression.expressionName = expressionName
 
         if (!expressionName || !expressionText || !expressionText.startsWith("(") || !expressionText.endsWith(")")) {
+            console.log("error 2")
+
+            Object.entries(expressionObjects.current).map(entry => {
+                let value = entry[1] as PosibleExpressions
+                delete expressionObjects.current[entry[0]]
+                value.remove()
+            })
+
             setWarn(true)
             return
         }
 
-        let parsingError = false
-        // let params = expressionText.slice(1, expressionText.length - 1).split(",").map(parseParams)
-        // console.log(params)
-
-        const parseParams = (paramsText: string) => {
+        const parseParams = (paramsText: string, index: number = 0, n: number = 0) => {
 
             let output: any[] = []
             let lastOpenBracketIndex: number | undefined
             let bracketCount = 0
             let outputIndex = 0
+
+            let expressionObjectsIndex = 0
+            let expressionObjectsId = `${n}-${index}`
 
             paramsText.split("").map((char, index) => {
                 if (lastOpenBracketIndex === undefined && char == "(") {
@@ -471,13 +190,12 @@ function Expression({ expression }: { expression: Expression<PosibleExpressions>
                 }
 
                 if (char == ")" && bracketCount == 0 && lastOpenBracketIndex !== undefined) {
-                    console.log(paramsText.slice(lastOpenBracketIndex + 1, index))
-                    output.push(parseParams(paramsText.slice(lastOpenBracketIndex + 1, index)))
+                    output.push(parseParams(paramsText.slice(lastOpenBracketIndex + 1, index), expressionObjectsIndex, n + 1))
+                    expressionObjectsIndex++
                     lastOpenBracketIndex = undefined
                 } else if (lastOpenBracketIndex === undefined && bracketCount == 0) {
                     if (char == ",") {
                         outputIndex++
-                        // output.push("")
                     } else if (output[outputIndex] == undefined) {
                         output.push(char)
                         if (!Number.isNaN(Number(output[outputIndex]))) {
@@ -496,41 +214,112 @@ function Expression({ expression }: { expression: Expression<PosibleExpressions>
                 parsingError = true
             }
 
-            const DiedricObjectParams = {}
+            const diedricObjectParams: any = {}
 
             DiedricObjects.map(DiedricObject => {
-                DiedricObjectParams[DiedricObject.type] = Object.values(DiedricObject.params)
+                diedricObjectParams[DiedricObject.type] = { ...DiedricObject.params }
             })
 
-            let finalParams = {}
+            let finalParams: any = {}
 
-            output.map(param => {
-                if (typeof param == "number") {
-                    Object.keys(DiedricObjectParams).map(b => {
-                        let index = DiedricObjectParams[b].indexOf("number")
-                        if (index == -1) {
-                            delete DiedricObjectParams[b]
+            if (output.indexOf(undefined) !== -1) {
+                expressionObjects.current[expressionObjectsId]?.remove()
+                delete expressionObjects.current[expressionObjectsId]
+                parsingError = true
+                return
+            }
+
+            output.map((paramValue, index) => {
+                if (typeof paramValue == "string") {
+                    const expression = expressions.find(expression => expression.expressionName == paramValue)
+                    output[index] = expression?.value
+                }
+            })
+
+            output.map(paramValue => {
+                if (typeof paramValue == "number") {
+                    Object.keys(diedricObjectParams).map(diedricObjectType => {
+
+                        let paramKey;
+                        Object.entries(diedricObjectParams[diedricObjectType]).find((entry, _index) => {
+                            if (entry[1] == "number") {
+                                paramKey = entry[0]
+                                // value = entry[1]
+                                return true
+                            }
+                            return false
+                        })
+
+                        if (paramKey == undefined) {
+                            delete diedricObjectParams[diedricObjectType]
                         } else {
-                            DiedricObjectParams[b].splice(index, 1)
+                            delete diedricObjectParams[diedricObjectType][paramKey]
+                            if (!finalParams[diedricObjectType]) {
+                                finalParams[diedricObjectType] = {}
+                            }
+
+                            finalParams[diedricObjectType][paramKey] = paramValue
+                        }
+                    })
+                } else if (typeof paramValue == "string") {
+                    console.warn("ASDF", paramValue)
+                } else {
+                    Object.keys(diedricObjectParams).map(diedricObjectType => {
+                        let paramKey;
+                        Object.entries(diedricObjectParams[diedricObjectType]).find((entry, _index) => {
+                            if (entry[1] == "number") { return false }
+                            // @ts-ignore
+                            if (paramValue instanceof entry[1]) {
+                                paramKey = entry[0]
+                                return true
+                            }
+                            return false
+                        })
+                        if (paramKey == undefined) {
+                            delete diedricObjectParams[diedricObjectType]
+                        } else {
+                            delete diedricObjectParams[diedricObjectType][paramKey]
+                            if (!finalParams[diedricObjectType]) {
+                                finalParams[diedricObjectType] = {}
+                            }
+
+                            finalParams[diedricObjectType][paramKey] = paramValue
                         }
                     })
                 }
             })
 
-            console.log(output)
-            let newObjectConstructor = DiedricObjects.find(DiedricObject => DiedricObject.type == Object.keys(DiedricObjectParams)[0] )
-            if (newObjectConstructor) {
-                // let newDiedricObject = new newObjectConstructor()
-                console.log(newObjectConstructor)
+            let match = false
+
+            Object.entries(diedricObjectParams).map(diedricObjectParamsEntry => {
+                let type = diedricObjectParamsEntry[0]
+                let params: any = diedricObjectParamsEntry[1]
+
+                if (Object.keys(params).length == 0) {
+                    match = true
+                    let diedricObject = DiedricObjects.find(DiedricObject => DiedricObject.type == type)
+                    if (diedricObject == undefined) {
+                        console.warn("This should never happen.")
+                    } else if (expressionObjects.current[expressionObjectsId] instanceof diedricObject) {
+                        if (expressionObjects.current[expressionObjectsId] instanceof DiedricPoint) {
+                            expressionObjects.current[expressionObjectsId].setAttributes(Object.assign(finalParams[type], { "color": expression.params.color }))
+                        }
+                    } else {
+                        console.log("new", diedricObject)
+                        expressionObjects.current[expressionObjectsId] = new diedricObject(Object.assign(finalParams[type], { "diedric": diedric, "color": expression.params.color }))
+                    }
+                }
+            })
+            if (!match) {
+                expressionObjects.current[expressionObjectsId]?.remove()
+                delete expressionObjects.current[expressionObjectsId]
+                parsingError = true
             }
 
-            console.log(DiedricObjectParams)
-
-            return output
+            return expressionObjects.current[expressionObjectsId]
         }
-        let params = parseParams(expressionText.slice(1, expressionText.length - 1))
 
-        console.log("params", params)
+        expression.value = parseParams(expressionText.slice(1, expressionText.length - 1))
 
         if (parsingError) {
             setWarn(true)
@@ -538,10 +327,13 @@ function Expression({ expression }: { expression: Expression<PosibleExpressions>
         }
         setWarn(false)
     }
+    useEffect(() => {
+        handleValueChange({ target: { value: value } })
+    }, [])
 
     return (
-        <div className="w-full border border-neutral-400 text-black rounded grid grid-cols-[40px_1fr_20px] items-center min-h-12 pr-2">
-            <div className=" bg-zinc-800/50 rounded-tl rounded-bl h-full">
+        <div className="w-full border border-neutral-300 text-black rounded grid grid-cols-[40px_1fr_20px] items-center min-h-12 pr-2">
+            <div className=" bg-zinc-800/20 rounded-tl rounded-bl h-full">
                 {warn ?
                     <TriangleAlert className="h-6 w-6 relative top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-neutral-900/40"></TriangleAlert>
                     :
@@ -549,309 +341,128 @@ function Expression({ expression }: { expression: Expression<PosibleExpressions>
                 }
             </div>
             <div className="relative w-full p-2 min-w-0 flex flex-col">
-                {/* <label className="font-semibold">{diedricObject?.type}</label> */}
                 <TextInput value={value} onChange={handleValueChange} className="bg-transparent focus:outline-none"></TextInput>
             </div>
             <Trash2 className="h-5 w-5 text-red-500 cursor-pointer hover:scale-105" onClick={removeExpression} />
-            {/* <div className="h-5 w-5 bg-red-500" onClick={removeExpression}> */}
-
-            {/* </div> */}
         </div>
     )
 }
 
-export default function App({ canvasRef }: { canvasRef: RefObject<HTMLCanvasElement> }) {
+export default function App({ canvas3dRef, canvas2dRef }: { canvas3dRef: RefObject<HTMLCanvasElement>, canvas2dRef: RefObject<HTMLCanvasElement> }) {
 
     const [diedric, setDiedric] = useState<Diedric>()
-    const [expressions, setExpressions] = useState<Expression<PosibleExpressions | null>[]>([])
+    const [expressions, setExpressions] = useState<Expression[]>([])
 
-    const savedExpressions: Expression<PosibleExpressions | null>[] = [
+    const savedExpressions: Expression[] = [
         {
             id: createId(8),
-            type: null,
+            expressionText: "A = (10,20,30)",
+            expressionName: null,
             value: null,
-            hidden: false,
             params: {
-                color: "red"
+                hidden: false,
+                color: "#000000"
             }
         },
-        // {
-        //     id: "A",
-        //     type: "point",
-        //     value: null,
-        //     hidden: false,
-        //     params: {
-        //         o: 0,
-        //         a: 55,
-        //         c: 55,
-        //         color: "aquamarine",
-        //     },
-        // },
-        // {
-        //     id: "B",
-        //     type: "point",
-        //     value: null,
-        //     hidden: false,
-        //     params: {
-        //         o: 55,
-        //         a: 0,
-        //         c: 0,
-        //         color: "aquamarine",
-        //     }
-        // },
-        // {
-        //     id: "r",
-        //     type: "line-2-pto",
-        //     value: null,
-        //     hidden: false,
-        //     params: {
-        //         point1: "A",
-        //         point2: "B",
-        //         color: "aquamarine",
-        //     }
-        // },
-        // {
-        //     id: "C",
-        //     type: "point",
-        //     value: null,
-        //     hidden: false,
-        //     params: {
-        //         o: 25,
-        //         a: 50,
-        //         c: 0,
-        //         color: "brown",
-        //     },
-        // },
-        // {
-        //     id: "D",
-        //     type: "point",
-        //     value: null,
-        //     hidden: false,
-        //     params: {
-        //         o: -25,
-        //         a: 0,
-        //         c: 50,
-        //         color: "brown",
-        //     }
-        // },
-        // {
-        //     id: "s",
-        //     type: "line-2-pto",
-        //     value: null,
-        //     hidden: false,
-        //     params: {
-        //         point1: "C",
-        //         point2: "D",
-        //         color: "brown",
-        //     }
-        // },
-        // {
-        //     id: "E",
-        //     type: "point",
-        //     value: null,
-        //     hidden: false,
-        //     params: {
-        //         o: 0,
-        //         a: 90,
-        //         c: 90,
-        //         color: "darkseagreen",
-        //     },
-        // },
-        // {
-        //     id: "F",
-        //     type: "point",
-        //     value: null,
-        //     hidden: false,
-        //     params: {
-        //         o: -50,
-        //         a: 90,
-        //         c: 40,
-        //         color: "darkseagreen",
-        //     }
-        // },
-        // {
-        //     id: "t",
-        //     type: "line-2-pto",
-        //     value: null,
-        //     hidden: false,
-        //     params: {
-        //         point1: "E",
-        //         point2: "F",
-        //         color: "darkseagreen",
-        //     }
-        // },
-        // {
-        //     id: "u",
-        //     type: "line-pto-parallel-line",
-        //     value: null,
-        //     hidden: false,
-        //     params: {
-        //         point: "A",
-        //         line: "t",
-        //         color: "salmon",
-        //     }
-        // },
-        // {
-        //     id: "j",
-        //     type: "line-pto-parallel-line",
-        //     value: null,
-        //     hidden: false,
-        //     params: {
-        //         point: "D",
-        //         line: "t",
-        //         color: "salmon",
-        //     }
-        // },
-        // {
-        //     id: "alpha",
-        //     type: "plane-2-line",
-        //     value: null,
-        //     hidden: false,
-        //     params: {
-        //         line1: "j",
-        //         line2: "s",
-        //         color: "salmon",
-        //     }
-        // },
-        // {
-        //     id: "beta",
-        //     type: "plane-2-line",
-        //     value: null,
-        //     hidden: false,
-        //     params: {
-        //         line1: "u",
-        //         line2: "r",
-        //         color: "tomato",
-        //     }
-        // },
-        // {
-        //     id: "sol",
-        //     type: "line-2-plane",
-        //     value: null,
-        //     hidden: false,
-        //     params: {
-        //         plane1: "alpha",
-        //         plane2: "beta",
-        //         color: "orange",
-        //     }
-        // },
+        {
+            id: createId(8),
+            expressionText: "B = (-10, -20, -55)",
+            expressionName: null,
+            value: null,
+            params: {
+                hidden: false,
+                color: "#fa7e19"
+            }
+        },
+        {
+            id: createId(8),
+            expressionText: "C = (90, -50, 55)",
+            expressionName: null,
+            value: null,
+            params: {
+                hidden: false,
+                color: "#6042a6"
+            }
+        },
+        {
+            id: createId(8),
+            expressionText: "r = (A, B)",
+            expressionName: null,
+            value: null,
+            params: {
+                hidden: false,
+                color: "#388c46"
+            }
+        },
+        {
+            id: createId(8),
+            expressionText: "t = (A, C)",
+            expressionName: null,
+            value: null,
+            params: {
+                hidden: false,
+                color: "#2d70b3"
+            }
+        },
+        {
+            id: createId(8),
+            expressionText: "alpha = (r, t)",
+            expressionName: null,
+            value: null,
+            params: {
+                hidden: false,
+                color: "#c74440"
+            }
+        },
     ]
     useEffect(() => {
-        if (!canvasRef.current) return
-        const newDiedric = new Diedric(200, canvasRef.current)
+        if (!canvas3dRef.current) return
+        const newDiedric = new Diedric(200, canvas3dRef.current, canvas2dRef.current)
 
         setDiedric(newDiedric)
-    }, [canvasRef])
-
-
-    // useEffect(() => {
-
-    //     DiedricObjects.map(DiedricObject => {
-    //         console.log(DiedricObject, DiedricObject.type)
-
-    //         Object.keys(DiedricObject.params).map(param => {
-    //             console.log(param, DiedricObject.params[param].type)
-    //         })
-    //     })
-
-    // }, [])
+    }, [canvas3dRef])
 
     useEffect(() => {
         if (!diedric) { return }
 
         console.log("getting saved expressions")
 
-        let newExpressions: Expression<PosibleExpressions | null>[] = []
+        let newExpressions: Expression[] = []
         savedExpressions.map((savedExpression) => {
-            let value
+            console.log(savedExpression)
+            newExpressions.push(savedExpression)
 
-            const parsedParams: any = {}
-
-            Object.keys(savedExpression.params).map(param => {
-                const value = savedExpression.params[param]
-                if (param == "color") {
-                    parsedParams.color = value
-                } else if (typeof value == "number") {
-                    parsedParams[param] = value
-                } else if (typeof value == "string") {
-                    let parsed = newExpressions.find((expression) => expression.id == value)
-                    parsedParams[param] = parsed?.value
-                }
-            })
-
-            if (savedExpression.type == "point") {
-                value = diedric.createPoint(parsedParams)
-            } else if (savedExpression.type == "line-2-pto") {
-                value = diedric.createLine2Point(parsedParams)
-            } else if (savedExpression.type == "plane-3-pto") {
-                value = diedric.createPlane3Point(parsedParams)
-            } else if (savedExpression.type == "plane-pto-line") {
-                value = diedric.createPlanePointLine(parsedParams)
-            } else if (savedExpression.type == "line-pto-parallel-line") {
-                value = diedric.createLinePointParallelLine(parsedParams)
-            } else if (savedExpression.type == "plane-2-line") {
-                value = diedric.createPlane2Line(parsedParams)
-            } else if (savedExpression.type == "line-2-plane") {
-                value = diedric.createLine2Plane(parsedParams)
-            } else {
-                newExpressions.push(savedExpression)
-                console.warn("Type not known", savedExpression.type)
-            }
-            if (!value) return
-
-            value.hidden = savedExpression.hidden
-
-            newExpressions.push({
-                id: savedExpression.id,
-                type: savedExpression.type,
-                value: value,
-                params: savedExpression.params,
-                hidden: savedExpression.hidden
-            })
         })
         setExpressions(newExpressions)
 
     }, [diedric])
 
-    const renderExpression = (expression: Expression<PosibleExpressions>, index: number) => {
-        if (expression.type == "point") {
-            return <PointExpresssion key={index} expression={expression as Expression<DiedricPoint>} />
-        } else if (expression.type == "plane-3-pto") {
-            return <Plane3PointsExpression key={index} expression={expression as Expression<DiedricPlane3Point>} />
-        } else if (expression.type == "line-2-pto") {
-            return <Line2PointsExpression key={index} expression={expression as Expression<DiedricLine2Point>} />
-        } else if (expression.type == "line-2-plane") {
-            return <Line2PlaneExpression key={index} expression={expression as Expression<DiedricLine2Plane>} />
-        } else if (expression.type == "line-pto-parallel-line") {
-            return <LinePointParallelLineExpression key={index} expression={expression as Expression<DiedricLinePointParallelLine>} />
-        } else if (expression.type == "plane-2-line") {
-            return <Plane2LineExpression key={index} expression={expression as Expression<DiedricPlane2Line>} />
-        } else {
-            console.warn("Type not known", expression.type)
-        }
-    }
-
     const saveExpressions = useCallback(() => {
+
+        console.log(expressions)
+        console.log("saveExpressions")
 
     }, [expressions])
 
+    const newExpression = () => {
+        console.log("newExpression")
+
+    }
 
     return (
 
         <div className="h-full overflow-y-auto p-1 relative">
             <div className="flex flex-col items-center gap-2">
-                <ExpressionsContext.Provider value={{ expressions, setExpressions }}>
+                <ExpressionsContext.Provider value={{ expressions, setExpressions, diedric, setDiedric }}>
                     {expressions.map(((expression) => (
-                        <Expression key={expression.id} expression={expression as Expression<PosibleExpressions>}>
-                            {/* {renderExpression(expression as Expression<PosibleExpressions>, index)} */}
-                        </Expression>
+                        <Expression key={expression.id} expression={expression as Expression} />
                     )))}
                 </ExpressionsContext.Provider>
             </div>
             <div className="h-10" />
             <div className="sticky backdrop-blur-sm bottom-2 mx-2 flex flex-row p-2 gap-2">
                 <Save className="text-zinc-800 w-8 h-8 hover:scale-110" onClick={saveExpressions} />
-                <Plus className="text-zinc-800 w-8 h-8 hover:scale-110"></Plus>
+                <Plus className="text-zinc-800 w-8 h-8 hover:scale-110" onClick={newExpression} />
             </div>
         </div>
     )

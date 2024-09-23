@@ -33,7 +33,6 @@ export class DiedricLine {
     }
     calc() {
 
-
         if (!(this._vector && this.__point)) {
             this.hidden = true
             this.children.map((child => child.update()))

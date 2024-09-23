@@ -12,7 +12,7 @@ export class DiedricLine2Point extends DiedricLine {
     static params = { 'point1': DiedricPoint, 'point2': DiedricPoint }
     static type = "line-2-pto"
 
-    constructor(diedric: Diedric, point1: DiedricPoint | undefined, point2: DiedricPoint | undefined, color: THREE.ColorRepresentation) {
+    constructor({ diedric, point1, point2, color }: { diedric: Diedric, point1: DiedricPoint | undefined, point2: DiedricPoint | undefined, color: THREE.ColorRepresentation }) {
 
         super(diedric, undefined, undefined, color)
 

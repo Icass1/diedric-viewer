@@ -8,7 +8,14 @@ export class DiedricLinePointParallelLine extends DiedricLine {
     private _color: THREE.ColorRepresentation
     private _point: DiedricPoint | undefined
     private _line: DiedricLine | undefined
-    constructor(diedric: Diedric, point: DiedricPoint | undefined, line: DiedricLine | undefined, color: THREE.ColorRepresentation) {
+
+    static type = 'line-pto-par-line'
+    static params = {
+        'point': DiedricPoint,
+        'line': DiedricLine
+    }
+
+    constructor({ diedric, point, line, color }: { diedric: Diedric, point: DiedricPoint | undefined, line: DiedricLine | undefined, color: THREE.ColorRepresentation }) {
 
         super(diedric, undefined, undefined, color)
 
