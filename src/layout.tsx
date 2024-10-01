@@ -4,20 +4,19 @@ import App from "./App";
 
 export default function Layout() {
 
-    const canvasRef = useRef<HTMLCanvasElement>(null)
+    const canvas3dRef = useRef<HTMLCanvasElement>(null)
+    const canvas2dRef = useRef<HTMLCanvasElement>(null)
 
     return (
         <div className=" h-full w-full grid grid-cols-[400px_2fr_1fr] gap-2">
             <div className="bg-neutral-100 h-full w-full min-w-0 min-h-0">
-                <App canvasRef={canvasRef} />
+                <App canvas3dRef={canvas3dRef} canvas2dRef={canvas2dRef} />
             </div>
             <div className="relative">
-                <canvas ref={canvasRef} className="absolute top-0 w-full min-w-0 h-full min-h-0"></canvas>
-                <div className="absolute flex flex-col p-1 m-1 bg-slate-600/50 rounded-lg text-sm"></div>
+                <canvas ref={canvas3dRef} className="absolute top-0 w-full min-w-0 h-full min-h-0"></canvas>
             </div>
             <div className="relative">
-                <canvas className="absolute top-0 w-full min-w-0 h-full min-h-0"></canvas>
-                <div className="absolute flex flex-col p-1 m-1 bg-slate-600/50 rounded-lg text-sm"></div>
+                <canvas ref={canvas2dRef} className="absolute top-0 w-full min-w-0 h-full min-h-0"></canvas>
             </div>
         </div>
     )

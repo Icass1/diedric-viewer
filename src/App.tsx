@@ -12,6 +12,8 @@ import { DiedricLine2Plane } from "./utils/diedricLine2Plane";
 import { DiedricPlane3Point } from "./utils/diedricPlane3Point";
 import { DiedricPlanePointLine } from "./utils/diedricPlanePointLine";
 import { DiedricPlane2Line } from "./utils/diedricPlane2Line";
+import { Vector3 } from "three";
+import { DiedricPlaneOAC } from "./utils/diedricPlaneOAC";
 
 type PosibleExpressions = DiedricLine2Point | DiedricPlane3Point | DiedricPoint | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPlane2Line | DiedricLine2Plane
 
@@ -25,6 +27,7 @@ const DiedricObjects = [
     DiedricPlanePointLine,
     DiedricPlane3Point,
     DiedricPlane2Line,
+    // DiedricPlaneOAC,
 ]
 
 interface Expression {
@@ -126,6 +129,7 @@ function Expression({ expression }: { expression: Expression }) {
 
     const expressionObjects = useRef<any>({})
 
+    const [options, setOptions] = useState<string[]>([])
 
     const removeExpression = () => {
         console.log("removeExpression")
@@ -177,6 +181,8 @@ function Expression({ expression }: { expression: Expression }) {
 
             let expressionObjectsIndex = 0
             let expressionObjectsId = `${n}-${index}`
+
+            let posibleOptions: string[] = []
 
             paramsText.split("").map((char, index) => {
                 if (lastOpenBracketIndex === undefined && char == "(") {
@@ -244,7 +250,6 @@ function Expression({ expression }: { expression: Expression }) {
                         Object.entries(diedricObjectParams[diedricObjectType]).find((entry, _index) => {
                             if (entry[1] == "number") {
                                 paramKey = entry[0]
-                                // value = entry[1]
                                 return true
                             }
                             return false
@@ -282,22 +287,21 @@ function Expression({ expression }: { expression: Expression }) {
                             if (!finalParams[diedricObjectType]) {
                                 finalParams[diedricObjectType] = {}
                             }
-
                             finalParams[diedricObjectType][paramKey] = paramValue
                         }
                     })
                 }
             })
 
-            let match = false
-
+            let matches = 0
             Object.entries(diedricObjectParams).map(diedricObjectParamsEntry => {
                 let type = diedricObjectParamsEntry[0]
                 let params: any = diedricObjectParamsEntry[1]
 
                 if (Object.keys(params).length == 0) {
-                    match = true
+                    matches++
                     let diedricObject = DiedricObjects.find(DiedricObject => DiedricObject.type == type)
+                    posibleOptions.push(diedricObject?.type || "error")
                     if (diedricObject == undefined) {
                         console.warn("This should never happen.")
                     } else if (expressionObjects.current[expressionObjectsId] instanceof diedricObject) {
@@ -305,17 +309,18 @@ function Expression({ expression }: { expression: Expression }) {
                             expressionObjects.current[expressionObjectsId].setAttributes(Object.assign(finalParams[type], { "color": expression.params.color }))
                         }
                     } else {
-                        console.log("new", diedricObject)
                         expressionObjects.current[expressionObjectsId] = new diedricObject(Object.assign(finalParams[type], { "diedric": diedric, "color": expression.params.color }))
                     }
                 }
             })
-            if (!match) {
+            setOptions(posibleOptions)
+
+            console.log(posibleOptions)
+            if (!matches) {
                 expressionObjects.current[expressionObjectsId]?.remove()
                 delete expressionObjects.current[expressionObjectsId]
                 parsingError = true
             }
-
             return expressionObjects.current[expressionObjectsId]
         }
 
@@ -342,6 +347,7 @@ function Expression({ expression }: { expression: Expression }) {
             </div>
             <div className="relative w-full p-2 min-w-0 flex flex-col">
                 <TextInput value={value} onChange={handleValueChange} className="bg-transparent focus:outline-none"></TextInput>
+                {options.map(option => <label>{option}</label>)}
             </div>
             <Trash2 className="h-5 w-5 text-red-500 cursor-pointer hover:scale-105" onClick={removeExpression} />
         </div>
@@ -356,7 +362,7 @@ export default function App({ canvas3dRef, canvas2dRef }: { canvas3dRef: RefObje
     const savedExpressions: Expression[] = [
         {
             id: createId(8),
-            expressionText: "A = (10,20,30)",
+            expressionText: "alpha = (-35, 20, -50)",
             expressionName: null,
             value: null,
             params: {
@@ -366,7 +372,7 @@ export default function App({ canvas3dRef, canvas2dRef }: { canvas3dRef: RefObje
         },
         {
             id: createId(8),
-            expressionText: "B = (-10, -20, -55)",
+            expressionText: "Hr = (70, 50, 0)",
             expressionName: null,
             value: null,
             params: {
@@ -376,7 +382,7 @@ export default function App({ canvas3dRef, canvas2dRef }: { canvas3dRef: RefObje
         },
         {
             id: createId(8),
-            expressionText: "C = (90, -50, 55)",
+            expressionText: "Vr = (-70, 0, 80)",
             expressionName: null,
             value: null,
             params: {
@@ -386,41 +392,27 @@ export default function App({ canvas3dRef, canvas2dRef }: { canvas3dRef: RefObje
         },
         {
             id: createId(8),
-            expressionText: "r = (A, B)",
+            expressionText: "r = (Hr, Vr)",
             expressionName: null,
             value: null,
             params: {
                 hidden: false,
-                color: "#388c46"
-            }
-        },
-        {
-            id: createId(8),
-            expressionText: "t = (A, C)",
-            expressionName: null,
-            value: null,
-            params: {
-                hidden: false,
-                color: "#2d70b3"
-            }
-        },
-        {
-            id: createId(8),
-            expressionText: "alpha = (r, t)",
-            expressionName: null,
-            value: null,
-            params: {
-                hidden: false,
-                color: "#c74440"
+                color: "red"
             }
         },
     ]
     useEffect(() => {
-        if (!canvas3dRef.current) return
-        const newDiedric = new Diedric(200, canvas3dRef.current, canvas2dRef.current)
+        if (!canvas3dRef.current || !canvas2dRef.current) return
+        const newDiedric = new Diedric(100, canvas3dRef.current, canvas2dRef.current)
+
+        newDiedric.createStaticLabel("x", new Vector3(newDiedric.size, 0, 0))
+        newDiedric.createStaticLabel("y", new Vector3(0, newDiedric.size, 0))
+        newDiedric.createStaticLabel("z", new Vector3(0, 0, newDiedric.size))
 
         setDiedric(newDiedric)
-    }, [canvas3dRef])
+
+
+    }, [canvas3dRef, canvas2dRef])
 
     useEffect(() => {
         if (!diedric) { return }
@@ -429,7 +421,7 @@ export default function App({ canvas3dRef, canvas2dRef }: { canvas3dRef: RefObje
 
         let newExpressions: Expression[] = []
         savedExpressions.map((savedExpression) => {
-            console.log(savedExpression)
+            // console.log(savedExpression)
             newExpressions.push(savedExpression)
 
         })

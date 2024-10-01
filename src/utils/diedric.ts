@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as TWO from "./two";
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { StaticLabel } from './staticLabel';
@@ -19,27 +20,37 @@ export class Diedric {
     staticLabels: StaticLabel[]
     size: number
 
-    constructor(size: number, canvas: HTMLCanvasElement) {
+    canvas2d: TWO.Canvas
+
+    constructor(size: number, canvas3d: HTMLCanvasElement, canvas2d: HTMLCanvasElement) {
         this.scene = new THREE.Scene()
-        this.camera = new THREE.PerspectiveCamera(75, canvas.offsetWidth / canvas.offsetHeight, 0.1, 10000)
+        this.camera = new THREE.PerspectiveCamera(75, canvas3d.offsetWidth / canvas3d.offsetHeight, 0.1, 10000)
         this.scene.background = new THREE.Color("rgb(240, 236, 244)")
+
 
         this.size = size
 
         this.renderer = new THREE.WebGLRenderer({
-            canvas: canvas
+            canvas: canvas3d
         })
 
         this.renderer.setPixelRatio(window.devicePixelRatio)
-        this.renderer.setSize(canvas.offsetWidth, canvas.offsetHeight)
+        this.renderer.setSize(canvas3d.offsetWidth, canvas3d.offsetHeight)
         this.getLocalStorageCameraConfig()
 
         this.controls = new OrbitControls(this.camera, this.renderer.domElement)
+
+
+        this.canvas2d = new TWO.Canvas(canvas2d)
+        this.canvas2d.setSize(canvas2d.offsetWidth, canvas2d.offsetHeight)
+        this.canvas2d.setBackground("rgb(240, 236, 244)")
 
         this.lastInnerHTML = ''
         this.staticLabels = []
 
         this.animate()
+
+        this.drawEarthLine()
 
         this.drawAxis()
         this.drawVerticalPlaneLabel()
@@ -88,6 +99,7 @@ export class Diedric {
             }
         }
         this.renderer.render(this.scene, this.camera)
+        this.canvas2d.render()
     }
 
     getLocalStorageCameraConfig() {
@@ -103,12 +115,59 @@ export class Diedric {
             this.camera.rotation.x = cameraConfig.rotation_x
             this.camera.rotation.y = cameraConfig.rotation_y
             this.camera.rotation.z = cameraConfig.rotation_z
-            // camera.rotation.set(cameraConfig.rotation_x, cameraConfig.rotation_y, cameraConfig.rotation_z)
         } else {
             this.camera.position.setZ(20)
             this.camera.position.setY(50)
             this.camera.position.setX(20)
         }
+    }
+
+    drawEarthLine() {
+        let line = new TWO.Line({ color: "black" })
+        line.start = new THREE.Vector2(-this.size, 0)
+        line.end = new THREE.Vector2(this.size, 0)
+        this.canvas2d.add(line)
+
+        line = new TWO.Line({ color: "black" })
+        line.start = new THREE.Vector2(-this.size, 10)
+        line.end = new THREE.Vector2(-this.size + 15, 10)
+        this.canvas2d.add(line)
+
+        line = new TWO.Line({ color: "black" })
+        line.start = new THREE.Vector2(this.size, 10)
+        line.end = new THREE.Vector2(this.size - 15, 10)
+        this.canvas2d.add(line)
+
+        line = new TWO.Line({ color: "black" })
+        line.start = new THREE.Vector2(0, 5)
+        line.end = new THREE.Vector2(0, -5)
+        this.canvas2d.add(line)
+
+
+        line = new TWO.Line({ color: "rgb(200, 200, 200)" })
+        line.start = new THREE.Vector2(-this.size, -this.size)
+        line.end = new THREE.Vector2(-this.size, this.size)
+        this.canvas2d.add(line)
+
+        line = new TWO.Line({ color: "rgb(200, 200, 200)" })
+        line.start = new THREE.Vector2(-this.size, this.size)
+        line.end = new THREE.Vector2(this.size, this.size)
+        this.canvas2d.add(line)
+
+        line = new TWO.Line({ color: "rgb(200, 200, 200)" })
+        line.start = new THREE.Vector2(this.size, this.size)
+        line.end = new THREE.Vector2(this.size, -this.size)
+        this.canvas2d.add(line)
+
+        line = new TWO.Line({ color: "rgb(200, 200, 200)" })
+        line.start = new THREE.Vector2(this.size, -this.size)
+        line.end = new THREE.Vector2(-this.size, -this.size)
+        this.canvas2d.add(line)
+
+
+        line = new TWO.Label({ text: "AS" })
+        this.canvas2d.add(line)
+
     }
 
     drawAxis() {
