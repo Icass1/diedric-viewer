@@ -3,6 +3,7 @@ import * as TWO from "./two";
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { StaticLabel } from './staticLabel';
+import { DiedricPlane } from './diedricPlane';
 
 interface InfoEvent {
     positionX: number
@@ -22,11 +23,28 @@ export class Diedric {
 
     canvas2d: TWO.Canvas
 
+    pb1: DiedricPlane
+    pb2: DiedricPlane
+
     constructor(size: number, canvas3d: HTMLCanvasElement, canvas2d: HTMLCanvasElement) {
         this.scene = new THREE.Scene()
         this.camera = new THREE.PerspectiveCamera(75, canvas3d.offsetWidth / canvas3d.offsetHeight, 0.1, 10000)
         this.scene.background = new THREE.Color("rgb(240, 236, 244)")
 
+        window.addEventListener("resize", () => {
+
+            if (canvas2d.parentNode && canvas3d.parentNode) {
+
+                let canvas3dParentNode = canvas3d.parentNode as HTMLDivElement
+                let canvas2dParentNode = canvas2d.parentNode as HTMLDivElement
+
+                this.renderer.setSize(canvas3dParentNode.offsetWidth, canvas3dParentNode.offsetHeight)
+                this.canvas2d.setSize(canvas2dParentNode.offsetWidth, canvas2dParentNode.offsetHeight)
+
+                this.camera.aspect = canvas3dParentNode.offsetWidth / canvas3dParentNode.offsetHeight;
+                this.camera.updateProjectionMatrix()
+            }
+        })
 
         this.size = size
 
@@ -39,7 +57,6 @@ export class Diedric {
         this.getLocalStorageCameraConfig()
 
         this.controls = new OrbitControls(this.camera, this.renderer.domElement)
-
 
         this.canvas2d = new TWO.Canvas(canvas2d)
         this.canvas2d.setSize(canvas2d.offsetWidth, canvas2d.offsetHeight)
@@ -55,6 +72,11 @@ export class Diedric {
         this.drawAxis()
         this.drawVerticalPlaneLabel()
         this.drawHorizontalPlaneLabel()
+
+        this.pb1 = new DiedricPlane(this, new THREE.Vector3(0, -1, 1), 0, "blue")
+        this.pb2 = new DiedricPlane(this, new THREE.Vector3(0, 1, 1), 0, "red")
+        this.pb1.hidden = true
+        this.pb2.hidden = true
     }
 
     animate() {
@@ -165,8 +187,8 @@ export class Diedric {
         this.canvas2d.add(line)
 
 
-        line = new TWO.Label({ text: "AS" })
-        this.canvas2d.add(line)
+        let label = new TWO.Label({ text: "AS" })
+        this.canvas2d.add(label)
 
     }
 
