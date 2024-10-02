@@ -26,7 +26,6 @@ export class DiedricPlane3Point extends DiedricPlane {
         this._point3?.children.push(this)
 
         this.update()
-        console.log("DiedricPlane3Point constructor", this.type)
     }
 
     removeParent(parent: DiedricPoint) {
@@ -48,7 +47,7 @@ export class DiedricPlane3Point extends DiedricPlane {
     }
 
     update() {
-        console.log("DiedricPlane3Point update", this.type)
+        // console.log("DiedricPlane3Point update", this.type)
 
         if (this._point1 && this._point2 && this._point3) {
             const pointA = new THREE.Vector3(this._point1.o, this._point1.c, this._point1.a)

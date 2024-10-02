@@ -34,7 +34,7 @@ export class Canvas {
 
     add(element: Objects) {
         if (this.elements.includes(element)) {
-            console.warn("Repeated", element)
+            // console.warn("Repeated", element)
             return
         }
         this.elements.push(element)

@@ -31,7 +31,7 @@ export class DiedricPlaneOAC extends DiedricPlane3Point {
         this._pointC.hidden = true
         super.point3 = this._pointC
 
-        console.log("DiedricPlaneOAC constructor")
+        // console.log("DiedricPlaneOAC constructor")
     }
 
     setAttributes(attr: { o: number | undefined, a: number | undefined, c: number | undefined, color: THREE.ColorRepresentation }) {
@@ -48,7 +48,7 @@ export class DiedricPlaneOAC extends DiedricPlane3Point {
     }
 
     update() {
-        console.log("DiedricPlaneOAC update")
+        // console.log("DiedricPlaneOAC update")
         super.update()
     }
     get color() {
