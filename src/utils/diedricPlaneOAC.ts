@@ -1,31 +1,46 @@
 import * as THREE from 'three';
-import { DiedricLine } from './diedricLine';
-import { DiedricPlane } from './diedricPlane';
 import { Diedric } from './diedric';
+import { DiedricPlane3Point } from './diedricPlane3Point';
 import { DiedricPoint } from './diedricPoint';
 
-export class DiedricPlaneOAC extends DiedricPlane {
-    private _color: THREE.ColorRepresentation
-    private _o: number | undefined
-    private _a: number | undefined
-    private _c: number | undefined
+export class DiedricPlaneOAC extends DiedricPlane3Point {
+    private _pointO: DiedricPoint
+    private _pointA: DiedricPoint
+    private _pointC: DiedricPoint
 
     static type = 'plane-oac'
-    static params = {
+    public type = 'plane-oac'
+    static params: any = {
         'o': "number",
         'a': "number",
         'c': "number",
     }
 
     constructor({ diedric, o, a, c, color }: { diedric: Diedric, o: number | undefined, a: number | undefined, c: number | undefined, color: THREE.ColorRepresentation }) {
-        super(diedric, undefined, undefined, color)
+        super({ diedric: diedric, point1: undefined, point2: undefined, point3: undefined, color: color })
 
-        this._color = color
-        this._o = o
-        this._a = a
-        this._c = c
+        this._pointO = new DiedricPoint({ diedric: diedric, o: o, a: 0, c: 0, color: color })
+        this._pointO.hidden = true
+        super.point1 = this._pointO
 
-        this.update()
+        this._pointA = new DiedricPoint({ diedric: diedric, o: 0, a: a, c: 0, color: color })
+        this._pointA.hidden = true
+        super.point2 = this._pointA
+
+        this._pointC = new DiedricPoint({ diedric: diedric, o: 0, a: 0, c: c, color: color })
+        this._pointC.hidden = true
+        super.point3 = this._pointC
+
+        console.log("DiedricPlaneOAC constructor")
+    }
+
+    setAttributes(attr: { o: number | undefined, a: number | undefined, c: number | undefined, color: THREE.ColorRepresentation }) {
+
+        this._pointO.o = attr.o
+        this._pointA.a = attr.a
+        this._pointC.c = attr.c
+
+        super.update()
     }
 
     remove() {
@@ -33,53 +48,11 @@ export class DiedricPlaneOAC extends DiedricPlane {
     }
 
     update() {
-
-
-        // if (this._line1?.bVector && this._line2?.bVector && this._line1.bPoint) {
-        //     super.normal = new THREE.Vector3().crossVectors(this._line1.bVector, this._line2.bVector).normalize();
-        //     super.d = super.normal.x * this._line1.bPoint.x + super.normal.y * this._line1.bPoint.y + super.normal.z * this._line1.bPoint.z
-        // } else {
-        //     super.normal = undefined
-        //     super.d = undefined
-        // }
+        console.log("DiedricPlaneOAC update")
+        super.update()
     }
     get color() {
-        return this._color
+        return super.color
     }
-    set o(o: number | undefined) {
-        // if (this._line1) {
-        //     let indexInChildren = this._line1.children.indexOf(this)
-        //     if (indexInChildren == -1) {
-        //         console.error("This should never happen", this, "is not in point3 children")
-        //     } else {
-        //         this._line1.children.splice(indexInChildren, 1)
-        //     }
-        // }
 
-        // this._line1 = line
-        // this.update()
-
-        // if (this._line1) {
-        //     this._line1.children.push(this)
-        // }
-    }
-    set a(a: number | undefined) {
-        // if (this._line2) {
-        //     let indexInChildren = this._line2.children.indexOf(this)
-        //     if (indexInChildren == -1) {
-        //         console.error("This should never happen", this, "is not in point3 children")
-        //     } else {
-        //         this._line2.children.splice(indexInChildren, 1)
-        //     }
-        // }
-
-        // this._line2 = line
-        // this.update()
-
-        // if (this._line2) {
-        //     this._line2.children.push(this)
-        // }
-    }
-    set c(c: number | undefined) {
-    }
 }
