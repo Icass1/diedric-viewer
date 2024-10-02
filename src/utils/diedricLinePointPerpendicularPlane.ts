@@ -55,7 +55,7 @@ export class DiedricLinePointPerpendicularPlane extends DiedricLine {
                 super.bVector = new THREE.Vector3().copy(this._plane.normal)
             }
 
-            super.bPoint = new THREE.Vector3(this._point.o, this._point.a, this._point.c)
+            super.bPoint = new THREE.Vector3(this._point.o, this._point.c, this._point.a)
 
         } else {
             super.bPoint = undefined
