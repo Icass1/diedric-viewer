@@ -78,66 +78,6 @@ function createId(length: number) {
     return result;
 }
 
-function TextInput({
-    defaultValue,
-    className,
-    onChange,
-    value,
-    type,
-}: {
-    defaultValue?: string | number | readonly string[] | undefined,
-    className?: string | undefined,
-    onChange?: React.ChangeEventHandler<HTMLInputElement> | undefined,
-    value?: string | number | readonly string[] | undefined
-    type?: React.HTMLInputTypeAttribute | undefined
-}) {
-
-    const inputRef = useRef<HTMLInputElement>(null)
-
-    const adjustWidth = () => {
-
-        if (!inputRef.current) return
-
-        const span = document.createElement('span');
-        span.style.visibility = 'hidden';
-        span.style.whiteSpace = 'pre';
-        span.style.font = window.getComputedStyle(inputRef.current).font;
-        span.textContent = inputRef.current.value || inputRef.current.placeholder;
-
-        document.body.appendChild(span);
-
-        // Set the input width to match the span width
-        if (span.offsetWidth == 0) {
-            inputRef.current.style.border = "2px gray dashed"
-            inputRef.current.style.borderRadius = "5px"
-        } else {
-            inputRef.current.style.border = ""
-            inputRef.current.style.borderRadius = ""
-        }
-        if (type == "number") {
-
-            inputRef.current.style.width = Math.max(span.offsetWidth + 20, 30) + "px";
-        } else {
-            inputRef.current.style.width = Math.max(span.offsetWidth, 10) + 'px';
-        }
-
-        // Remove the temporary span
-        document.body.removeChild(span);
-    }
-
-    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-        onChange && onChange(event)
-
-        adjustWidth()
-    }
-
-    useEffect(adjustWidth, [inputRef, value])
-
-    return (
-        <input ref={inputRef} type={type} className={className} value={value === undefined ? defaultValue : value} onChange={handleChange} />
-    )
-}
-
 function Expression({ expression }: { expression: Expression }) {
     const { expressions, setExpressions, diedric } = useContext(ExpressionsContext)
     const [value, setValue] = useState(expression.expressionText)
@@ -168,6 +108,8 @@ function Expression({ expression }: { expression: Expression }) {
             expression.params.hidden = true
             setHidden(true)
         }
+        setExpressions([...expressions])
+
     }
 
     const parseText = (inputText: string) => {
@@ -389,10 +331,12 @@ function Expression({ expression }: { expression: Expression }) {
                         if (expression.option) {
                             if (expression.option == diedricObject.type) {
                                 expressionObjects.current[expressionObjectsId] = new diedricObject(Object.assign(finalParams[type], { "diedric": diedric, "color": expression.params.color }))
+                                expressionObjects.current[expressionObjectsId].update()
                                 expression.option = diedricObject.type
                             }
                         } else {
                             expressionObjects.current[expressionObjectsId] = new diedricObject(Object.assign(finalParams[type], { "diedric": diedric, "color": expression.params.color }))
+                            expressionObjects.current[expressionObjectsId].update()
                             expression.option = diedricObject.type
                         }
                     }
@@ -413,6 +357,8 @@ function Expression({ expression }: { expression: Expression }) {
         }
 
         expression.value = parseParams(expressionText.slice(1, expressionText.length - 1))
+
+        setExpressions([...expressions])
 
         if (parsingError) {
             setWarn(true)
@@ -459,12 +405,15 @@ function Expression({ expression }: { expression: Expression }) {
     )
 }
 
-export default function App({ canvas3dRef, canvas2dRef }: { canvas3dRef: RefObject<HTMLCanvasElement>, canvas2dRef: RefObject<HTMLCanvasElement> }) {
+export default function App() {
 
     const [diedric, setDiedric] = useState<Diedric>()
     const [expressions, setExpressions] = useState<Expression[]>([])
 
     const savedExpressions = JSON.parse(localStorage.getItem("expressions") || "[]") as Expression[]
+
+    const canvas3dRef = useRef<HTMLCanvasElement>(null)
+    const canvas2dRef = useRef<HTMLCanvasElement>(null)
 
     useEffect(() => {
         if (!canvas3dRef.current || !canvas2dRef.current) return
@@ -517,19 +466,42 @@ export default function App({ canvas3dRef, canvas2dRef }: { canvas3dRef: RefObje
     }
 
     return (
-        <div className="h-full overflow-y-auto p-1 relative">
-            <div className="flex flex-col items-center gap-2">
-                <ExpressionsContext.Provider value={{ expressions, setExpressions, diedric, setDiedric }}>
-                    {expressions.map(((expression) => (
-                        <Expression key={expression.id} expression={expression as Expression} />
-                    )))}
-                </ExpressionsContext.Provider>
+        <div className=" h-full w-full grid grid-cols-[400px_1fr_1fr] gap-2">
+            <div className="bg-neutral-100 h-full w-full min-w-0 min-h-0">
+                <div className="h-full overflow-y-auto p-1 relative">
+                    <div className="flex flex-col items-center gap-2">
+                        <ExpressionsContext.Provider value={{ expressions, setExpressions, diedric, setDiedric }}>
+                            {expressions.map(((expression) => (
+                                <Expression key={expression.id} expression={expression as Expression} />
+                            )))}
+                        </ExpressionsContext.Provider>
+                    </div>
+                    <div className="h-10" />
+                    <div className="sticky backdrop-blur-sm bottom-2 mx-2 flex flex-row p-2 gap-2">
+                        <Save className="text-zinc-800 w-8 h-8 hover:scale-110" onClick={saveExpressions} />
+                        <Plus className="text-zinc-800 w-8 h-8 hover:scale-110" onClick={newExpression} />
+                    </div>
+                </div>
             </div>
-            <div className="h-10" />
-            <div className="sticky backdrop-blur-sm bottom-2 mx-2 flex flex-row p-2 gap-2">
-                <Save className="text-zinc-800 w-8 h-8 hover:scale-110" onClick={saveExpressions} />
-                <Plus className="text-zinc-800 w-8 h-8 hover:scale-110" onClick={newExpression} />
+            <div className="relative">
+                <canvas ref={canvas3dRef} className="absolute top-0 w-full min-w-0 h-full min-h-0"></canvas>
             </div>
-        </div>
+            <div className="relative">
+                <canvas ref={canvas2dRef} className="absolute top-0 w-full min-w-0 h-full min-h-0"></canvas>
+            </div>
+
+            <div className="fixed bg-blue-300 p-2 max-h-[calc(100%_-_2.5rem)] overflow-y-scroll text-black font-semibold rounded top-5 right-5">
+                {expressions.map(expression =>
+                    <div key={expression.id} className="flex flex-col">
+                        <label>{expression.value?.type || "---"}</label>
+                        <label className="text-sm font-base pl-3">{expression.params.color}</label>
+                        <label className="text-sm font-base pl-3">{JSON.stringify(expression.params.hidden)}</label>
+                    </div>
+                )
+                }
+            </div >
+        </div >
+
+
     )
 }
