@@ -1,6 +1,9 @@
 import * as THREE from 'three';
+import * as TWO from "./two";
+
 import { Diedric } from './diedric';
 import { DiedricLine2Plane } from './diedricLine2Plane';
+import { DiedricLinePointPerpendicularPlane } from './diedricLinePointPerpendicularPlane';
 
 export class DiedricPlane {
     private size: number
@@ -19,10 +22,16 @@ export class DiedricPlane {
     private horizontalProjectionLine: THREE.Line<THREE.BufferGeometry<THREE.NormalBufferAttributes>, THREE.LineBasicMaterial, THREE.Object3DEventMap>
     private plane: THREE.Mesh<THREE.BufferGeometry<THREE.NormalBufferAttributes>, THREE.MeshBasicMaterial, THREE.Object3DEventMap>
 
-    children: (DiedricLine2Plane)[] = []
+    children: (DiedricLine2Plane | DiedricLinePointPerpendicularPlane)[] = []
 
     static type = "plane"
+    public type = "plane"
 
+    private _hidden = false
+    private _exists = false
+
+    private horizontalProjectionLine2d: TWO.Line
+    private verticalProjectionLine2d: TWO.Line
 
     constructor(diedric: Diedric, normal: THREE.Vector3 | undefined, d: number | undefined, color: THREE.ColorRepresentation) {
 
@@ -43,8 +52,6 @@ export class DiedricPlane {
         this.verticalProjectionLine = new THREE.Line(this.verticalProjectionGeometry, projectionMaterial);
         this.diedric.scene.add(this.verticalProjectionLine);
 
-        this.calc()
-
         // Create a material
         this.material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 0.1 });
 
@@ -53,228 +60,253 @@ export class DiedricPlane {
 
         // Add the plane to the scene
         this.diedric.scene.add(this.plane);
+
+        this.horizontalProjectionLine2d = new TWO.Line({ color: color.toString(), width: 1 })
+        this.verticalProjectionLine2d = new TWO.Line({ color: color.toString(), width: 1 })
+
+        this.diedric.canvas2d.add(this.horizontalProjectionLine2d)
+        this.diedric.canvas2d.add(this.verticalProjectionLine2d)
+
+        this.calc()
+        console.log("DiedricPlane constructor")
     }
 
     calc() {
-        if (!(this._d !== undefined && this._normal)) {
-            this.hidden = true
+        console.log("DiedricPlane calc")
+        if (this._d !== undefined && this._normal?.x !== undefined && this._normal?.y !== undefined && this._normal?.z !== undefined) {
+            this._exists = true
 
-            return
-        }
+            const size = this.size
 
-        this.hidden = false
+            const d = this._d
+            const borderPoints: THREE.Vector3[] = []
 
-        const size = this.size
+            let horizontalProjectionPoints = []
+            let verticalProjectionPoints = []
 
-        const d = this._d
-        const borderPoints: THREE.Vector3[] = []
+            if (this._normal.x != 0) {
+                let x: number;
+                let y: number;
+                let z: number;
 
-        let horizontalProjectionPoints = []
-        let verticalProjectionPoints = []
+                for (let k of [[size, size], [size, -size], [-size, size], [-size, -size]]) {
+                    y = k[0]
+                    z = k[1]
+                    x = (d - this._normal.y * y - this._normal.z * z) / this._normal.x
+                    if (x <= size && x >= -size) {
+                        // addPoint(new THREE.Vector3(x, y, z), "blue")
+                        borderPoints.push(new THREE.Vector3(x, y, z))
+                    }
+                }
 
-        if (this._normal.x != 0) {
-            let x: number;
-            let y: number;
-            let z: number;
+                z = size
+                y = 0
+                x = (d - this._normal.z * z) / this._normal.x
+                if (x <= size && x >= -size) {
+                    horizontalProjectionPoints.push(new THREE.Vector3(x, y, z))
+                }
 
-            for (let k of [[size, size], [size, -size], [-size, size], [-size, -size]]) {
-                y = k[0]
-                z = k[1]
-                x = (d - this._normal.y * y - this._normal.z * z) / this._normal.x
-                if (x < size && x > -size) {
-                    // addPoint(new THREE.Vector3(x, y, z), "blue")
-                    borderPoints.push(new THREE.Vector3(x, y, z))
+                z = -size
+                x = (d - this._normal.z * z) / this._normal.x
+                if (x <= size && x >= -size) {
+                    horizontalProjectionPoints.push(new THREE.Vector3(x, y, z))
+                }
+
+                z = 0
+                y = size
+                x = (d - this._normal.y * y) / this._normal.x
+                if (x <= size && x >= -size) {
+                    verticalProjectionPoints.push(new THREE.Vector3(x, y, z))
+                }
+
+                y = -size
+                x = (d - this._normal.y * y) / this._normal.x
+                if (x <= size && x >= -size) {
+                    verticalProjectionPoints.push(new THREE.Vector3(x, y, z))
+                }
+
+            }
+            if (this._normal.y != 0) {
+                let x: number;
+                let y: number;
+                let z: number;
+                for (let k of [[size, size], [size, -size], [-size, size], [-size, -size]]) {
+                    x = k[0]
+                    z = k[1]
+                    y = (d - this._normal.x * x - this._normal.z * z) / this._normal.y
+                    if (y <= size && y >= -size) {
+                        borderPoints.push(new THREE.Vector3(x, y, z))
+                    }
+                }
+                z = 0
+                x = size
+                y = (d - this._normal.x * x) / this._normal.y
+                if (y <= size && y >= -size) {
+                    verticalProjectionPoints.push(new THREE.Vector3(x, y, z))
+                }
+
+                x = -size
+                y = (d - this._normal.x * x) / this._normal.y
+                if (y <= size && y >= -size) {
+                    verticalProjectionPoints.push(new THREE.Vector3(x, y, z))
+                }
+
+            }
+            if (this._normal.z != 0) {
+                let x: number;
+                let y: number;
+                let z: number;
+                for (let k of [[size, size], [size, -size], [-size, size], [-size, -size]]) {
+
+                    x = k[0]
+                    y = k[1]
+                    z = (d - this._normal.x * x - this._normal.y * y) / this._normal.z
+                    if (z <= size && z >= -size) {
+                        // addPoint(new THREE.Vector3(x, y, z))
+                        borderPoints.push(new THREE.Vector3(x, y, z))
+                    }
+                }
+                y = 0;
+                x = size
+                z = (d - this._normal.x * x) / this._normal.z
+                if (z <= size && z >= -size) {
+                    horizontalProjectionPoints.push(new THREE.Vector3(x, y, z))
+                }
+
+                x = -size
+                z = (d - this._normal.x * x) / this._normal.z
+                if (z <= size && z >= -size) {
+                    horizontalProjectionPoints.push(new THREE.Vector3(x, y, z))
                 }
             }
 
-            z = size
-            y = 0
-            x = (d - this._normal.z * z) / this._normal.x
-            if (x <= size && x >= -size) {
-                horizontalProjectionPoints.push(new THREE.Vector3(x, y, z))
-            }
+            this.horizontalProjectionLine2d.start = new THREE.Vector2(horizontalProjectionPoints[0].x, horizontalProjectionPoints[0].z)
+            this.horizontalProjectionLine2d.end = new THREE.Vector2(horizontalProjectionPoints[1].x, horizontalProjectionPoints[1].z)
 
-            z = -size
-            x = (d - this._normal.z * z) / this._normal.x
-            if (x <= size && x >= -size) {
-                horizontalProjectionPoints.push(new THREE.Vector3(x, y, z))
-            }
+            this.verticalProjectionLine2d.start = new THREE.Vector2(verticalProjectionPoints[0].x, -verticalProjectionPoints[0].y)
+            this.verticalProjectionLine2d.end = new THREE.Vector2(verticalProjectionPoints[1].x, -verticalProjectionPoints[1].y)
 
-            z = 0
-            y = size
-            x = (d - this._normal.y * y) / this._normal.x
-            if (x <= size && x >= -size) {
-                verticalProjectionPoints.push(new THREE.Vector3(x, y, z))
-            }
+            this.horizontalProjectionGeometry.setFromPoints(horizontalProjectionPoints)
+            this.verticalProjectionGeometry.setFromPoints(verticalProjectionPoints)
 
-            y = -size
-            x = (d - this._normal.y * y) / this._normal.x
-            if (x <= size && x >= -size) {
-                verticalProjectionPoints.push(new THREE.Vector3(x, y, z))
-            }
+            const finalBorderPoints: THREE.Vector3[] = []
 
-        }
-        if (this._normal.y != 0) {
-            let x: number;
-            let y: number;
-            let z: number;
-            for (let k of [[size, size], [size, -size], [-size, size], [-size, -size]]) {
+            let currentPoint = borderPoints[0]
 
-                x = k[0]
-                z = k[1]
-                y = (d - this._normal.x * x - this._normal.z * z) / this._normal.y
-                if (y < size && y > -size) {
-                    // addPoint(new THREE.Vector3(x, y, z), "red")
-                    borderPoints.push(new THREE.Vector3(x, y, z))
+            finalBorderPoints.push(currentPoint)
+
+            let facesDone: string[] = []
+
+            for (let i = 0; i < borderPoints.length - 1; i++) {
+
+                if (currentPoint.x == size && !facesDone.includes("A")) {
+
+                    let newPoint = borderPoints.find(point => (point.x == size && !finalBorderPoints.includes(point)))
+                    if (!newPoint) {
+                        console.warn("This should never happen", borderPoints, currentPoint)
+                        continue
+                    }
+                    finalBorderPoints.push(newPoint)
+                    currentPoint = newPoint
+                    facesDone.push("A")
+                } else if (currentPoint.x == -size && !facesDone.includes("B")) {
+
+                    let newPoint = borderPoints.find(point => (point.x == -size && !finalBorderPoints.includes(point)))
+                    if (!newPoint) {
+                        console.warn("This should never happen", borderPoints, currentPoint)
+                        continue
+                    }
+                    finalBorderPoints.push(newPoint)
+                    currentPoint = newPoint
+
+                    facesDone.push("B")
+                } else if (currentPoint.y == size && !facesDone.includes("C")) {
+                    let newPoint = borderPoints.find(point => (point.y == size && !finalBorderPoints.includes(point)))
+                    if (!newPoint) {
+                        console.warn("This should never happen", borderPoints, currentPoint)
+                        continue
+                    }
+                    finalBorderPoints.push(newPoint)
+                    currentPoint = newPoint
+
+                    facesDone.push("C")
+
+                } else if (currentPoint.y == -size && !facesDone.includes("D")) {
+                    let newPoint = borderPoints.find(point => (point.y == -size && !finalBorderPoints.includes(point)))
+                    if (!newPoint) {
+                        console.warn("This should never happen", borderPoints, currentPoint)
+                        continue
+                    }
+                    finalBorderPoints.push(newPoint)
+                    currentPoint = newPoint
+
+                    facesDone.push("D")
+                } else if (currentPoint.z == size && !facesDone.includes("E")) {
+                    let newPoint = borderPoints.find(point => (point.z == size && !finalBorderPoints.includes(point)))
+                    if (!newPoint) {
+                        console.warn("This should never happen", borderPoints, currentPoint)
+                        continue
+                    }
+                    finalBorderPoints.push(newPoint)
+                    currentPoint = newPoint
+
+                    facesDone.push("E")
+                } else if (currentPoint.z == -size && !facesDone.includes("F")) {
+                    let newPoint = borderPoints.find(point => (point.z == -size && !finalBorderPoints.includes(point)))
+                    if (!newPoint) {
+                        console.warn("This should never happen", borderPoints, currentPoint)
+                        continue
+                    }
+                    finalBorderPoints.push(newPoint)
+                    currentPoint = newPoint
+
+                    facesDone.push("F")
                 }
             }
-            z = 0
-            x = size
-            y = (d - this._normal.x * x) / this._normal.y
-            if (y <= size && y >= -size) {
-                verticalProjectionPoints.push(new THREE.Vector3(x, y, z))
-            }
 
-            x = -size
-            y = (d - this._normal.x * x) / this._normal.y
-            if (y <= size && y >= -size) {
-                verticalProjectionPoints.push(new THREE.Vector3(x, y, z))
-            }
 
-        }
-        if (this._normal.z != 0) {
-            let x: number;
-            let y: number;
-            let z: number;
-            for (let k of [[size, size], [size, -size], [-size, size], [-size, -size]]) {
+            // Create a new geometry
+            const vertices = []
 
-                x = k[0]
-                y = k[1]
-                z = (d - this._normal.x * x - this._normal.y * y) / this._normal.z
-                if (z < size && z > -size) {
-                    // addPoint(new THREE.Vector3(x, y, z))
-                    borderPoints.push(new THREE.Vector3(x, y, z))
+            for (let face = 0; face < finalBorderPoints.length - 2; face++) {
+                vertices.push(finalBorderPoints[0].x, finalBorderPoints[0].y, finalBorderPoints[0].z)
+                for (let vertice = 0; vertice < 2; vertice++) {
+                    vertices.push(finalBorderPoints[vertice + face + 1].x, finalBorderPoints[vertice + face + 1].y, finalBorderPoints[vertice + face + 1].z)
                 }
             }
-            y = 0;
-            x = size
-            z = (d - this._normal.x * x) / this._normal.z
-            if (z <= size && z >= -size) {
-                horizontalProjectionPoints.push(new THREE.Vector3(x, y, z))
+            if (!vertices) {
+                console.error("No vertices")
+                this._exists = false
+            } else {
+                const Float32Vertices = new Float32Array(vertices);
+                this._exists = true
+
+                // Set the positions to the geometry
+                this.geometry.setAttribute('position', new THREE.BufferAttribute(Float32Vertices, 3));
             }
 
-            x = -size
-            z = (d - this._normal.x * x) / this._normal.z
-            if (z <= size && z >= -size) {
-                horizontalProjectionPoints.push(new THREE.Vector3(x, y, z))
-            }
-        }
-
-        this.horizontalProjectionGeometry.setFromPoints(horizontalProjectionPoints)
-        this.verticalProjectionGeometry.setFromPoints(verticalProjectionPoints)
-
-        const finalBorderPoints: THREE.Vector3[] = []
-
-        let currentPoint = borderPoints[0]
-
-        finalBorderPoints.push(currentPoint)
-
-        let facesDone: string[] = []
-
-        for (let i = 0; i < borderPoints.length - 1; i++) {
-
-            if (currentPoint.x == size && !facesDone.includes("A")) {
-
-                let newPoint = borderPoints.find(point => (point.x == size && !finalBorderPoints.includes(point)))
-                if (!newPoint) {
-                    console.warn("This should never happen", borderPoints, currentPoint)
-                    continue
-                }
-                finalBorderPoints.push(newPoint)
-                currentPoint = newPoint
-                facesDone.push("A")
-            } else if (currentPoint.x == -size && !facesDone.includes("B")) {
-
-                let newPoint = borderPoints.find(point => (point.x == -size && !finalBorderPoints.includes(point)))
-                if (!newPoint) {
-                    console.warn("This should never happen", borderPoints, currentPoint)
-                    continue
-                }
-                finalBorderPoints.push(newPoint)
-                currentPoint = newPoint
-
-                facesDone.push("B")
-            } else if (currentPoint.y == size && !facesDone.includes("C")) {
-                let newPoint = borderPoints.find(point => (point.y == size && !finalBorderPoints.includes(point)))
-                if (!newPoint) {
-                    console.warn("This should never happen", borderPoints, currentPoint)
-                    continue
-                }
-                finalBorderPoints.push(newPoint)
-                currentPoint = newPoint
-
-                facesDone.push("C")
-
-            } else if (currentPoint.y == -size && !facesDone.includes("D")) {
-                let newPoint = borderPoints.find(point => (point.y == -size && !finalBorderPoints.includes(point)))
-                if (!newPoint) {
-                    console.warn("This should never happen", borderPoints, currentPoint)
-                    continue
-                }
-                finalBorderPoints.push(newPoint)
-                currentPoint = newPoint
-
-                facesDone.push("D")
-            } else if (currentPoint.z == size && !facesDone.includes("E")) {
-                let newPoint = borderPoints.find(point => (point.z == size && !finalBorderPoints.includes(point)))
-                if (!newPoint) {
-                    console.warn("This should never happen", borderPoints, currentPoint)
-                    continue
-                }
-                finalBorderPoints.push(newPoint)
-                currentPoint = newPoint
-
-                facesDone.push("E")
-            } else if (currentPoint.z == -size && !facesDone.includes("F")) {
-                let newPoint = borderPoints.find(point => (point.z == -size && !finalBorderPoints.includes(point)))
-                if (!newPoint) {
-                    console.warn("This should never happen", borderPoints, currentPoint)
-                    continue
-                }
-                finalBorderPoints.push(newPoint)
-                currentPoint = newPoint
-
-                facesDone.push("F")
-            }
-
-        }
-        // for (let i in finalBorderPoints) {
-        //     this.diedric.createStaticLabel(i, finalBorderPoints[i])
-        // }
-
-        // Create a new geometry
-        const vertices = []
-
-        for (let face = 0; face < finalBorderPoints.length - 2; face++) {
-            vertices.push(finalBorderPoints[0].x, finalBorderPoints[0].y, finalBorderPoints[0].z)
-            for (let vertice = 0; vertice < 2; vertice++) {
-                vertices.push(finalBorderPoints[vertice + face + 1].x, finalBorderPoints[vertice + face + 1].y, finalBorderPoints[vertice + face + 1].z)
-            }
-        }
-        if (!vertices) {
-            console.error("No vertices")
-            this.hidden = true
+            this.children.map(child => child.update())
         } else {
-            const Float32Vertices = new Float32Array(vertices);
-            this.hidden = false
-
-            // Set the positions to the geometry
-            this.geometry.setAttribute('position', new THREE.BufferAttribute(Float32Vertices, 3));
+            this._exists = false
         }
 
-        this.children.map(child => child.update())
+        if (this._exists && !this._hidden) {
+            this.diedric.scene.add(this.horizontalProjectionLine)
+            this.diedric.scene.add(this.verticalProjectionLine)
+            this.diedric.scene.add(this.plane)
 
-        // return vertices
+            this.diedric.canvas2d.add(this.horizontalProjectionLine2d)
+            this.diedric.canvas2d.add(this.verticalProjectionLine2d)
+
+        } else {
+            this.diedric.scene.remove(this.horizontalProjectionLine)
+            this.diedric.scene.remove(this.verticalProjectionLine)
+            this.diedric.scene.remove(this.plane)
+
+            this.diedric.canvas2d.remove(this.horizontalProjectionLine2d)
+            this.diedric.canvas2d.remove(this.verticalProjectionLine2d)
+
+        }
     }
 
     remove() {
@@ -288,20 +320,7 @@ export class DiedricPlane {
 
     set d(d: number | undefined) {
         this._d = d
-
         this.calc()
-
-        // let vertices = this.calc()
-        // if (!vertices) {
-        //     this.hidden = true
-        //     console.error("No vertices")
-        // } else {
-        //     this.hidden = false
-        //     const Float32Vertices = new Float32Array(vertices);
-
-        //     // Set the positions to the geometry
-        //     this.geometry.setAttribute('position', new THREE.BufferAttribute(Float32Vertices, 3));
-        // }
     }
 
     get d(): number | undefined {
@@ -310,20 +329,7 @@ export class DiedricPlane {
 
     set normal(normal: THREE.Vector3 | undefined) {
         this._normal = normal
-
-
         this.calc()
-        // let vertices = this.calc()
-        // if (!vertices) {
-        //     this.hidden = true
-        //     console.error("No vertices")
-        // } else {
-        //     this.hidden = false
-        //     const Float32Vertices = new Float32Array(vertices);
-
-        //     // Set the positions to the geometry
-        //     this.geometry.setAttribute('position', new THREE.BufferAttribute(Float32Vertices, 3));
-        // }
     }
 
     get normal(): THREE.Vector3 | undefined {
@@ -331,78 +337,7 @@ export class DiedricPlane {
     }
 
     set hidden(value: boolean) {
-        if (value) {
-            this.diedric.scene.remove(this.horizontalProjectionLine)
-            this.diedric.scene.remove(this.verticalProjectionLine)
-            this.diedric.scene.remove(this.plane)
-        } else {
-            this.diedric.scene.add(this.horizontalProjectionLine)
-            this.diedric.scene.add(this.verticalProjectionLine)
-            this.diedric.scene.add(this.plane)
-        }
+        this._hidden = value
+        this.calc()
     }
-
 }
-
-
-
-
-// export class DiedridPlaneOAC extends DiedricPlane {
-//     constructor(diedric: Diedric, o: number, a: number, c: number) {
-
-//         let point1: THREE.Vector3;
-//         let point2: THREE.Vector3;
-//         let point3: THREE.Vector3;
-
-//         if (o == null && a == null && c == null) {
-//             console.error("Unable to create plane")
-//             return
-//         } else if (o == null && a == null) { // Horizontal plane
-//             c = c as number
-//             point1 = new THREE.Vector3(2, c, 0)
-//             point2 = new THREE.Vector3(0, c, 2)
-//             point3 = new THREE.Vector3(-2, c, 0)
-//         } else if (a == null && c == null) { // Profile plane
-//             o = o as number
-//             point1 = new THREE.Vector3(o, 0, 0)
-//             point2 = new THREE.Vector3(o, 0, 50)
-//             point3 = new THREE.Vector3(o, 50, 0)
-//         } else if (o == null && c == null) { // Vertical plane
-//             a = a as number
-//             point1 = new THREE.Vector3(2, 0, a)
-//             point2 = new THREE.Vector3(0, 2, a)
-//             point3 = new THREE.Vector3(-2, 0, a)
-//         } else if (o == null) { // Parallel  LT
-//             a = a as number
-//             c = c as number
-//             point1 = new THREE.Vector3(0, 0, a)
-//             point2 = new THREE.Vector3(0, c, 0)
-//             point3 = new THREE.Vector3(-50, 0, a)
-//         } else if (a == null) { // Perpendicular to vertical plane
-//             o = o as number
-//             c = c as number
-//             point1 = new THREE.Vector3(o, 0, 0)
-//             point2 = new THREE.Vector3(o, 0, 10)
-//             point3 = new THREE.Vector3(0, c, 0)
-//         } else if (c == null) { // Perpendicular to horizontal plane
-//             o = o as number
-//             a = a as number
-//             point1 = new THREE.Vector3(o, 0, 0)
-//             point2 = new THREE.Vector3(o, 10, 0)
-//             point3 = new THREE.Vector3(0, 0, a)
-//         } else {
-//             o = o as number
-//             a = a as number
-//             c = c as number
-//             point1 = new THREE.Vector3(o, 0, 0)
-//             point2 = new THREE.Vector3(0, c, 0)
-//             point3 = new THREE.Vector3(0, 0, a)
-//         }
-
-//         point1 = point1 as THREE.Vector3
-//         point2 = point2 as THREE.Vector3
-//         point3 = point3 as THREE.Vector3
-
-//     }
-
-// }
