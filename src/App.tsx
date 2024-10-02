@@ -16,13 +16,15 @@ import { Vector3 } from "three";
 import { DiedricPlaneOAC } from "./utils/diedricPlaneOAC";
 import { DiedricPointMidLinePoint } from "./utils/diedricPointMidLinePoint";
 import { DiedricLinePointPerpendicularPlane } from "./utils/diedricLinePointPerpendicularPlane";
+import { DiedricPointIntersectLinePlane } from "./utils/diedricPointIntersectLinePlane";
 
 type PosibleExpressions = DiedricLine2Point | DiedricPlane3Point | DiedricPoint | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPlane2Line | DiedricLine2Plane
 
 const DiedricObjects = [
     DiedricPoint,
     DiedricPointMidLinePoint,
-    
+    DiedricPointIntersectLinePlane,
+
     DiedricLine2Point,
     DiedricLine2Plane,
     DiedricLinePointParallelLine,
@@ -142,8 +144,10 @@ function Expression({ expression }: { expression: Expression }) {
     const [warn, setWarn] = useState(false)
 
     const expressionObjects = useRef<any>({})
-
     const [options, setOptions] = useState<string[]>([])
+
+    const [hidden, setHidden] = useState<boolean>(false)
+    const [numericValue, setNumericValue] = useState<number | undefined>(undefined)
 
     const removeExpression = () => {
         const expressionsCopy = [...expressions]
@@ -154,6 +158,18 @@ function Expression({ expression }: { expression: Expression }) {
     const handleValueChange = (e: ChangeEvent<HTMLInputElement>) => {
         parseText(e.target.value)
     }
+    const toggleHidden = () => {
+        if (hidden) {
+            Object.values(expressionObjects.current).map(expression => { (expression as PosibleExpressions).hidden = false })
+            setHidden(false)
+            expression.params.hidden = false
+        } else {
+            Object.values(expressionObjects.current).map(expression => { (expression as PosibleExpressions).hidden = true })
+            expression.params.hidden = true
+            setHidden(true)
+        }
+    }
+
     const parseText = (inputText: string) => {
         expression.expressionText = inputText
 
@@ -161,6 +177,35 @@ function Expression({ expression }: { expression: Expression }) {
 
         const text = inputText.replace(/ /g, '')
         setValue(inputText)
+
+
+
+
+
+
+        if (text.startsWith("distance")) {
+            const args = text.replace("distance(", "").replace(")", "").split(",")
+
+            const object1 = expressions.find(expression => expression.expressionName == args[0])?.value
+            const object2 = expressions.find(expression => expression.expressionName == args[1])?.value
+
+            if (object1 && object2) {
+                setWarn(false)
+                if (object1 instanceof DiedricPoint && object2 instanceof DiedricPoint) {
+                    if (object1.o !== undefined && object1.a !== undefined && object1.c !== undefined && object2.o !== undefined && object2.a !== undefined && object2.c !== undefined) {
+                        setNumericValue(Math.sqrt((object1.o - object2.o) ** 2 + (object1.a - object2.a) ** 2 + (object1.c - object2.c) ** 2))
+                    }
+                }
+            } else {
+                setWarn(true)
+                setNumericValue(undefined)
+
+            }
+            return
+        }
+
+
+
         if (!text.includes("=")) {
             console.log("error 1")
 
@@ -376,6 +421,9 @@ function Expression({ expression }: { expression: Expression }) {
         setWarn(false)
     }
     useEffect(() => {
+        setHidden(expression.params.hidden)
+        Object.values(expressionObjects.current).map(exp => { (exp as PosibleExpressions).hidden = expression.params.hidden })
+
         parseText(value)
     }, [])
 
@@ -385,12 +433,17 @@ function Expression({ expression }: { expression: Expression }) {
                 {warn ?
                     <TriangleAlert className="h-6 w-6 relative top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-neutral-900/40"></TriangleAlert>
                     :
-                    <div className="bg-red-300 h-8 w-8 rounded-full relative top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ backgroundColor: expression?.params.color?.toString() }}></div>
+                    <div
+                        onClick={toggleHidden}
+                        className={"h-8 w-8 rounded-full relative top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 " + (hidden && ' border-4 border-neutral-600')}
+                        style={{ backgroundColor: hidden ? '' : expression?.params.color?.toString() }}
+                    />
                 }
             </div>
             <div className="relative w-full p-2 min-w-0 flex flex-col gap-1">
                 {/* <TextInput value={value} onChange={handleValueChange} className="bg-transparent focus:outline-none border-b-2 w-full"></TextInput> */}
                 <input value={value} onChange={handleValueChange} className="bg-transparent focus:outline-none border-b-2 w-full"></input>
+                <label>{numericValue}</label>
                 {options.map(option =>
                     <label
                         key={option}
@@ -413,7 +466,6 @@ export default function App({ canvas3dRef, canvas2dRef }: { canvas3dRef: RefObje
 
     const savedExpressions = JSON.parse(localStorage.getItem("expressions") || "[]") as Expression[]
 
-
     useEffect(() => {
         if (!canvas3dRef.current || !canvas2dRef.current) return
         const newDiedric = new Diedric(100, canvas3dRef.current, canvas2dRef.current)
@@ -429,8 +481,6 @@ export default function App({ canvas3dRef, canvas2dRef }: { canvas3dRef: RefObje
     useEffect(() => {
         if (!diedric) { return }
 
-        console.log("getting saved expressions")
-
         let newExpressions: Expression[] = []
         savedExpressions.map((savedExpression) => {
             if (savedExpression) {
@@ -444,9 +494,12 @@ export default function App({ canvas3dRef, canvas2dRef }: { canvas3dRef: RefObje
     }, [diedric])
 
     const saveExpressions = useCallback(() => {
-
-        localStorage.setItem("expressions", JSON.stringify(expressions.map(expression => ({ id: expression.id, expressionText: expression.expressionText, params: expression.params, option: expression.option }))))
-
+        localStorage.setItem("expressions", JSON.stringify(expressions.map(expression => ({
+            id: expression.id,
+            expressionText: expression.expressionText,
+            params: expression.params,
+            option: expression.option,
+        }))))
     }, [expressions])
 
     const newExpression = () => {
