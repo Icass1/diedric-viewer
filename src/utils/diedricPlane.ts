@@ -4,6 +4,7 @@ import * as TWO from "./two";
 import { Diedric } from './diedric';
 import { DiedricLine2Plane } from './diedricLine2Plane';
 import { DiedricLinePointPerpendicularPlane } from './diedricLinePointPerpendicularPlane';
+import { DiedricPointIntersectLinePlane } from './diedricPointIntersectLinePlane';
 
 export class DiedricPlane {
     private size: number
@@ -22,7 +23,7 @@ export class DiedricPlane {
     private horizontalProjectionLine: THREE.Line<THREE.BufferGeometry<THREE.NormalBufferAttributes>, THREE.LineBasicMaterial, THREE.Object3DEventMap>
     private plane: THREE.Mesh<THREE.BufferGeometry<THREE.NormalBufferAttributes>, THREE.MeshBasicMaterial, THREE.Object3DEventMap>
 
-    children: (DiedricLine2Plane | DiedricLinePointPerpendicularPlane)[] = []
+    children: (DiedricLine2Plane | DiedricLinePointPerpendicularPlane | DiedricPointIntersectLinePlane)[] = []
 
     static type = "plane"
     public type = "plane"
@@ -68,11 +69,11 @@ export class DiedricPlane {
         this.diedric.canvas2d.add(this.verticalProjectionLine2d)
 
         this.calc()
-        console.log("DiedricPlane constructor")
+        // console.log("DiedricPlane constructor")
     }
 
     calc() {
-        console.log("DiedricPlane calc")
+        // console.log("DiedricPlane calc")
         if (this._d !== undefined && this._normal?.x !== undefined && this._normal?.y !== undefined && this._normal?.z !== undefined) {
             this._exists = true
 
