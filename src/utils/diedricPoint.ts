@@ -6,9 +6,11 @@ import { DiedricPlane3Point } from './diedricPlane3Point';
 import { DiedricPlanePointLine } from './diedricPlanePointLine';
 
 import * as TWO from "./two";
+import { DiedricPointMidLinePoint } from './diedricPointMidPlanePoint';
+import { DiedricLinePointPerpendicularPlane } from './diedricLinePointPerpendicularPlane';
 
 export class DiedricPoint {
-    private point: THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial, THREE.Object3DEventMap>
+    private bPoint: THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial, THREE.Object3DEventMap>
     private material: THREE.MeshBasicMaterial
     private diedric: Diedric
     private lineToY0Line: THREE.Line<THREE.BufferGeometry<THREE.NormalBufferAttributes>, THREE.LineBasicMaterial, THREE.Object3DEventMap>
@@ -22,18 +24,21 @@ export class DiedricPoint {
     private horizontalProjection: TWO.Point
     private verticalProjection: TWO.Point
 
-    private _o: number
-    private _a: number
-    private _c: number
+    private _o: number | undefined
+    private _a: number | undefined
+    private _c: number | undefined
 
     private _color: THREE.ColorRepresentation
-    children: (DiedricPlane3Point | DiedricLine2Point | DiedricPlanePointLine | DiedricLinePointParallelLine)[] = []
+    children: (DiedricPlane3Point | DiedricLine2Point | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPointMidLinePoint | DiedricLinePointPerpendicularPlane)[] = []
 
-    static params = { "o": "number", "a": "number", "c": "number" }
+    static params: any = { "o": "number", "a": "number", "c": "number" }
     static type = "point"
+    public type = "point"
 
+    private _hidden = false;
+    private _exists = false;
 
-    constructor({ diedric, o, a, c, color }: { diedric: Diedric, o: number, a: number, c: number, color: THREE.ColorRepresentation }) {
+    constructor({ diedric, o, a, c, color }: { diedric: Diedric, o: number | undefined, a: number | undefined, c: number | undefined, color: THREE.ColorRepresentation }) {
 
         this.diedric = diedric
         this._color = color
@@ -58,17 +63,16 @@ export class DiedricPoint {
         const geometry = new THREE.SphereGeometry(1)
         this.material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
 
-        this.point = new THREE.Mesh(geometry, this.material);
+        this.bPoint = new THREE.Mesh(geometry, this.material);
 
         this._o = o
-        this._c = c
         this._a = a
+        this._c = c
 
-        this.diedric.scene.add(this.point);
+        this.diedric.scene.add(this.bPoint);
         this.diedric.scene.add(this.lineToX0Line);
         this.diedric.scene.add(this.lineToY0Line);
         this.diedric.scene.add(this.lineToZ0Line);
-
 
         this.horizontalProjection = new TWO.Point({ radius: 3, color: color.toString() })
         this.verticalProjection = new TWO.Point({ radius: 3, color: color.toString() })
@@ -76,36 +80,66 @@ export class DiedricPoint {
         this.diedric.canvas2d.add(this.horizontalProjection)
         this.diedric.canvas2d.add(this.verticalProjection)
 
-        this.update()
+        this.calc()
+    }
+    update() {
+        this.calc()
     }
 
-    update() {
+    calc() {
+        if (this._o !== undefined && this._a !== undefined && this._c !== undefined) {
+            this._exists = true
 
-        this.point.position.x = this._o
-        this.point.position.y = this._c
-        this.point.position.z = this._a
+            this.bPoint.position.x = this._o
+            this.bPoint.position.y = this._c
+            this.bPoint.position.z = this._a
 
-        this.lineToY0Geometry.setFromPoints([this.point.position, new THREE.Vector3(this._o, 0, this._a)])
-        this.lineToX0Geometry.setFromPoints([new THREE.Vector3(this._o, 0, this._a), new THREE.Vector3(0, 0, this._a)])
-        this.lineToZ0Geometry.setFromPoints([new THREE.Vector3(this._o, 0, this._a), new THREE.Vector3(this._o, 0, 0)])
-        this.lineToX0Line.computeLineDistances()
-        this.lineToY0Line.computeLineDistances()
-        this.lineToZ0Line.computeLineDistances()
+            this.lineToY0Geometry.setFromPoints([this.bPoint.position, new THREE.Vector3(this._o, 0, this._a)])
+            this.lineToX0Geometry.setFromPoints([new THREE.Vector3(this._o, 0, this._a), new THREE.Vector3(0, 0, this._a)])
+            this.lineToZ0Geometry.setFromPoints([new THREE.Vector3(this._o, 0, this._a), new THREE.Vector3(this._o, 0, 0)])
+            this.lineToX0Line.computeLineDistances()
+            this.lineToY0Line.computeLineDistances()
+            this.lineToZ0Line.computeLineDistances()
 
-        this.verticalProjection.pos = new THREE.Vector2(this._o, -this._c)
-        this.horizontalProjection.pos = new THREE.Vector2(this._o, this._a)
+            this.verticalProjection.pos = new THREE.Vector2(this._o, -this._c)
+            this.horizontalProjection.pos = new THREE.Vector2(this._o, this._a)
 
-        this.children.map((child => child.update()))
+            this.children.map((child => child.update()))
+        } else {
+            this._exists = false
+        }
+
+        if (this._exists && !this._hidden) {
+            this.diedric.scene.add(this.bPoint)
+            this.diedric.scene.add(this.lineToX0Line)
+            this.diedric.scene.add(this.lineToY0Line)
+            this.diedric.scene.add(this.lineToZ0Line)
+
+            this.diedric.canvas2d.add(this.verticalProjection)
+            this.diedric.canvas2d.add(this.horizontalProjection)
+
+        } else {
+            this.diedric.scene.remove(this.bPoint)
+            this.diedric.scene.remove(this.lineToX0Line)
+            this.diedric.scene.remove(this.lineToY0Line)
+            this.diedric.scene.remove(this.lineToZ0Line)
+
+            this.diedric.canvas2d.remove(this.verticalProjection)
+            this.diedric.canvas2d.remove(this.horizontalProjection)
+
+        }
     }
 
     setAttributes(attr: { o?: number, a?: number, c?: number, color?: THREE.ColorRepresentation }) {
         Object.entries(attr).map(attrEntry => {
+            // @ts-ignore
             this[attrEntry[0]] = attrEntry[1]
         })
     }
 
     remove() {
-        this.diedric.scene.remove(this.point)
+        console.warn("Remove from 2d canvas")
+        this.diedric.scene.remove(this.bPoint)
         this.diedric.scene.remove(this.lineToX0Line)
         this.diedric.scene.remove(this.lineToY0Line)
         this.diedric.scene.remove(this.lineToZ0Line)
@@ -114,30 +148,34 @@ export class DiedricPoint {
     }
 
     set hidden(value: boolean) {
-        if (value) {
-            this.diedric.scene.remove(this.point)
-            this.diedric.scene.remove(this.lineToX0Line)
-            this.diedric.scene.remove(this.lineToY0Line)
-            this.diedric.scene.remove(this.lineToZ0Line)
-        } else {
-            this.diedric.scene.add(this.point)
-            this.diedric.scene.add(this.lineToX0Line)
-            this.diedric.scene.add(this.lineToY0Line)
-            this.diedric.scene.add(this.lineToZ0Line)
-        }
+
+        this._hidden = value
+        this.calc()
     }
 
-    set o(o: number) {
+    set o(o: number | undefined) {
         this._o = o
-        this.update()
+        if (this.type == "point") {
+            this.update()
+        } else {
+            this.calc()
+        }
     }
-    set a(a: number) {
+    set a(a: number | undefined) {
         this._a = a
-        this.update()
+        if (this.type == "point") {
+            this.update()
+        } else {
+            this.calc()
+        }
     }
-    set c(c: number) {
+    set c(c: number | undefined) {
         this._c = c
-        this.update()
+        if (this.type == "point") {
+            this.update()
+        } else {
+            this.calc()
+        }
     }
     get o() {
         return this._o
