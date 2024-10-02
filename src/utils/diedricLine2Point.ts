@@ -9,8 +9,9 @@ export class DiedricLine2Point extends DiedricLine {
     private _point1: DiedricPoint | undefined
     private _point2: DiedricPoint | undefined
 
-    static params = { 'point1': DiedricPoint, 'point2': DiedricPoint }
+    static params: any = { 'point1': DiedricPoint, 'point2': DiedricPoint }
     static type = "line-2-pto"
+    public type = "line-2-pto"
 
     constructor({ diedric, point1, point2, color }: { diedric: Diedric, point1: DiedricPoint | undefined, point2: DiedricPoint | undefined, color: THREE.ColorRepresentation }) {
 
@@ -41,7 +42,7 @@ export class DiedricLine2Point extends DiedricLine {
         super.remove()
     }
     update() {
-        if (this._point1 && this._point2) {
+        if (this._point1?.o !== undefined && this._point1?.a !== undefined && this._point1?.c !== undefined && this._point2?.o !== undefined && this._point2?.a !== undefined && this._point2?.c !== undefined) {
 
             super.bPoint = new THREE.Vector3(this._point1.o, this._point1.c, this._point1.a)
             super.bVector = new THREE.Vector3(this._point1.o - this._point2.o, this._point1.c - this._point2.c, this._point1.a - this._point2.a)

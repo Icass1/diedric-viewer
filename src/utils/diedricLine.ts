@@ -6,6 +6,7 @@ import { DiedricPlane2Line } from "./diedricPlane2Line";
 import { DiedricPlanePointLine } from "./diedricPlanePointLine";
 
 import * as TWO from "./two";
+import { DiedricPointMidLinePoint } from "./diedricPointMidPlanePoint";
 
 
 export class DiedricLine {
@@ -17,7 +18,7 @@ export class DiedricLine {
     horizontalProjectionLine2d: TWO.Line
     verticalProjectionLine2d: TWO.Line
 
-    children: (DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPlane2Line)[] = []
+    children: (DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPlane2Line | DiedricPointMidLinePoint)[] = []
 
     constructor(diedric: Diedric, point: THREE.Vector3 | undefined, vector: THREE.Vector3 | undefined, color: THREE.ColorRepresentation) {
 
@@ -43,6 +44,7 @@ export class DiedricLine {
         this.calc()
     }
     calc() {
+        console.log("DiedricLine calc")
         if (!(this._vector && this.__point)) {
             this.hidden = true
             this.children.map((child => child.update()))
@@ -56,7 +58,6 @@ export class DiedricLine {
         let horizontalProjectionPoints = []
         let verticalProjectionPoints = []
 
-        console.log(this._vector)
         let points: THREE.Vector3[] = []
         if (this._vector.x != 0) {
             lambda1 = (this.diedric.size - this.__point.x) / this._vector.x
@@ -73,8 +74,8 @@ export class DiedricLine {
             if (y >= -this.diedric.size && y <= this.diedric.size && z >= -this.diedric.size && z <= this.diedric.size) points.push(new THREE.Vector3(x, y, z))
 
             // For 2D line
-            if (y >= -this.diedric.size && y <= this.diedric.size) { verticalProjectionPoints.push(new THREE.Vector2(x, -y)); console.log("1") }
-            if (z >= -this.diedric.size && z <= this.diedric.size) { horizontalProjectionPoints.push(new THREE.Vector2(x, z)); console.log("2") }
+            if (y >= -this.diedric.size && y <= this.diedric.size) { verticalProjectionPoints.push(new THREE.Vector2(x, -y)) }
+            if (z >= -this.diedric.size && z <= this.diedric.size) { horizontalProjectionPoints.push(new THREE.Vector2(x, z)) }
 
             x = -this.diedric.size
             y = this._vector.y * lambda2 + this.__point.y
@@ -83,8 +84,8 @@ export class DiedricLine {
             if (y >= -this.diedric.size && y <= this.diedric.size && z >= -this.diedric.size && z <= this.diedric.size) points.push(new THREE.Vector3(x, y, z))
 
             // For 2D line
-            if (y >= -this.diedric.size && y <= this.diedric.size) { verticalProjectionPoints.push(new THREE.Vector2(x, -y)); console.log("3") }
-            if (z >= -this.diedric.size && z <= this.diedric.size) { horizontalProjectionPoints.push(new THREE.Vector2(x, z)); console.log("4") }
+            if (y >= -this.diedric.size && y <= this.diedric.size) { verticalProjectionPoints.push(new THREE.Vector2(x, -y)) }
+            if (z >= -this.diedric.size && z <= this.diedric.size) { horizontalProjectionPoints.push(new THREE.Vector2(x, z)) }
         }
         if (this._vector.y != 0) {
             lambda1 = (this.diedric.size - this.__point.y) / this._vector.y
@@ -104,10 +105,8 @@ export class DiedricLine {
             if (x >= -this.diedric.size && x <= this.diedric.size) {
                 if (z >= -this.diedric.size && z <= this.diedric.size) {
                     horizontalProjectionPoints.push(new THREE.Vector2(x, z))
-                    console.log("5")
                 }
                 verticalProjectionPoints.push(new THREE.Vector2(x, -y))
-                console.log("6")
             }
 
             x = this._vector.x * lambda2 + this.__point.x
@@ -120,10 +119,8 @@ export class DiedricLine {
             if (x >= -this.diedric.size && x <= this.diedric.size) {
                 if (z >= -this.diedric.size && z <= this.diedric.size) {
                     horizontalProjectionPoints.push(new THREE.Vector2(x, z))
-                    console.log("7")
                 }
                 verticalProjectionPoints.push(new THREE.Vector2(x, -y))
-                console.log("8")
             }
         }
         if (this._vector.z != 0) {
@@ -144,10 +141,8 @@ export class DiedricLine {
             if (x >= -this.diedric.size && x <= this.diedric.size) {
                 if (y >= -this.diedric.size && y <= this.diedric.size) {
                     verticalProjectionPoints.push(new THREE.Vector2(x, -y))
-                    console.log("9")
                 }
                 horizontalProjectionPoints.push(new THREE.Vector2(x, z))
-                console.log("10")
             }
 
             x = this._vector.x * lambda2 + this.__point.x
@@ -160,19 +155,13 @@ export class DiedricLine {
             if (x >= -this.diedric.size && x <= this.diedric.size) {
                 if (y >= -this.diedric.size && y <= this.diedric.size) {
                     verticalProjectionPoints.push(new THREE.Vector2(x, -y))
-                    console.log("11")
                 }
                 horizontalProjectionPoints.push(new THREE.Vector2(x, z))
-                console.log("12")
             }
         }
 
         const pointA = points[0]
         const pointB = points[1]
-
-        console.log(this.verticalProjectionLine2d.color, "verticalProjectionPoints", [...verticalProjectionPoints])
-        console.log(this.verticalProjectionLine2d.color, "horizontalProjectionPoints", [...horizontalProjectionPoints])
-        // console.log(points)
 
         this.verticalProjectionLine2d.start = verticalProjectionPoints[0]
         this.verticalProjectionLine2d.end = verticalProjectionPoints[1]
@@ -216,8 +205,14 @@ export class DiedricLine {
     set hidden(value: boolean) {
         if (value == true) {
             this.diedric.scene.remove(this.cylinder)
+
+            this.diedric.canvas2d.remove(this.verticalProjectionLine2d)
+            this.diedric.canvas2d.remove(this.horizontalProjectionLine2d)
+
         } else {
             this.diedric.scene.add(this.cylinder)
+            this.diedric.canvas2d.add(this.verticalProjectionLine2d)
+            this.diedric.canvas2d.add(this.horizontalProjectionLine2d)
         }
     }
 

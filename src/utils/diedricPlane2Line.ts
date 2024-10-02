@@ -10,7 +10,8 @@ export class DiedricPlane2Line extends DiedricPlane {
     private _line2: DiedricLine | undefined
 
     static type = 'plane-2-line'
-    static params = {
+    public type = 'plane-2-line'
+    static params: any = {
         'line1': DiedricLine,
         'line2': DiedricLine
     }

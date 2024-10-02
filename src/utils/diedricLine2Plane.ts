@@ -9,8 +9,9 @@ export class DiedricLine2Plane extends DiedricLine {
     private _plane1: DiedricPlane | undefined
     private _plane2: DiedricPlane | undefined
 
-    static params = { 'plane1': DiedricPlane, 'plane2': DiedricPlane }
+    static params: any = { 'plane1': DiedricPlane, 'plane2': DiedricPlane }
     static type = "line-2-plane"
+    public type = "line-2-plane"
 
     constructor({ diedric, plane1, plane2, color }: { diedric: Diedric, plane1: DiedricPlane | undefined, plane2: DiedricPlane | undefined, color: THREE.ColorRepresentation }) {
 
@@ -41,7 +42,7 @@ export class DiedricLine2Plane extends DiedricLine {
         super.remove()
     }
     update() {
-        if (this._plane1?.normal && this._plane2?.normal && this._plane1.d && this._plane2.d) {
+        if (this._plane1?.normal !== undefined && this._plane2?.normal !== undefined && this._plane1.d !== undefined && this._plane2.d !== undefined) {
             // super.bPoint = new THREE.Vector3(this._point.o, this._point.c, this._point.a)
             super.bVector = new THREE.Vector3().crossVectors(this._plane1?.normal, this._plane2.normal)
 

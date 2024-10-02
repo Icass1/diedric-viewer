@@ -10,7 +10,8 @@ export class DiedricLinePointParallelLine extends DiedricLine {
     private _line: DiedricLine | undefined
 
     static type = 'line-pto-par-line'
-    static params = {
+    public type = 'line-pto-par-line'
+    static params: any = {
         'point': DiedricPoint,
         'line': DiedricLine
     }

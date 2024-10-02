@@ -11,7 +11,8 @@ export class DiedricPlanePointLine extends DiedricPlane {
     private _line: DiedricLine | undefined
 
     static type = "plane-point-line"
-    static params = { 'point': DiedricPoint, 'line': DiedricLine }
+    public type = "plane-point-line"
+    static params: any = { 'point': DiedricPoint, 'line': DiedricLine }
 
     constructor({ diedric, point, line, color }: { diedric: Diedric, point: DiedricPoint | undefined, line: DiedricLine | undefined, color: THREE.ColorRepresentation }) {
 
