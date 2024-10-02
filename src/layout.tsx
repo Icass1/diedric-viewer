@@ -8,7 +8,7 @@ export default function Layout() {
     const canvas2dRef = useRef<HTMLCanvasElement>(null)
 
     return (
-        <div className=" h-full w-full grid grid-cols-[400px_2fr_1fr] gap-2">
+        <div className=" h-full w-full grid grid-cols-[400px_1fr_1fr] gap-2"> 
             <div className="bg-neutral-100 h-full w-full min-w-0 min-h-0">
                 <App canvas3dRef={canvas3dRef} canvas2dRef={canvas2dRef} />
             </div>
