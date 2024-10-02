@@ -1,8 +1,9 @@
 import { Vector2 } from "three";
 import { Line } from "./line";
 import { Point } from "./point";
+import { Label } from "./label";
 
-type Objects = Line | Point
+type Objects = Line | Point | Label
 
 export class Canvas {
     canvas: HTMLCanvasElement
@@ -32,7 +33,16 @@ export class Canvas {
     }
 
     add(element: Objects) {
+        if (this.elements.includes(element)) {
+            console.warn("Repeated", element)
+            return
+        }
         this.elements.push(element)
+    }
+
+    remove(element: Objects) {
+        delete this.elements[this.elements.indexOf(element)]
+        this.elements = this.elements.filter(element => element)
     }
 
     render() {
