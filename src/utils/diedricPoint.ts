@@ -6,7 +6,7 @@ import { DiedricPlane3Point } from './diedricPlane3Point';
 import { DiedricPlanePointLine } from './diedricPlanePointLine';
 
 import * as TWO from "./two";
-import { DiedricPointMidLinePoint } from './diedricPointMidPlanePoint';
+import { DiedricPointMidLinePoint } from './diedricPointMidLinePoint';
 import { DiedricLinePointPerpendicularPlane } from './diedricLinePointPerpendicularPlane';
 
 export class DiedricPoint {

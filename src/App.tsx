@@ -14,7 +14,7 @@ import { DiedricPlanePointLine } from "./utils/diedricPlanePointLine";
 import { DiedricPlane2Line } from "./utils/diedricPlane2Line";
 import { Vector3 } from "three";
 import { DiedricPlaneOAC } from "./utils/diedricPlaneOAC";
-import { DiedricPointMidLinePoint } from "./utils/diedricPointMidPlanePoint";
+import { DiedricPointMidLinePoint } from "./utils/diedricPointMidLinePoint";
 import { DiedricLinePointPerpendicularPlane } from "./utils/diedricLinePointPerpendicularPlane";
 
 type PosibleExpressions = DiedricLine2Point | DiedricPlane3Point | DiedricPoint | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPlane2Line | DiedricLine2Plane
