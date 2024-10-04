@@ -23,7 +23,6 @@ export class DiedricLine2Plane extends DiedricLine {
 
         this._plane1?.children.push(this)
         this._plane2?.children.push(this)
-        this.update()
 
     }
     removeParent(parent: DiedricPlane) {
@@ -32,7 +31,6 @@ export class DiedricLine2Plane extends DiedricLine {
         } else if (this._plane2 == parent) {
             this._plane2 = undefined
         }
-        this.update()
     }
 
     remove() {
@@ -42,6 +40,7 @@ export class DiedricLine2Plane extends DiedricLine {
         super.remove()
     }
     update() {
+        console.log("DiedricLine2Plane update")
         if (this._plane1?.normal !== undefined && this._plane2?.normal !== undefined && this._plane1.d !== undefined && this._plane2.d !== undefined) {
             // super.bPoint = new THREE.Vector3(this._point.o, this._point.c, this._point.a)
             super.bVector = new THREE.Vector3().crossVectors(this._plane1?.normal, this._plane2.normal)
@@ -81,7 +80,6 @@ export class DiedricLine2Plane extends DiedricLine {
 
         this._plane1 = plane
 
-        this.update()
 
         if (this._plane1) {
             this._plane1.children.push(this)
@@ -99,7 +97,6 @@ export class DiedricLine2Plane extends DiedricLine {
         }
 
         this._plane2 = plane
-        this.update()
 
         if (this._plane2) {
             this._plane2.children.push(this)

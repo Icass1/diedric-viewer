@@ -27,7 +27,6 @@ export class DiedricPointIntersectLinePlane extends DiedricPoint {
         this._plane?.children.push(this)
         this._line?.children.push(this)
 
-        this.update()
     }
     removeParent(parent: DiedricPlane | DiedricLine) {
         if (this._plane === parent) {
@@ -35,18 +34,16 @@ export class DiedricPointIntersectLinePlane extends DiedricPoint {
         } else if (this._line == parent) {
             this._line = undefined
         }
-        this.update()
     }
     remove() {
         this._plane = undefined
         this._line = undefined
 
         super.remove()
-        console.warn("Remove")
     }
 
     update() {
-        console.log("Update")
+        console.log("DiedricPointIntersectLinePlane update")
         if (this._plane?.normal && this._plane?.d && this._line?.bPoint && this._line.bVector) {
 
             let result = intersectionLinePlane(this._line, this._plane)

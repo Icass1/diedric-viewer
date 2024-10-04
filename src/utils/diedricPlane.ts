@@ -68,12 +68,10 @@ export class DiedricPlane {
         this.diedric.canvas2d.add(this.horizontalProjectionLine2d)
         this.diedric.canvas2d.add(this.verticalProjectionLine2d)
 
-        this.calc()
-        // console.log("DiedricPlane constructor")
     }
 
     calc() {
-        // console.log("DiedricPlane calc")
+        console.log("DiedricPlane calc")
         if (this._d !== undefined && this._normal?.x !== undefined && this._normal?.y !== undefined && this._normal?.z !== undefined) {
             this._exists = true
 
@@ -265,7 +263,6 @@ export class DiedricPlane {
                 }
             }
 
-
             // Create a new geometry
             const vertices = []
 
@@ -291,6 +288,19 @@ export class DiedricPlane {
             this._exists = false
         }
 
+        this.updateView()
+
+    }
+
+    remove() {
+        this.diedric.scene.remove(this.plane)
+        this.diedric.scene.remove(this.horizontalProjectionLine)
+        this.diedric.scene.remove(this.verticalProjectionLine)
+    }
+    getSuper() {
+        return this
+    }
+    updateView() {
         if (this._exists && !this._hidden) {
             this.diedric.scene.add(this.horizontalProjectionLine)
             this.diedric.scene.add(this.verticalProjectionLine)
@@ -306,22 +316,10 @@ export class DiedricPlane {
 
             this.diedric.canvas2d.remove(this.horizontalProjectionLine2d)
             this.diedric.canvas2d.remove(this.verticalProjectionLine2d)
-
         }
     }
-
-    remove() {
-        this.diedric.scene.remove(this.plane)
-        this.diedric.scene.remove(this.horizontalProjectionLine)
-        this.diedric.scene.remove(this.verticalProjectionLine)
-    }
-    getSuper() {
-        return this
-    }
-
     set d(d: number | undefined) {
         this._d = d
-        this.calc()
     }
 
     get d(): number | undefined {
@@ -330,7 +328,6 @@ export class DiedricPlane {
 
     set normal(normal: THREE.Vector3 | undefined) {
         this._normal = normal
-        this.calc()
     }
 
     get normal(): THREE.Vector3 | undefined {
@@ -339,6 +336,6 @@ export class DiedricPlane {
 
     set hidden(value: boolean) {
         this._hidden = value
-        this.calc()
+        this.updateView()
     }
 }

@@ -24,7 +24,6 @@ export class DiedricPlanePointLine extends DiedricPlane {
 
         this._point?.children.push(this)
         this._line?.children.push(this)
-        this.update()
 
     }
     removeParent(parent: DiedricPoint | DiedricLine) {
@@ -33,7 +32,6 @@ export class DiedricPlanePointLine extends DiedricPlane {
         } else if (this._line == parent) {
             this._line = undefined
         }
-        this.update()
     }
     remove() {
         this._point = undefined
@@ -43,6 +41,7 @@ export class DiedricPlanePointLine extends DiedricPlane {
     }
 
     update() {
+        console.log("DiedricPlanePointLine update")
 
         if (this._point && this._line?.bPoint && this._line?.bVector) {
 
@@ -77,7 +76,6 @@ export class DiedricPlanePointLine extends DiedricPlane {
 
 
         this._point = point
-        this.update()
 
         if (this._point) {
             this._point.children.push(this)
@@ -94,7 +92,6 @@ export class DiedricPlanePointLine extends DiedricPlane {
         }
 
         this._line = line
-        this.update()
 
         if (this._line) {
             this._line.children.push(this)

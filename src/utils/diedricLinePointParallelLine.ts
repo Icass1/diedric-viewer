@@ -26,7 +26,6 @@ export class DiedricLinePointParallelLine extends DiedricLine {
 
         this._point?.children.push(this)
         this._line?.children.push(this)
-        this.update()
 
     }
     removeParent(parent: DiedricPoint | DiedricLine) {
@@ -35,7 +34,6 @@ export class DiedricLinePointParallelLine extends DiedricLine {
         } else if (this._line == parent) {
             this._line = undefined
         }
-        this.update()
     }
 
     remove() {
@@ -45,6 +43,7 @@ export class DiedricLinePointParallelLine extends DiedricLine {
         super.remove()
     }
     update() {
+        console.log("DiedricLinePointParallelLine update")
         if (this._point && this._line?.bVector) {
             super.bPoint = new THREE.Vector3(this._point.o, this._point.c, this._point.a)
             super.bVector = new THREE.Vector3().copy(this._line.bVector)
@@ -52,6 +51,7 @@ export class DiedricLinePointParallelLine extends DiedricLine {
             super.bPoint = undefined
             super.bVector = undefined
         }
+        super.calc()
     }
     set point(point: DiedricPoint | undefined) {
 
@@ -66,7 +66,6 @@ export class DiedricLinePointParallelLine extends DiedricLine {
 
         this._point = point
 
-        this.update()
 
         if (this._point) {
             this._point.children.push(this)
@@ -84,7 +83,6 @@ export class DiedricLinePointParallelLine extends DiedricLine {
         }
 
         this._line = line
-        this.update()
 
         if (this._line) {
             this._line.children.push(this)

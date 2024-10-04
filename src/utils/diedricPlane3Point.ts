@@ -25,7 +25,6 @@ export class DiedricPlane3Point extends DiedricPlane {
         this._point2?.children.push(this)
         this._point3?.children.push(this)
 
-        this.update()
     }
 
     removeParent(parent: DiedricPoint) {
@@ -36,7 +35,6 @@ export class DiedricPlane3Point extends DiedricPlane {
         } else if (this._point3 == parent) {
             this.point3 = undefined
         }
-        this.update()
     }
     remove() {
 
@@ -47,7 +45,7 @@ export class DiedricPlane3Point extends DiedricPlane {
     }
 
     update() {
-        // console.log("DiedricPlane3Point update", this.type)
+        console.log("DiedricPlane3Point update")
 
         if (this._point1 && this._point2 && this._point3) {
             const pointA = new THREE.Vector3(this._point1.o, this._point1.c, this._point1.a)
@@ -83,7 +81,6 @@ export class DiedricPlane3Point extends DiedricPlane {
 
 
         this._point1 = point
-        this.update()
 
         if (this._point1) {
             this._point1.children.push(this)
@@ -102,7 +99,6 @@ export class DiedricPlane3Point extends DiedricPlane {
 
 
         this._point2 = point
-        this.update()
 
         if (this._point2) {
             this._point2.children.push(this)
@@ -120,7 +116,6 @@ export class DiedricPlane3Point extends DiedricPlane {
 
 
         this._point3 = point
-        this.update()
 
         if (this._point3) {
             this._point3.children.push(this)

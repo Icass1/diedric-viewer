@@ -24,7 +24,6 @@ export class DiedricLine2Point extends DiedricLine {
         this._point1?.children.push(this)
         this._point2?.children.push(this)
 
-        this.update()
     }
     removeParent(parent: DiedricPoint) {
         if (this._point1 === parent) {
@@ -32,7 +31,6 @@ export class DiedricLine2Point extends DiedricLine {
         } else if (this._point2 == parent) {
             this._point2 = undefined
         }
-        this.update()
     }
 
     remove() {
@@ -42,10 +40,11 @@ export class DiedricLine2Point extends DiedricLine {
         super.remove()
     }
     update() {
+        console.log("DiedricLine2Point update")
         if (this._point1?.o !== undefined && this._point1?.a !== undefined && this._point1?.c !== undefined && this._point2?.o !== undefined && this._point2?.a !== undefined && this._point2?.c !== undefined) {
-
             super.bPoint = new THREE.Vector3(this._point1.o, this._point1.c, this._point1.a)
             super.bVector = new THREE.Vector3(this._point1.o - this._point2.o, this._point1.c - this._point2.c, this._point1.a - this._point2.a)
+            super.calc()
         } else {
             super.bPoint = undefined
             super.bVector = undefined
@@ -64,7 +63,6 @@ export class DiedricLine2Point extends DiedricLine {
 
 
         this._point1 = point
-        this.update()
 
         if (this._point1) {
             this._point1.children.push(this)
@@ -82,7 +80,6 @@ export class DiedricLine2Point extends DiedricLine {
         }
         this._point2 = point
 
-        this.update()
 
 
         if (this._point2) {

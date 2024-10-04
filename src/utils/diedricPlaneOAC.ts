@@ -10,6 +10,11 @@ export class DiedricPlaneOAC extends DiedricPlane3Point {
 
     static type = 'plane-oac'
     public type = 'plane-oac'
+
+    private _o: number | undefined
+    private _a: number | undefined
+    private _c: number | undefined
+
     static params: any = {
         'o': "number",
         'a': "number",
@@ -31,16 +36,22 @@ export class DiedricPlaneOAC extends DiedricPlane3Point {
         this._pointC.hidden = true
         super.point3 = this._pointC
 
-        // console.log("DiedricPlaneOAC constructor")
+        this._o = o
+        this._a = a
+        this._c = c
     }
 
     setAttributes(attr: { o: number | undefined, a: number | undefined, c: number | undefined, color: THREE.ColorRepresentation }) {
-
         this._pointO.o = attr.o
         this._pointA.a = attr.a
         this._pointC.c = attr.c
 
+        this._o = attr.o
+        this._a = attr.a
+        this._c = attr.c
+
         super.update()
+        super.calc()
     }
 
     remove() {
@@ -48,11 +59,21 @@ export class DiedricPlaneOAC extends DiedricPlane3Point {
     }
 
     update() {
-        // console.log("DiedricPlaneOAC update")
+        console.log("DiedricPlaneOAC update")
         super.update()
+        super.calc()
     }
     get color() {
         return super.color
     }
 
+    get o() {
+        return this._o
+    }
+    get a() {
+        return this._a
+    }
+    get c() {
+        return this._c
+    }
 }

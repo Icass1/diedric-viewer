@@ -15,15 +15,9 @@ export class DiedricPointMidLinePoint extends DiedricPoint {
         'line': DiedricLine
     }
 
-    // tempPlane: DiedricPlane
-    // tempPoint1: DiedricPoint
-
     constructor({ diedric, point, line, color }: { diedric: Diedric, point: DiedricPoint | undefined, line: DiedricLine | undefined, color: THREE.ColorRepresentation }) {
 
         super({ diedric: diedric, o: undefined, a: undefined, c: undefined, color: color })
-
-        // this.tempPlane = new DiedricPlane(diedric, undefined, undefined, color)
-        // this.tempPoint1 = new DiedricPoint({ diedric: diedric, o: undefined, a: undefined, c: undefined, color: color })
 
         this._point = point
         this._line = line
@@ -31,7 +25,6 @@ export class DiedricPointMidLinePoint extends DiedricPoint {
         this._point?.children.push(this)
         this._line?.children.push(this)
 
-        this.update()
     }
     removeParent(parent: DiedricPoint | DiedricLine) {
         if (this._point === parent) {
@@ -50,6 +43,7 @@ export class DiedricPointMidLinePoint extends DiedricPoint {
     }
 
     update() {
+        console.log("DiedricPointMidLinePoint update")
 
         if (this._point?.o !== undefined && this._point?.a !== undefined && this._point?.c !== undefined && this._line?.bVector !== undefined && this._line?.bPoint !== undefined) {
             this._point.o
@@ -60,19 +54,11 @@ export class DiedricPointMidLinePoint extends DiedricPoint {
             this._line.bPoint
 
             const d = this._line.bVector.x * this._point.o + this._line.bVector.y * this._point.c + this._line.bVector.z * this._point.a
-
-            // this.tempPlane.normal = new THREE.Vector3().copy(this._line.bVector)
-            // this.tempPlane.d = d
-
             const t = (d - this._line.bVector.x * this._line.bPoint.x - this._line.bVector.y * this._line.bPoint.y - this._line.bVector.z * this._line.bPoint.z) / (this._line.bVector.x ** 2 + this._line.bVector.y ** 2 + this._line.bVector.z ** 2)
 
             const x = this._line.bVector.x * t + this._line.bPoint.x
             const y = this._line.bVector.z * t + this._line.bPoint.z
             const z = this._line.bVector.y * t + this._line.bPoint.y
-
-            // this.tempPoint1.o = x
-            // this.tempPoint1.a = y
-            // this.tempPoint1.c = z
 
             const midX = (this._point.o + x) / 2
             const midY = (this._point.a + y) / 2
@@ -81,7 +67,11 @@ export class DiedricPointMidLinePoint extends DiedricPoint {
             super.o = midX
             super.a = midY
             super.c = midZ
-
+        } else {
+            super.o = undefined
+            super.a = undefined
+            super.c = undefined
         }
+        super.calc()
     }
 }

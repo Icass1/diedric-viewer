@@ -45,10 +45,9 @@ export class DiedricLine {
         this.diedric.scene.add(this.cylinder);
         this.diedric.canvas2d.add(this.horizontalProjectionLine2d)
         this.diedric.canvas2d.add(this.verticalProjectionLine2d)
-        this.calc()
     }
     calc() {
-        // console.log("DiedricLine calc")
+        console.log("DiedricLine calc")
         if (this._vector && this.__point) {
 
             this._exists = true
@@ -198,7 +197,10 @@ export class DiedricLine {
         }
 
         this.children.map((child => child.update()))
+        this.updateView()
 
+    }
+    updateView() {
         if (this._exists && !this._hidden) {
             this.diedric.scene.add(this.cylinder)
             this.diedric.canvas2d.add(this.verticalProjectionLine2d)
@@ -218,23 +220,26 @@ export class DiedricLine {
         this.diedric.canvas2d.remove(this.verticalProjectionLine2d)
         this.diedric.canvas2d.remove(this.horizontalProjectionLine2d)
 
-        this.children.map((child => child.removeParent(this)))
+
+
+        this.children.map((child => {
+            console.log(child)
+            child.removeParent(this)
+        }))
     }
     getSuper() {
         return this
     }
     set hidden(value: boolean) {
         this._hidden = value
-        this.calc()
+        this.updateView()
     }
 
     set bPoint(point: THREE.Vector3 | undefined) {
         this.__point = point
-        this.calc()
     }
     set bVector(vector: THREE.Vector3 | undefined) {
         this._vector = vector
-        this.calc()
     }
     get bPoint(): THREE.Vector3 | undefined {
         return this.__point

@@ -80,13 +80,14 @@ export class DiedricPoint {
         this.diedric.canvas2d.add(this.horizontalProjection)
         this.diedric.canvas2d.add(this.verticalProjection)
 
-        this.calc()
     }
     update() {
         this.calc()
     }
 
     calc() {
+        console.log("DiedricPoint calc")
+
         if (this._o !== undefined && this._a !== undefined && this._c !== undefined) {
             this._exists = true
 
@@ -108,7 +109,12 @@ export class DiedricPoint {
         } else {
             this._exists = false
         }
+        this.updateView()
 
+
+    }
+
+    updateView() {
         if (this._exists && !this._hidden) {
             this.diedric.scene.add(this.bPoint)
             this.diedric.scene.add(this.lineToX0Line)
@@ -131,10 +137,13 @@ export class DiedricPoint {
     }
 
     setAttributes(attr: { o?: number, a?: number, c?: number, color?: THREE.ColorRepresentation }) {
+        if (attr.o == this.o && attr.a == this.a && attr.c == this.c && attr.color == this._color) { return }
+        console.log(attr)
         Object.entries(attr).map(attrEntry => {
             // @ts-ignore
             this[attrEntry[0]] = attrEntry[1]
         })
+        this.update()
     }
 
     remove() {
@@ -148,34 +157,18 @@ export class DiedricPoint {
     }
 
     set hidden(value: boolean) {
-
         this._hidden = value
-        this.calc()
+        this.updateView()
     }
 
     set o(o: number | undefined) {
         this._o = o
-        if (this.type == "point") {
-            this.update()
-        } else {
-            this.calc()
-        }
     }
     set a(a: number | undefined) {
         this._a = a
-        if (this.type == "point") {
-            this.update()
-        } else {
-            this.calc()
-        }
     }
     set c(c: number | undefined) {
         this._c = c
-        if (this.type == "point") {
-            this.update()
-        } else {
-            this.calc()
-        }
     }
     get o() {
         return this._o
