@@ -1,5 +1,5 @@
-import { ChangeEvent, createContext, RefObject, useCallback, useContext, useEffect, useRef, useState } from "react"
-import { Trash2, Plus, Save, TriangleAlert } from 'lucide-react';
+import { ChangeEvent, createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
+import { Trash2, Plus, Save, TriangleAlert, RotateCw } from 'lucide-react';
 
 import { Diedric } from "./utils/diedric"
 
@@ -42,6 +42,7 @@ interface Expression {
     expressionName: string | null
     value: PosibleExpressions | null
     option: string | null
+    dependencies: string[]
     params: {
         hidden: boolean
         color: string
@@ -120,11 +121,6 @@ function Expression({ expression }: { expression: Expression }) {
         const text = inputText.replace(/ /g, '')
         setValue(inputText)
 
-
-
-
-
-
         if (text.startsWith("distance")) {
             const args = text.replace("distance(", "").replace(")", "").split(",")
 
@@ -141,12 +137,9 @@ function Expression({ expression }: { expression: Expression }) {
             } else {
                 setWarn(true)
                 setNumericValue(undefined)
-
             }
             return
         }
-
-
 
         if (!text.includes("=")) {
             console.log("error 1")
@@ -241,6 +234,8 @@ function Expression({ expression }: { expression: Expression }) {
                 return
             }
 
+            let dependencies: string[] = []
+
             output.map((paramValue, index) => {
                 if (typeof paramValue == "string") {
                     if (paramValue == "1PB") {
@@ -248,11 +243,24 @@ function Expression({ expression }: { expression: Expression }) {
                     } else if (paramValue == "2PB") {
                         output[index] = diedric?.pb2
                     } else {
-                        const expression = expressions.find(expression => expression.expressionName == paramValue)
-                        output[index] = expression?.value
+                        dependencies.push(paramValue)
+                        const exp = expressions.find(expression => expression.expressionName == paramValue)
+                        output[index] = exp?.value
                     }
                 }
             })
+
+            console.log(dependencies)
+
+            for (let i = 0; i < dependencies.length; i++) {
+                console.log(dependencies[i])
+                expression.dependencies[i] = dependencies[i];
+            }
+            // expression.dependencies[0] = "ASDF"
+            expression.dependencies = [...dependencies]
+            console.log(expression.dependencies)
+            // expression.dependencies = ["asdf"]
+
 
             output.map(paramValue => {
                 if (typeof paramValue == "number") {
@@ -305,6 +313,7 @@ function Expression({ expression }: { expression: Expression }) {
                 }
             })
 
+
             let matches = 0
             Object.entries(diedricObjectParams).map(diedricObjectParamsEntry => {
                 let type = diedricObjectParamsEntry[0]
@@ -318,11 +327,13 @@ function Expression({ expression }: { expression: Expression }) {
                         console.warn("This should never happen.")
                     } else if (expressionObjects.current[expressionObjectsId] instanceof diedricObject) {
                         if (
-                            expressionObjects.current[expressionObjectsId] instanceof DiedricPoint ||
-                            expressionObjects.current[expressionObjectsId] instanceof DiedricPlaneOAC
+                            expressionObjects.current[expressionObjectsId] instanceof DiedricPoint
                         ) {
                             expressionObjects.current[expressionObjectsId].setAttributes(Object.assign(finalParams[type], { "color": expression.params.color }))
                         }
+                    } else if (expressionObjects.current[expressionObjectsId] instanceof DiedricPlaneOAC) {
+                        expressionObjects.current[expressionObjectsId].setAttributes(Object.assign(finalParams[type], { "color": expression.params.color }))
+
                     } else {
                         if (expressionObjects.current[expressionObjectsId]?.type !== expression.option) {
                             expressionObjects.current[expressionObjectsId]?.remove()
@@ -349,6 +360,7 @@ function Expression({ expression }: { expression: Expression }) {
             setOptions(posibleOptions)
 
             if (!matches) {
+                console.log("No matches")
                 expressionObjects.current[expressionObjectsId]?.remove()
                 delete expressionObjects.current[expressionObjectsId]
                 parsingError = true
@@ -361,30 +373,47 @@ function Expression({ expression }: { expression: Expression }) {
         setExpressions([...expressions])
 
         if (parsingError) {
+            console.log("parsingError")
             setWarn(true)
             return
         }
         setWarn(false)
     }
     useEffect(() => {
+
+        // console.log("======================")
+        // console.log("Use Effect")
+        // console.log("======================")
+
         setHidden(expression.params.hidden)
         Object.values(expressionObjects.current).map(exp => { (exp as PosibleExpressions).hidden = expression.params.hidden })
 
         parseText(value)
     }, [])
 
+    useEffect(() => {
+        if (warn) {
+            expression.value = null
+            setExpressions([...expressions])
+        } else {
+        }
+    }, [warn])
+
     return (
         <div className="w-full border border-neutral-300 text-black rounded grid grid-cols-[40px_1fr_20px] items-center min-h-12 pr-2">
             <div className=" bg-zinc-800/20 rounded-tl rounded-bl h-full">
-                {warn ?
-                    <TriangleAlert className="h-6 w-6 relative top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-neutral-900/40"></TriangleAlert>
-                    :
-                    <div
-                        onClick={toggleHidden}
-                        className={"h-8 w-8 rounded-full relative top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 " + (hidden && ' border-4 border-neutral-600')}
-                        style={{ backgroundColor: hidden ? '' : expression?.params.color?.toString() }}
-                    />
-                }
+                <div className="justify-center w-full h-full flex flex-col gap-2">
+                    {warn ?
+                        <TriangleAlert className="h-6 w-6 relative mx-auto text-neutral-900/40"></TriangleAlert>
+                        :
+                        <div
+                            onClick={toggleHidden}
+                            className={"h-8 w-8 rounded-full relative mx-auto " + (hidden && ' border-4 border-neutral-600')}
+                            style={{ backgroundColor: hidden ? '' : expression?.params.color?.toString() }}
+                        />
+                    }
+                    <RotateCw className="w-8 h-8 mx-auto text-neutral-500 cursor-pointer" onClick={() => { parseText(expression.expressionText) }}></RotateCw>
+                </div>
             </div>
             <div className="relative w-full p-2 min-w-0 flex flex-col gap-1">
                 {/* <TextInput value={value} onChange={handleValueChange} className="bg-transparent focus:outline-none border-b-2 w-full"></TextInput> */}
@@ -433,7 +462,7 @@ export default function App() {
         let newExpressions: Expression[] = []
         savedExpressions.map((savedExpression) => {
             if (savedExpression) {
-                newExpressions.push(savedExpression)
+                newExpressions.push({ ...savedExpression, dependencies: [] })
             } else {
                 console.warn("null expression in savedExpressions")
             }
@@ -458,6 +487,7 @@ export default function App() {
             expressionName: null,
             value: null,
             option: null,
+            dependencies: [],
             params: {
                 hidden: false,
                 color: colors[Math.round(Math.random() * (colors.length - 1))]
@@ -490,15 +520,43 @@ export default function App() {
                 <canvas ref={canvas2dRef} className="absolute top-0 w-full min-w-0 h-full min-h-0"></canvas>
             </div>
 
-            <div className="fixed bg-blue-300 p-2 max-h-[calc(100%_-_2.5rem)] overflow-y-scroll text-black font-semibold rounded top-5 right-5">
+            <div className="fixed bg-white shadow-lg p-1 max-h-[calc(100%_-_2.5rem)] min-w-52 overflow-y-auto text-black text-sm font-base rounded-lg top-5 right-5 flex flex-col gap-2">
                 {expressions.map(expression =>
-                    <div key={expression.id} className="flex flex-col">
-                        <label>{expression.value?.type || "---"}</label>
-                        <label className="text-sm font-base pl-3">{expression.params.color}</label>
-                        <label className="text-sm font-base pl-3">{JSON.stringify(expression.params.hidden)}</label>
+                    <div key={expression.id} className="flex flex-col border border-neutral-400 rounded p-1">
+                        <label className="font-semibold">{expression.expressionName} </label>
+                        <label className="text-sm font-base pl-3">Type: {expression.value?.type || "---"}</label>
+                        <div className="pl-3 flex flex-row gap-2 items-center">
+                            <label className="text-sm font-base ">Color: </label>
+                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: expression.params.color }}></div>
+                            <label className="text-sm font-base ">{expression.params.color}</label>
+                        </div>
+                        <label className="text-sm font-base pl-3">Hidden: {JSON.stringify(expression.params.hidden)}</label>
+                        <label className="text-sm font-base pl-3">Depenedencies: {JSON.stringify(expression.dependencies)}</label>
+                        <label className="font-semibold">Args</label>
+
+                        {expression?.value?.o !== undefined && <label className="pl-3">o {expression.value.o}</label>}
+                        {expression?.value?.a !== undefined && <label className="pl-3">a {expression.value.a}</label>}
+                        {expression?.value?.c !== undefined && <label className="pl-3">c {expression.value.c}</label>}
+                        {expression?.value?.point?.type && <label className="pl-3">point {expression.value.point?.type}</label>}
+                        {expression?.value?.point1?.type && <label className="pl-3">point1 {expression.value.point1?.type}</label>}
+                        {expression?.value?.point2?.type && <label className="pl-3">point2 {expression.value.point2?.type}</label>}
+                        {expression?.value?.point3?.type && <label className="pl-3">point3 {expression.value.point3?.type}</label>}
+                        {expression?.value?.line?.type && <label className="pl-3">line {expression.value.line?.type}</label>}
+                        {expression?.value?.line1?.type && <label className="pl-3">line1 {expression.value.line1?.type}</label>}
+                        {expression?.value?.line2?.type && <label className="pl-3">line2 {expression.value.line2?.type}</label>}
+
+                        <div className="bg-white flex flex-col">
+                            <label className="font-semibold">Children</label>
+                            {expression.value?.children.map((child, index) => {
+                                const a = expressions.find(exp => exp.value == child)
+                                return (
+                                    <div className="pl-3 flex flex-col" key={expression.id + index}>
+                                        <label>{a?.expressionName} {child.type}</label>
+                                    </div>)
+                            })}
+                        </div>
                     </div>
-                )
-                }
+                )}
             </div >
         </div >
 
