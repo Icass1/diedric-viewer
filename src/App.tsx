@@ -372,6 +372,9 @@ function Expression({ expression }: { expression: Expression }) {
         }
 
         expression.value = parseParams(expressionText.slice(1, expressionText.length - 1))
+        if (expression.value) {
+            expression.value.name = expression.expressionName
+        }
 
         setExpressions([...expressions])
 
@@ -442,17 +445,16 @@ export default function App() {
     const [diedric, setDiedric] = useState<Diedric>()
     const [expressions, setExpressions] = useState<Expression[]>([])
 
-    const savedExpressionsIndex = 2;
+    const savedExpressionsIndex = 1;
     const savedExpressions = JSON.parse(localStorage.getItem("expressions") || "[]")[savedExpressionsIndex] as Expression[]
     console.log(savedExpressions)
 
     const canvas3dRef = useRef<HTMLCanvasElement>(null)
     const canvas2dRef = useRef<HTMLCanvasElement>(null)
 
-
     useEffect(() => {
         if (!canvas3dRef.current || !canvas2dRef.current) return
-        const newDiedric = new Diedric(150, canvas3dRef.current, canvas2dRef.current)
+        const newDiedric = new Diedric(100, canvas3dRef.current, canvas2dRef.current)
 
         newDiedric.createStaticLabel("x", new Vector3(newDiedric.size, 0, 0))
         newDiedric.createStaticLabel("y", new Vector3(0, newDiedric.size, 0))
