@@ -1,3 +1,8 @@
+
+// ****************************************
+// *************  TO DELETE  **************
+// ****************************************
+
 import { Vector2 } from "three"
 import { Canvas } from "./canvas"
 
@@ -15,9 +20,9 @@ export class Ellispe {
 
         this.pos = new Vector2(0, 0)
 
-        this.semiMajor = 10
-        this.semiMinor = 20
-        this.angle = 10
+        this.semiMajor = 0
+        this.semiMinor = 0
+        this.angle = 0
     }
     render(canvas: Canvas) {
         // 4. Draw the ellipse using the calculated center, radii, and rotation

@@ -2,8 +2,10 @@ import { Vector2 } from "three";
 import { Line } from "./line";
 import { Point } from "./point";
 import { Label } from "./label";
+import { Ellispe } from "./ellipse";
+import { Path } from "./path";
 
-type Objects = Line | Point | Label
+type Objects = Line | Point | Label | Ellispe | Path
 
 export class Canvas {
     canvas: HTMLCanvasElement
