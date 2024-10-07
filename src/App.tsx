@@ -17,6 +17,7 @@ import { DiedricPlaneOAC } from "./utils/diedricPlaneOAC";
 import { DiedricPointMidLinePoint } from "./utils/diedricPointMidLinePoint";
 import { DiedricLinePointPerpendicularPlane } from "./utils/diedricLinePointPerpendicularPlane";
 import { DiedricPointIntersectLinePlane } from "./utils/diedricPointIntersectLinePlane";
+import { DiedricCircle3Point } from "./utils/diedricCircle3Point";
 
 type PosibleExpressions = DiedricLine2Point | DiedricPlane3Point | DiedricPoint | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPlane2Line | DiedricLine2Plane
 
@@ -34,6 +35,8 @@ const DiedricObjects = [
     DiedricPlane3Point,
     DiedricPlane2Line,
     DiedricPlaneOAC,
+
+    DiedricCircle3Point,
 ]
 
 interface Expression {
@@ -439,14 +442,17 @@ export default function App() {
     const [diedric, setDiedric] = useState<Diedric>()
     const [expressions, setExpressions] = useState<Expression[]>([])
 
-    const savedExpressions = JSON.parse(localStorage.getItem("expressions") || "[]") as Expression[]
+    const savedExpressionsIndex = 2;
+    const savedExpressions = JSON.parse(localStorage.getItem("expressions") || "[]")[savedExpressionsIndex] as Expression[]
+    console.log(savedExpressions)
 
     const canvas3dRef = useRef<HTMLCanvasElement>(null)
     const canvas2dRef = useRef<HTMLCanvasElement>(null)
 
+
     useEffect(() => {
         if (!canvas3dRef.current || !canvas2dRef.current) return
-        const newDiedric = new Diedric(100, canvas3dRef.current, canvas2dRef.current)
+        const newDiedric = new Diedric(150, canvas3dRef.current, canvas2dRef.current)
 
         newDiedric.createStaticLabel("x", new Vector3(newDiedric.size, 0, 0))
         newDiedric.createStaticLabel("y", new Vector3(0, newDiedric.size, 0))
@@ -457,7 +463,7 @@ export default function App() {
     }, [canvas3dRef, canvas2dRef])
 
     useEffect(() => {
-        if (!diedric) { return }
+        if (!diedric || savedExpressions == undefined) { return }
 
         let newExpressions: Expression[] = []
         savedExpressions.map((savedExpression) => {
@@ -472,12 +478,16 @@ export default function App() {
     }, [diedric])
 
     const saveExpressions = useCallback(() => {
-        localStorage.setItem("expressions", JSON.stringify(expressions.map(expression => ({
+
+        let expressionsStored = JSON.parse(localStorage.getItem("expressions") || "[]")
+        expressionsStored[savedExpressionsIndex] = expressions.map(expression => ({
             id: expression.id,
             expressionText: expression.expressionText,
             params: expression.params,
             option: expression.option,
-        }))))
+        }))
+
+        localStorage.setItem("expressions", JSON.stringify(expressionsStored))
     }, [expressions])
 
     const newExpression = () => {
