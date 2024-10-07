@@ -25,6 +25,8 @@ export class DiedricPlane3Point extends DiedricPlane {
         this._point2?.children.push(this)
         this._point3?.children.push(this)
 
+        this.update()
+        this.calc()
     }
 
     removeParent(parent: DiedricPoint) {
@@ -85,6 +87,8 @@ export class DiedricPlane3Point extends DiedricPlane {
         if (this._point1) {
             this._point1.children.push(this)
         }
+        this.update()
+        this.calc()
     }
     set point2(point: DiedricPoint | undefined) {
 
@@ -97,12 +101,13 @@ export class DiedricPlane3Point extends DiedricPlane {
             }
         }
 
-
         this._point2 = point
 
         if (this._point2) {
             this._point2.children.push(this)
         }
+        this.update()
+        this.calc()
     }
     set point3(point: DiedricPoint | undefined) {
         if (this._point3) {
@@ -114,11 +119,12 @@ export class DiedricPlane3Point extends DiedricPlane {
             }
         }
 
-
         this._point3 = point
 
         if (this._point3) {
             this._point3.children.push(this)
         }
+        this.update()
+        this.calc()
     }
 }
