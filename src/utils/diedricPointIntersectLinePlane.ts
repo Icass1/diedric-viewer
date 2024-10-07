@@ -52,5 +52,6 @@ export class DiedricPointIntersectLinePlane extends DiedricPoint {
             super.c = result.c
             super.calc()
         }
+
     }
 }
