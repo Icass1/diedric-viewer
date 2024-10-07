@@ -1,5 +1,5 @@
 import { ChangeEvent, createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
-import { Trash2, Plus, Save, TriangleAlert, RotateCw } from 'lucide-react';
+import { Trash2, Plus, Save, TriangleAlert, RotateCw, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { Diedric } from "./utils/diedric"
 
@@ -250,15 +250,15 @@ function Expression({ expression }: { expression: Expression }) {
                 }
             })
 
-            console.log(dependencies)
+            // console.log(dependencies)
 
             for (let i = 0; i < dependencies.length; i++) {
-                console.log(dependencies[i])
+                // console.log(dependencies[i])
                 expression.dependencies[i] = dependencies[i];
             }
             // expression.dependencies[0] = "ASDF"
             expression.dependencies = [...dependencies]
-            console.log(expression.dependencies)
+            // console.log(expression.dependencies)
             // expression.dependencies = ["asdf"]
 
 
@@ -520,44 +520,65 @@ export default function App() {
                 <canvas ref={canvas2dRef} className="absolute top-0 w-full min-w-0 h-full min-h-0"></canvas>
             </div>
 
-            <div className="fixed bg-white shadow-lg p-1 max-h-[calc(100%_-_2.5rem)] min-w-52 overflow-y-auto text-black text-sm font-base rounded-lg top-5 right-5 flex flex-col gap-2">
-                {expressions.map(expression =>
-                    <div key={expression.id} className="flex flex-col border border-neutral-400 rounded p-1">
-                        <label className="font-semibold">{expression.expressionName} </label>
-                        <label className="text-sm font-base pl-3">Type: {expression.value?.type || "---"}</label>
-                        <div className="pl-3 flex flex-row gap-2 items-center">
-                            <label className="text-sm font-base ">Color: </label>
-                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: expression.params.color }}></div>
-                            <label className="text-sm font-base ">{expression.params.color}</label>
-                        </div>
-                        <label className="text-sm font-base pl-3">Hidden: {JSON.stringify(expression.params.hidden)}</label>
-                        <label className="text-sm font-base pl-3">Depenedencies: {JSON.stringify(expression.dependencies)}</label>
-                        <label className="font-semibold">Args</label>
+            <div id="object-info-panel" className="fixed bg-white shadow-lg p-1 transition-all max-h-[calc(100%_-_2.5rem)] min-w-52 text-black text-sm font-base rounded-lg top-5 right-5 flex flex-col gap-2">
+                <ChevronRight
+                    className="absolute -left-8 text-black w-8 h-8 transition-transform duration-500"
+                    onClick={() => {
+                        if ((document.querySelector("#object-info-panel") as HTMLDivElement).style.backgroundColor == "transparent") {
+                            (document.querySelector("#object-info-panel") as HTMLDivElement).style.backgroundColor = "";
+                            (document.querySelector("#object-info-panel") as HTMLDivElement).querySelector("div").hidden = false;
+                            (document.querySelector("#object-info-panel") as HTMLDivElement).style.width = "";
+                            (document.querySelector("#object-info-panel") as HTMLDivElement).style.minWidth = "";
+                            (document.querySelector("#object-info-panel") as HTMLDivElement).querySelector("svg").style.transform = "";
+                        } else {
+                            (document.querySelector("#object-info-panel") as HTMLDivElement).style.backgroundColor = "transparent";
+                            (document.querySelector("#object-info-panel") as HTMLDivElement).querySelector("div").hidden = true;
+                            (document.querySelector("#object-info-panel") as HTMLDivElement).style.width = "0px";
+                            (document.querySelector("#object-info-panel") as HTMLDivElement).style.minWidth = "0px";
+                            (document.querySelector("#object-info-panel") as HTMLDivElement).querySelector("svg").style.transform = "rotate(180deg)";
+                        }
+                    }}
+                />
+                <div className="overflow-y-auto">
 
-                        {expression?.value?.o !== undefined && <label className="pl-3">o {expression.value.o}</label>}
-                        {expression?.value?.a !== undefined && <label className="pl-3">a {expression.value.a}</label>}
-                        {expression?.value?.c !== undefined && <label className="pl-3">c {expression.value.c}</label>}
-                        {expression?.value?.point?.type && <label className="pl-3">point {expression.value.point?.type}</label>}
-                        {expression?.value?.point1?.type && <label className="pl-3">point1 {expression.value.point1?.type}</label>}
-                        {expression?.value?.point2?.type && <label className="pl-3">point2 {expression.value.point2?.type}</label>}
-                        {expression?.value?.point3?.type && <label className="pl-3">point3 {expression.value.point3?.type}</label>}
-                        {expression?.value?.line?.type && <label className="pl-3">line {expression.value.line?.type}</label>}
-                        {expression?.value?.line1?.type && <label className="pl-3">line1 {expression.value.line1?.type}</label>}
-                        {expression?.value?.line2?.type && <label className="pl-3">line2 {expression.value.line2?.type}</label>}
+                    {expressions.map(expression =>
+                        <div key={expression.id} className="flex flex-col border border-neutral-400 rounded p-1">
+                            <label className="font-semibold">{expression.expressionName} </label>
+                            <label className="text-sm font-base pl-3">Type: {expression.value?.type || "---"}</label>
+                            <div className="pl-3 flex flex-row gap-2 items-center">
+                                <label className="text-sm font-base ">Color: </label>
+                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: expression.params.color }}></div>
+                                <label className="text-sm font-base ">{expression.params.color}</label>
+                            </div>
+                            <label className="text-sm font-base pl-3">Hidden: {JSON.stringify(expression.params.hidden)}</label>
+                            <label className="text-sm font-base pl-3">Depenedencies: {JSON.stringify(expression.dependencies)}</label>
+                            <label className="font-semibold">Args</label>
 
-                        <div className="bg-white flex flex-col">
-                            <label className="font-semibold">Children</label>
-                            {expression.value?.children.map((child, index) => {
-                                const a = expressions.find(exp => exp.value == child)
-                                return (
-                                    <div className="pl-3 flex flex-col" key={expression.id + index}>
-                                        <label>{a?.expressionName} {child.type}</label>
-                                    </div>)
-                            })}
+                            {expression?.value?.o !== undefined && <label className="pl-3">o {expression.value.o}</label>}
+                            {expression?.value?.a !== undefined && <label className="pl-3">a {expression.value.a}</label>}
+                            {expression?.value?.c !== undefined && <label className="pl-3">c {expression.value.c}</label>}
+                            {expression?.value?.point?.type && <label className="pl-3">point {expression.value.point?.type}</label>}
+                            {expression?.value?.point1?.type && <label className="pl-3">point1 {expression.value.point1?.type}</label>}
+                            {expression?.value?.point2?.type && <label className="pl-3">point2 {expression.value.point2?.type}</label>}
+                            {expression?.value?.point3?.type && <label className="pl-3">point3 {expression.value.point3?.type}</label>}
+                            {expression?.value?.line?.type && <label className="pl-3">line {expression.value.line?.type}</label>}
+                            {expression?.value?.line1?.type && <label className="pl-3">line1 {expression.value.line1?.type}</label>}
+                            {expression?.value?.line2?.type && <label className="pl-3">line2 {expression.value.line2?.type}</label>}
+
+                            <div className="bg-white flex flex-col">
+                                <label className="font-semibold">Children</label>
+                                {expression.value?.children.map((child, index) => {
+                                    const a = expressions.find(exp => exp.value == child)
+                                    return (
+                                        <div className="pl-3 flex flex-col" key={expression.id + index}>
+                                            <label>{a?.expressionName} {child.type}</label>
+                                        </div>)
+                                })}
+                            </div>
                         </div>
-                    </div>
-                )}
-            </div >
+                    )}
+                </div >
+            </div>
         </div >
 
 
