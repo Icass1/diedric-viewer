@@ -50,6 +50,7 @@ export class DiedricPointIntersectLinePlane extends DiedricPoint {
             super.o = result.o
             super.a = result.a
             super.c = result.c
+            super.calc()
         }
     }
 }
