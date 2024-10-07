@@ -8,6 +8,7 @@ import { DiedricPlanePointLine } from './diedricPlanePointLine';
 import * as TWO from "./two";
 import { DiedricPointMidLinePoint } from './diedricPointMidLinePoint';
 import { DiedricLinePointPerpendicularPlane } from './diedricLinePointPerpendicularPlane';
+import { DiedricCircle3Point } from './diedricCircle3Point';
 
 export class DiedricPoint {
     private bPoint: THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial, THREE.Object3DEventMap>
@@ -23,13 +24,15 @@ export class DiedricPoint {
 
     private horizontalProjection: TWO.Point
     private verticalProjection: TWO.Point
+    private horizontalProjectionLabel: TWO.Label
+    private verticalProjectionLabel: TWO.Label
 
     private _o: number | undefined
     private _a: number | undefined
     private _c: number | undefined
 
     private _color: THREE.ColorRepresentation
-    children: (DiedricPlane3Point | DiedricLine2Point | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPointMidLinePoint | DiedricLinePointPerpendicularPlane)[] = []
+    children: (DiedricPlane3Point | DiedricLine2Point | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPointMidLinePoint | DiedricLinePointPerpendicularPlane | DiedricCircle3Point)[] = []
 
     static params: any = { "o": "number", "a": "number", "c": "number" }
     static type = "point"
@@ -74,11 +77,17 @@ export class DiedricPoint {
         this.diedric.scene.add(this.lineToY0Line);
         this.diedric.scene.add(this.lineToZ0Line);
 
-        this.horizontalProjection = new TWO.Point({ radius: 3, color: color.toString() })
-        this.verticalProjection = new TWO.Point({ radius: 3, color: color.toString() })
+        this.verticalProjection = new TWO.Point({ radius: 6, color: color.toString() })
+        this.horizontalProjection = new TWO.Point({ radius: 6, color: color.toString() })
 
-        this.diedric.canvas2d.add(this.horizontalProjection)
         this.diedric.canvas2d.add(this.verticalProjection)
+        this.diedric.canvas2d.add(this.horizontalProjection)
+
+        this.verticalProjectionLabel = new TWO.Label({ text: "", color: "black" })
+        this.horizontalProjectionLabel = new TWO.Label({ text: "", color: "black" })
+
+        this.diedric.canvas2d.add(this.verticalProjectionLabel)
+        this.diedric.canvas2d.add(this.horizontalProjectionLabel)
 
     }
     update() {
@@ -104,6 +113,9 @@ export class DiedricPoint {
 
             this.verticalProjection.pos = new THREE.Vector2(this._o, -this._c)
             this.horizontalProjection.pos = new THREE.Vector2(this._o, this._a)
+
+            this.verticalProjectionLabel.pos = new THREE.Vector2(this._o, -this._c)
+            this.horizontalProjectionLabel.pos = new THREE.Vector2(this._o, this._a)
 
             this.children.map((child => child.update()))
         } else {
@@ -186,5 +198,10 @@ export class DiedricPoint {
 
     get color(): THREE.ColorRepresentation {
         return this._color
+    }
+
+    set name(name: string) {
+        this.verticalProjectionLabel.text = name + "''"
+        this.horizontalProjectionLabel.text = name + "'"
     }
 }
