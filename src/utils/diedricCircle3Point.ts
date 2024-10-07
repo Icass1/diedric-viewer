@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Diedric } from "./diedric"
 import { DiedricPoint } from "./diedricPoint"
-import { Ellispe } from './two/elipse';
+import { Path } from './two/path';
 
 export class DiedricCircle3Point {
 
@@ -26,7 +26,11 @@ export class DiedricCircle3Point {
 
     children = []
 
-    private horizontalProjection: Ellispe
+    private horizontalProjection: Path
+    private verticalProjection: Path
+
+    ellipseResolution = 40
+
 
     constructor({ diedric, point1, point2, point3, color }: { diedric: Diedric, point1: DiedricPoint | undefined, point2: DiedricPoint | undefined, point3: DiedricPoint | undefined, color: THREE.ColorRepresentation }) {
 
@@ -41,13 +45,28 @@ export class DiedricCircle3Point {
         this._point2 = point2
         this._point3 = point3
 
+        this._point1?.children.push(this)
+        this._point2?.children.push(this)
+        this._point3?.children.push(this)
 
-        this.horizontalProjection = new Ellispe({ color: color.toString() })
+        this.horizontalProjection = new Path({ color: color.toString(), width: 1 })
         this.diedric.canvas2d.add(this.horizontalProjection)
+
+        this.verticalProjection = new Path({ color: color.toString(), width: 1 })
+        this.diedric.canvas2d.add(this.verticalProjection)
 
         this.update()
     }
 
+    removeParent(parent: DiedricPoint) {
+        if (this._point1 === parent) {
+            this._point1 = undefined
+        } else if (this._point2 == parent) {
+            this._point2 = undefined
+        } else if (this._point3 == parent) {
+            this._point3 = undefined
+        }
+    }
     update() {
         let p1 = new THREE.Vector3(this._point1?.o, this._point1?.c, this._point1?.a)
         let p2 = new THREE.Vector3(this._point2?.o, this._point2?.c, this._point2?.a)
@@ -61,11 +80,22 @@ export class DiedricCircle3Point {
 
         const normal = new THREE.Vector3().crossVectors(dirAB, dirBC).normalize();
 
-        let circumcenter = new THREE.Vector3();
-        circumcenter.addScaledVector(midAB, 1);
-        circumcenter.addScaledVector(midBC, 1);
+        let dir1 = new THREE.Vector3().crossVectors(dirAB, normal)
+        let dir2 = new THREE.Vector3().crossVectors(dirBC, normal)
 
-        circumcenter.divideScalar(2);  // Averaging for approximation
+        let r1 = midAB.x;
+        let r2 = midAB.y;
+        let v1 = dir1.x;
+        let v2 = dir1.y;
+
+        let s1 = midBC.x;
+        let s2 = midBC.y;
+        let u1 = dir2.x;
+        let u2 = dir2.y;
+
+        let t = (r2 * u1 - s2 * u1 - r1 * u2 + s1 * u2) / (v1 * u2 - v2 * u1)
+
+        let circumcenter = new THREE.Vector3().addScaledVector(midAB, 1).addScaledVector(dir1, t);
 
         const radius = circumcenter.distanceTo(p1);
 
@@ -80,59 +110,17 @@ export class DiedricCircle3Point {
         quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal);
         this.circle.quaternion.copy(quaternion);
 
+        this.horizontalProjection.points = []
+        this.verticalProjection.points = []
 
+        for (let i = 0; i < this.ellipseResolution; i++) {
+            let horizontal = new THREE.Vector3(Math.cos(i / this.ellipseResolution * 2 * Math.PI), Math.sin(i / this.ellipseResolution * 2 * Math.PI), 0)
 
+            let point = new THREE.Vector3().crossVectors(horizontal, normal).normalize().multiplyScalar(radius).addScaledVector(circumcenter, 1)
 
+            this.horizontalProjection.points.push(new THREE.Vector2(point.x, -point.y))
+            this.verticalProjection.points.push(new THREE.Vector2(point.x, point.z))
 
-        // Given three 2D points
-        const pointA = { x: this._point1?.o, y: this._point1?.a };
-        const pointB = { x: this._point2?.o, y: this._point2?.a };
-        const pointC = { x: this._point3?.o, y: this._point3?.a };
-
-        // Get distances between the points
-        const distAB = getDistance(pointA, pointB);
-        const distBC = getDistance(pointB, pointC);
-        const distCA = getDistance(pointC, pointA);
-
-        // 1. Calculate the center of the ellipse
-        function getEllipseCenter(p1, p2, p3) {
-            const centerX = (p1.x + p2.x + p3.x) / 3;
-            const centerY = (p1.y + p2.y + p3.y) / 3;
-            return { x: centerX, y: centerY };
         }
-
-        const center = getEllipseCenter(pointA, pointB, pointC);
-        // 2. Calculate the lengths of the semi-major and semi-minor axes
-        function getDistance(p1, p2) {
-            return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
-        }
-
-        // Semi-major axis is the longest distance between two points
-        const semiMajor = Math.max(distAB, distBC, distCA) ;
-        // Semi-minor axis can be the shortest distance divided by 2 for simplicity
-        const semiMinor = Math.min(distAB, distBC, distCA) 
-
-        // 3. Calculate the rotation of the ellipse
-        // Use the angle between the longest axis (semi-major) and the horizontal axis
-        let angle;
-        if (semiMajor === distAB) {
-            angle = Math.atan2(pointB.y - pointA.y, pointB.x - pointA.x);
-        } else if (semiMajor === distBC) {
-            angle = Math.atan2(pointC.y - pointB.y, pointC.x - pointB.x);
-        } else {
-            angle = Math.atan2(pointA.y - pointC.y, pointA.x - pointC.x);
-        }
-
-
-
-        this.horizontalProjection.angle = angle
-        this.horizontalProjection.semiMinor = semiMinor
-        this.horizontalProjection.semiMajor = semiMajor
-        this.horizontalProjection.pos = new THREE.Vector2(center.x, center.y)
-
-
-
-
-
     }
 }
