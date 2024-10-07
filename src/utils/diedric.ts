@@ -185,11 +185,6 @@ export class Diedric {
         line.start = new THREE.Vector2(this.size, -this.size)
         line.end = new THREE.Vector2(-this.size, -this.size)
         this.canvas2d.add(line)
-
-
-        let label = new TWO.Label({ text: "AS" })
-        this.canvas2d.add(label)
-
     }
 
     drawAxis() {
