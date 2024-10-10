@@ -28,6 +28,7 @@ export class Canvas {
     setSize(width: number, height: number) {
         this.canvas.width = width
         this.canvas.height = height
+        this.center = new Vector2(this.canvas.width / 2, this.canvas.height / 2)
     }
 
     setBackground(color: string) {
