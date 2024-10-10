@@ -1,5 +1,5 @@
 import { ChangeEvent, createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
-import { Trash2, Plus, Save, TriangleAlert, RotateCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trash2, Plus, Save, TriangleAlert, RotateCw, ChevronRight } from 'lucide-react';
 
 import { Diedric } from "./utils/diedric"
 
@@ -373,6 +373,7 @@ function Expression({ expression }: { expression: Expression }) {
 
         expression.value = parseParams(expressionText.slice(1, expressionText.length - 1))
         if (expression.value) {
+            // @ts-ignore
             expression.value.name = expression.expressionName
         }
 
@@ -538,16 +539,16 @@ export default function App() {
                     onClick={() => {
                         if ((document.querySelector("#object-info-panel") as HTMLDivElement).style.backgroundColor == "transparent") {
                             (document.querySelector("#object-info-panel") as HTMLDivElement).style.backgroundColor = "";
-                            (document.querySelector("#object-info-panel") as HTMLDivElement).querySelector("div").hidden = false;
+                            ((document.querySelector("#object-info-panel") as HTMLDivElement).querySelector("div") as HTMLDivElement).hidden = false;
                             (document.querySelector("#object-info-panel") as HTMLDivElement).style.width = "";
                             (document.querySelector("#object-info-panel") as HTMLDivElement).style.minWidth = "";
-                            (document.querySelector("#object-info-panel") as HTMLDivElement).querySelector("svg").style.transform = "";
+                            ((document.querySelector("#object-info-panel") as HTMLDivElement).querySelector("svg") as SVGSVGElement).style.transform = "";
                         } else {
                             (document.querySelector("#object-info-panel") as HTMLDivElement).style.backgroundColor = "transparent";
-                            (document.querySelector("#object-info-panel") as HTMLDivElement).querySelector("div").hidden = true;
+                            ((document.querySelector("#object-info-panel") as HTMLDivElement).querySelector("div") as HTMLDivElement).hidden = true;
                             (document.querySelector("#object-info-panel") as HTMLDivElement).style.width = "0px";
                             (document.querySelector("#object-info-panel") as HTMLDivElement).style.minWidth = "0px";
-                            (document.querySelector("#object-info-panel") as HTMLDivElement).querySelector("svg").style.transform = "rotate(180deg)";
+                            ((document.querySelector("#object-info-panel") as HTMLDivElement).querySelector("svg") as SVGSVGElement).style.transform = "rotate(180deg)";
                         }
                     }}
                 />
@@ -565,16 +566,29 @@ export default function App() {
                             <label className="text-sm font-base pl-3">Hidden: {JSON.stringify(expression.params.hidden)}</label>
                             <label className="text-sm font-base pl-3">Depenedencies: {JSON.stringify(expression.dependencies)}</label>
                             <label className="font-semibold">Args</label>
-
+                            {/* @ts-ignore */}
                             {expression?.value?.o !== undefined && <label className="pl-3">o {expression.value.o}</label>}
+                            {/* @ts-ignore */}
                             {expression?.value?.a !== undefined && <label className="pl-3">a {expression.value.a}</label>}
+                            {/* @ts-ignore */}
                             {expression?.value?.c !== undefined && <label className="pl-3">c {expression.value.c}</label>}
+                            {/* @ts-ignore */}
                             {expression?.value?.point?.type && <label className="pl-3">point {expression.value.point?.type}</label>}
+                            {/* @ts-ignore */}
+                            {/* @ts-ignore */}
+                            {/* @ts-ignore */}
+                            {/* @ts-ignore */}
+                            {/* @ts-ignore */}
                             {expression?.value?.point1?.type && <label className="pl-3">point1 {expression.value.point1?.type}</label>}
+                            {/* @ts-ignore */}
                             {expression?.value?.point2?.type && <label className="pl-3">point2 {expression.value.point2?.type}</label>}
+                            {/* @ts-ignore */}
                             {expression?.value?.point3?.type && <label className="pl-3">point3 {expression.value.point3?.type}</label>}
+                            {/* @ts-ignore */}
                             {expression?.value?.line?.type && <label className="pl-3">line {expression.value.line?.type}</label>}
+                            {/* @ts-ignore */}
                             {expression?.value?.line1?.type && <label className="pl-3">line1 {expression.value.line1?.type}</label>}
+                            {/* @ts-ignore */}
                             {expression?.value?.line2?.type && <label className="pl-3">line2 {expression.value.line2?.type}</label>}
 
                             <div className="bg-white flex flex-col">
