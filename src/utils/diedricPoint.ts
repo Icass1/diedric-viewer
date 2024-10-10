@@ -77,8 +77,8 @@ export class DiedricPoint {
         this.diedric.scene.add(this.lineToY0Line);
         this.diedric.scene.add(this.lineToZ0Line);
 
-        this.verticalProjection = new TWO.Point({ radius: 6, color: color.toString() })
-        this.horizontalProjection = new TWO.Point({ radius: 6, color: color.toString() })
+        this.verticalProjection = new TWO.Point({ radius: 3, color: color.toString() })
+        this.horizontalProjection = new TWO.Point({ radius: 3, color: color.toString() })
 
         this.diedric.canvas2d.add(this.verticalProjection)
         this.diedric.canvas2d.add(this.horizontalProjection)

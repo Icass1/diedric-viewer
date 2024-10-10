@@ -29,7 +29,7 @@ export class DiedricCircle3Point {
     private horizontalProjection: Path
     private verticalProjection: Path
 
-    ellipseResolution = 40
+    ellipseResolution = 100
 
 
     constructor({ diedric, point1, point2, point3, color }: { diedric: Diedric, point1: DiedricPoint | undefined, point2: DiedricPoint | undefined, point3: DiedricPoint | undefined, color: THREE.ColorRepresentation }) {

@@ -18,6 +18,8 @@ import { DiedricPointMidLinePoint } from "./utils/diedricPointMidLinePoint";
 import { DiedricLinePointPerpendicularPlane } from "./utils/diedricLinePointPerpendicularPlane";
 import { DiedricPointIntersectLinePlane } from "./utils/diedricPointIntersectLinePlane";
 import { DiedricCircle3Point } from "./utils/diedricCircle3Point";
+import { DiedricPointMid2Point } from "./utils/diedricPointMid2Point";
+import { DiedricPlanePointPerpendicularLine } from "./utils/diedricPlanePointPerpendicularLine";
 
 type PosibleExpressions = DiedricLine2Point | DiedricPlane3Point | DiedricPoint | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPlane2Line | DiedricLine2Plane
 
@@ -25,6 +27,7 @@ const DiedricObjects = [
     DiedricPoint,
     DiedricPointMidLinePoint,
     DiedricPointIntersectLinePlane,
+    DiedricPointMid2Point,
 
     DiedricLine2Point,
     DiedricLine2Plane,
@@ -35,6 +38,7 @@ const DiedricObjects = [
     DiedricPlane3Point,
     DiedricPlane2Line,
     DiedricPlaneOAC,
+    DiedricPlanePointPerpendicularLine,
 
     DiedricCircle3Point,
 ]
@@ -445,7 +449,7 @@ export default function App() {
     const [diedric, setDiedric] = useState<Diedric>()
     const [expressions, setExpressions] = useState<Expression[]>([])
 
-    const savedExpressionsIndex = 1;
+    const savedExpressionsIndex = 0;
     const savedExpressions = JSON.parse(localStorage.getItem("expressions") || "[]")[savedExpressionsIndex] as Expression[]
     console.log(savedExpressions)
 

@@ -53,21 +53,20 @@ export class DiedricPlane {
         this.verticalProjectionLine = new THREE.Line(this.verticalProjectionGeometry, projectionMaterial);
         this.diedric.scene.add(this.verticalProjectionLine);
 
-        // Create a material
+        // Create a material.
         this.material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 0.1 });
 
-        // Create a mesh with the geometry and material
+        // Create a mesh with the geometry and material.
         this.plane = new THREE.Mesh(this.geometry, this.material);
 
-        // Add the plane to the scene
+        // Add the plane to the scene.
         this.diedric.scene.add(this.plane);
 
-        this.horizontalProjectionLine2d = new TWO.Line({ color: color.toString(), width: 1 })
-        this.verticalProjectionLine2d = new TWO.Line({ color: color.toString(), width: 1 })
+        this.horizontalProjectionLine2d = new TWO.Line({ color: color.toString(), width: 2, dashed: true })
+        this.verticalProjectionLine2d = new TWO.Line({ color: color.toString(), width: 2 })
 
         this.diedric.canvas2d.add(this.horizontalProjectionLine2d)
         this.diedric.canvas2d.add(this.verticalProjectionLine2d)
-
     }
 
     calc() {
@@ -93,7 +92,6 @@ export class DiedricPlane {
                     z = k[1]
                     x = (d - this._normal.y * y - this._normal.z * z) / this._normal.x
                     if (x <= size && x >= -size) {
-                        // addPoint(new THREE.Vector3(x, y, z), "blue")
                         borderPoints.push(new THREE.Vector3(x, y, z))
                     }
                 }
@@ -149,7 +147,6 @@ export class DiedricPlane {
                 if (y <= size && y >= -size) {
                     verticalProjectionPoints.push(new THREE.Vector3(x, y, z))
                 }
-
             }
             if (this._normal.z != 0) {
                 let x: number;
