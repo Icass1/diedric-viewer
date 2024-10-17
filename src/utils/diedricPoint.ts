@@ -9,6 +9,8 @@ import * as TWO from "./two";
 import { DiedricPointMidLinePoint } from './diedricPointMidLinePoint';
 import { DiedricLinePointPerpendicularPlane } from './diedricLinePointPerpendicularPlane';
 import { DiedricCircle3Point } from './diedricCircle3Point';
+import { DiedricPointMid2Point } from './diedricPointMid2Point';
+import { DiedricPlanePointPerpendicularLine } from './diedricPlanePointPerpendicularLine';
 
 export class DiedricPoint {
     private bPoint: THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial, THREE.Object3DEventMap>
@@ -32,7 +34,7 @@ export class DiedricPoint {
     private _c: number | undefined
 
     private _color: THREE.ColorRepresentation
-    children: (DiedricPlane3Point | DiedricLine2Point | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPointMidLinePoint | DiedricLinePointPerpendicularPlane | DiedricCircle3Point)[] = []
+    children: (DiedricPlane3Point | DiedricLine2Point | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPointMidLinePoint | DiedricLinePointPerpendicularPlane | DiedricCircle3Point | DiedricPointMid2Point|DiedricPlanePointPerpendicularLine)[] = []
 
     static params: any = { "o": "number", "a": "number", "c": "number" }
     static type = "point"
@@ -136,6 +138,8 @@ export class DiedricPoint {
             this.diedric.canvas2d.add(this.verticalProjection)
             this.diedric.canvas2d.add(this.horizontalProjection)
 
+            this.diedric.canvas2d.add(this.verticalProjectionLabel)
+            this.diedric.canvas2d.add(this.horizontalProjectionLabel)
         } else {
             this.diedric.scene.remove(this.bPoint)
             this.diedric.scene.remove(this.lineToX0Line)
@@ -145,6 +149,8 @@ export class DiedricPoint {
             this.diedric.canvas2d.remove(this.verticalProjection)
             this.diedric.canvas2d.remove(this.horizontalProjection)
 
+            this.diedric.canvas2d.remove(this.verticalProjectionLabel)
+            this.diedric.canvas2d.remove(this.horizontalProjectionLabel)
         }
     }
 

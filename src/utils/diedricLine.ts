@@ -8,6 +8,7 @@ import { DiedricPlanePointLine } from "./diedricPlanePointLine";
 import * as TWO from "./two";
 import { DiedricPointMidLinePoint } from "./diedricPointMidLinePoint";
 import { DiedricPointIntersectLinePlane } from "./diedricPointIntersectLinePlane";
+import { DiedricPlanePointPerpendicularLine } from "./diedricPlanePointPerpendicularLine";
 
 export class DiedricLine {
     private diedric: Diedric
@@ -18,7 +19,14 @@ export class DiedricLine {
     private horizontalProjectionLine2d: TWO.Line
     private verticalProjectionLine2d: TWO.Line
 
-    children: (DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPlane2Line | DiedricPointMidLinePoint | DiedricPointIntersectLinePlane)[] = []
+    children: (
+        DiedricPlanePointLine | 
+        DiedricLinePointParallelLine | 
+        DiedricPlane2Line | 
+        DiedricPointMidLinePoint | 
+        DiedricPointIntersectLinePlane | 
+        DiedricPlanePointPerpendicularLine
+    )[] = []
 
     private _exists: boolean = false
     private _hidden: boolean = false
@@ -83,8 +91,8 @@ export class DiedricLine {
                 if (y >= -this.diedric.size && y <= this.diedric.size && z >= -this.diedric.size && z <= this.diedric.size) points.push(new THREE.Vector3(x, y, z))
 
                 // For 2D line
-                if (y >= -this.diedric.size && y <= this.diedric.size) { verticalProjectionPoints.push(new THREE.Vector2(x, -y)); console.log("2", x, -y) }
-                if (z >= -this.diedric.size && z <= this.diedric.size) { horizontalProjectionPoints.push(new THREE.Vector2(x, z)); console.log("2", x, z) }
+                if (y >= -this.diedric.size && y <= this.diedric.size) { verticalProjectionPoints.push(new THREE.Vector2(x, -y)); console.log("3", x, -y) }
+                if (z >= -this.diedric.size && z <= this.diedric.size) { horizontalProjectionPoints.push(new THREE.Vector2(x, z)); console.log("4", x, z) }
             }
             if (this._vector.y != 0) {
                 lambda1 = (this.diedric.size - this.__point.y) / this._vector.y
@@ -103,9 +111,12 @@ export class DiedricLine {
                 // For 2D line
                 if (x >= -this.diedric.size && x <= this.diedric.size) {
                     if (z >= -this.diedric.size && z <= this.diedric.size) {
-                        horizontalProjectionPoints.push(new THREE.Vector2(x, z))
+                        // horizontalProjectionPoints.push(new THREE.Vector2(x, z))
+                        console.log("5", x, z)
                     }
                     verticalProjectionPoints.push(new THREE.Vector2(x, -y))
+                    console.log("6", x, -y)
+
                 }
 
                 x = this._vector.x * lambda2 + this.__point.x
@@ -117,7 +128,7 @@ export class DiedricLine {
                 // For 2D line
                 if (x >= -this.diedric.size && x <= this.diedric.size) {
                     if (z >= -this.diedric.size && z <= this.diedric.size) {
-                        horizontalProjectionPoints.push(new THREE.Vector2(x, z))
+                        // horizontalProjectionPoints.push(new THREE.Vector2(x, z))
                     }
                     verticalProjectionPoints.push(new THREE.Vector2(x, -y))
                 }
@@ -139,7 +150,7 @@ export class DiedricLine {
                 // For 2D line
                 if (x >= -this.diedric.size && x <= this.diedric.size) {
                     if (y >= -this.diedric.size && y <= this.diedric.size) {
-                        verticalProjectionPoints.push(new THREE.Vector2(x, -y))
+                        // verticalProjectionPoints.push(new THREE.Vector2(x, -y))
                     }
                     horizontalProjectionPoints.push(new THREE.Vector2(x, z))
                 }
@@ -153,7 +164,7 @@ export class DiedricLine {
                 // For 2D line
                 if (x >= -this.diedric.size && x <= this.diedric.size) {
                     if (y >= -this.diedric.size && y <= this.diedric.size) {
-                        verticalProjectionPoints.push(new THREE.Vector2(x, -y))
+                        // verticalProjectionPoints.push(new THREE.Vector2(x, -y))
                     }
                     horizontalProjectionPoints.push(new THREE.Vector2(x, z))
                 }

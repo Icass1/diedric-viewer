@@ -450,7 +450,7 @@ export default function App() {
     const [diedric, setDiedric] = useState<Diedric>()
     const [expressions, setExpressions] = useState<Expression[]>([])
 
-    const savedExpressionsIndex = 0;
+    const savedExpressionsIndex = 3;
     const savedExpressions = JSON.parse(localStorage.getItem("expressions") || "[]")[savedExpressionsIndex] as Expression[]
     console.log(savedExpressions)
 
@@ -578,10 +578,6 @@ export default function App() {
                             {expression?.value?.c !== undefined && <label className="pl-3">c {expression.value.c}</label>}
                             {/* @ts-ignore */}
                             {expression?.value?.point?.type && <label className="pl-3">point {expression.value.point?.type}</label>}
-                            {/* @ts-ignore */}
-                            {/* @ts-ignore */}
-                            {/* @ts-ignore */}
-                            {/* @ts-ignore */}
                             {/* @ts-ignore */}
                             {expression?.value?.point1?.type && <label className="pl-3">point1 {expression.value.point1?.type}</label>}
                             {/* @ts-ignore */}
