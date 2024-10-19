@@ -450,7 +450,7 @@ export default function App() {
     const [diedric, setDiedric] = useState<Diedric>()
     const [expressions, setExpressions] = useState<Expression[]>([])
 
-    const savedExpressionsIndex = 3;
+    const savedExpressionsIndex = 1;
     const savedExpressions = JSON.parse(localStorage.getItem("expressions") || "[]")[savedExpressionsIndex] as Expression[]
     console.log(savedExpressions)
 
@@ -537,9 +537,10 @@ export default function App() {
                 <canvas ref={canvas2dRef} className="absolute top-0 w-full min-w-0 h-full min-h-0"></canvas>
             </div>
 
-            <div id="object-info-panel" className="fixed bg-white shadow-lg p-1 transition-all max-h-[calc(100%_-_2.5rem)] min-w-52 text-black text-sm font-base rounded-lg top-5 right-5 flex flex-col gap-2">
+            <div style={{background: "transparent", minWidth: '0px', width: '0px'}} id="object-info-panel" className="fixed bg-white shadow-lg p-1 transition-all max-h-[calc(100%_-_2.5rem)] min-w-52 text-black text-sm font-base rounded-lg top-5 right-5 flex flex-col gap-2">
                 <ChevronRight
                     className="absolute -left-8 text-black w-8 h-8 transition-transform duration-500"
+                    style={{transform: "rotate(180deg)"}}
                     onClick={() => {
                         if ((document.querySelector("#object-info-panel") as HTMLDivElement).style.backgroundColor == "transparent") {
                             (document.querySelector("#object-info-panel") as HTMLDivElement).style.backgroundColor = "";
