@@ -1,25 +1,29 @@
 import { ChangeEvent, createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
 import { Trash2, Plus, Save, TriangleAlert, RotateCw, ChevronRight } from 'lucide-react';
 
-import { Diedric } from "./utils/diedric"
+import * as THREE from 'three';
 
-import { DiedricPoint } from "./utils/diedricPoint";
+import { Diedric } from "./utils/diedric"
 
 import { DiedricLine2Point } from "./utils/diedricLine2Point";
 import { DiedricLinePointParallelLine } from "./utils/diedricLinePointParallelLine";
 import { DiedricLine2Plane } from "./utils/diedricLine2Plane";
+import { DiedricLinePointPerpendicularPlane } from "./utils/diedricLinePointPerpendicularPlane";
 
+import { DiedricPlane } from "./utils/diedricPlane";
 import { DiedricPlane3Point } from "./utils/diedricPlane3Point";
 import { DiedricPlanePointLine } from "./utils/diedricPlanePointLine";
 import { DiedricPlane2Line } from "./utils/diedricPlane2Line";
-import { Vector3 } from "three";
 import { DiedricPlaneOAC } from "./utils/diedricPlaneOAC";
-import { DiedricPointMidLinePoint } from "./utils/diedricPointMidLinePoint";
-import { DiedricLinePointPerpendicularPlane } from "./utils/diedricLinePointPerpendicularPlane";
-import { DiedricPointIntersectLinePlane } from "./utils/diedricPointIntersectLinePlane";
-import { DiedricCircle3Point } from "./utils/diedricCircle3Point";
-import { DiedricPointMid2Point } from "./utils/diedricPointMid2Point";
 import { DiedricPlanePointPerpendicularLine } from "./utils/diedricPlanePointPerpendicularLine";
+
+import { DiedricPoint } from "./utils/diedricPoint";
+import { DiedricPointMidLinePoint } from "./utils/diedricPointMidLinePoint";
+import { DiedricPointIntersectLinePlane } from "./utils/diedricPointIntersectLinePlane";
+import { DiedricPointMid2Point } from "./utils/diedricPointMid2Point";
+
+import { DiedricCircle3Point } from "./utils/diedricCircle3Point";
+
 import { Unfold } from "./utils/unfold";
 
 type PosibleExpressions = DiedricLine2Point | DiedricPlane3Point | DiedricPoint | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPlane2Line | DiedricLine2Plane
@@ -42,7 +46,7 @@ const DiedricObjects = [
     DiedricPlanePointPerpendicularLine,
 
     DiedricCircle3Point,
-    
+
     Unfold
 ]
 
@@ -453,23 +457,120 @@ export default function App() {
     const [diedric, setDiedric] = useState<Diedric>()
     const [expressions, setExpressions] = useState<Expression[]>([])
 
-    const savedExpressionsIndex = 4;
+    const savedExpressionsIndex = 5;
     const savedExpressions = JSON.parse(localStorage.getItem("expressions") || "[]")[savedExpressionsIndex] as Expression[]
 
     const canvas3dRef = useRef<HTMLCanvasElement>(null)
     const canvas2dRef = useRef<HTMLCanvasElement>(null)
 
+    const [point, setPoint] = useState<DiedricPoint>()
+    const [plane, setPlane] = useState<DiedricPlane>()
+
+
+    const [angle, setAngle] = useState<number>(0)
+
+
+
     useEffect(() => {
         if (!canvas3dRef.current || !canvas2dRef.current) return
         const newDiedric = new Diedric(100, canvas3dRef.current, canvas2dRef.current)
 
-        newDiedric.createStaticLabel("x", new Vector3(newDiedric.size, 0, 0))
-        newDiedric.createStaticLabel("y", new Vector3(0, newDiedric.size, 0))
-        newDiedric.createStaticLabel("z", new Vector3(0, 0, newDiedric.size))
+        newDiedric.createStaticLabel("x", new THREE.Vector3(newDiedric.size, 0, 0))
+        newDiedric.createStaticLabel("y", new THREE.Vector3(0, newDiedric.size, 0))
+        newDiedric.createStaticLabel("z", new THREE.Vector3(0, 0, newDiedric.size))
+
+
+
+        let point = new DiedricPoint({ diedric: newDiedric, o: 40, a: 60, c: 10, color: "red" })
+        point.calc()
+
+        let plane = new DiedricPlane(newDiedric, new THREE.Vector3(-20, 30, 60), 0, "red")
+        plane.calc()
+
+        setPoint(point)
+        setPlane(plane)
+
+
+
+
 
         setDiedric(newDiedric)
 
     }, [canvas3dRef, canvas2dRef])
+
+
+
+    useEffect(() => {
+        if (
+            point?.o != undefined &&
+            point?.a != undefined &&
+            point?.c != undefined &&
+            plane?.normal?.x != undefined &&
+            plane?.normal?.y != undefined &&
+            plane?.normal?.z != undefined &&
+            plane?.d != undefined
+        ) {
+
+
+            // Define the point you want to rotate.
+            const _point = new THREE.Vector3(40, 60, 10); // Replace x, y, z with your point coordinates
+
+
+
+
+            // Define a point on the line (A) and the line's direction (L).
+            const linePoint = new THREE.Vector3(0, 0, 0); // Replace ax, ay, az with line point coordinates
+            // const lineDirection = new THREE.Vector3().copy(plane.normal).normalize(); // Replace lx, ly, lz with line direction
+
+            const lineDirection = new THREE.Vector3(0, 1, 0).cross(plane.normal).normalize()
+
+
+
+            // Translate the point relative to the line point.
+            const translatedPoint = _point.clone().sub(linePoint);
+
+            // Define a target position with y = 0 in the same x-z plane as the translated point.
+            const targetPoint = translatedPoint.clone();
+            targetPoint.y = 0; // We want the rotated point to end up with y = 0.
+
+
+
+            // Step 1: Translate point to the origin relative to the line.
+            _point.sub(linePoint);
+
+            // Step 2: Create a quaternion for rotation around the line direction.
+            const quaternion = new THREE.Quaternion();
+            quaternion.setFromAxisAngle(lineDirection, angle);
+
+            console.log(quaternion, lineDirection, angle)
+
+            let qw = Math.cos(angle / 2)
+            let qx = lineDirection.x * Math.sin(angle / 2)
+            let qy = lineDirection.y * Math.sin(angle / 2)
+            let qz = lineDirection.z * Math.sin(angle / 2)
+
+            console.log(qw, qx, qy, qz)
+
+
+            // Step 3: Apply the rotation to the point.
+            _point.applyQuaternion(quaternion);
+
+            // Step 4: Translate the point back to the original position.
+            _point.add(linePoint);
+
+            point.o = _point.x
+            point.c = _point.y
+            point.a = _point.z
+            point.calc()
+
+        }
+
+
+    }, [point, plane, angle])
+
+
+
+
 
     useEffect(() => {
         if (!diedric || savedExpressions == undefined) { return }
@@ -539,10 +640,15 @@ export default function App() {
                 <canvas ref={canvas2dRef} className="absolute top-0 w-full min-w-0 h-full min-h-0"></canvas>
             </div>
 
-            <div style={{background: "transparent", minWidth: '0px', width: '0px'}} id="object-info-panel" className="fixed bg-white shadow-lg p-1 transition-all max-h-[calc(100%_-_2.5rem)] min-w-52 text-black text-sm font-base rounded-lg top-5 right-5 flex flex-col gap-2">
+            <div className="fixed left-[600px] top-10">
+                <input type="range" min={0} max={2 * Math.PI} step={0.1} value={angle} onInput={(e) => { setAngle(e.target?.value || 0) }}></input>
+                <label className="p-2 bg-black">{angle}</label>
+            </div>
+
+            <div style={{ background: "transparent", minWidth: '0px', width: '0px' }} id="object-info-panel" className="fixed bg-white shadow-lg p-1 transition-all max-h-[calc(100%_-_2.5rem)] min-w-52 text-black text-sm font-base rounded-lg top-5 right-5 flex flex-col gap-2">
                 <ChevronRight
                     className="absolute -left-8 text-black w-8 h-8 transition-transform duration-500"
-                    style={{transform: "rotate(180deg)"}}
+                    style={{ transform: "rotate(180deg)" }}
                     onClick={() => {
                         if ((document.querySelector("#object-info-panel") as HTMLDivElement).style.backgroundColor == "transparent") {
                             (document.querySelector("#object-info-panel") as HTMLDivElement).style.backgroundColor = "";
