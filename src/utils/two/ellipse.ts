@@ -1,12 +1,9 @@
 
-// ****************************************
-// *************  TO DELETE  **************
-// ****************************************
 
 import { Vector2 } from "three"
 import { Canvas } from "./canvas"
 
-export class Ellispe {
+export class Ellipse {
     color: string
     pos: Vector2
 

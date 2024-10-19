@@ -2,7 +2,7 @@ import { Vector2 } from "three"
 import { Canvas } from "./canvas"
 
 export class Label {
-    private color: string
+    color: string
     pos: Vector2
     text: string
 
@@ -30,5 +30,6 @@ export class Label {
         canvas.ctx.fillText(this.text, 0, 0);
         canvas.ctx.restore();
     }
+    
 
 }
