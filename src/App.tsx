@@ -20,6 +20,7 @@ import { DiedricPointIntersectLinePlane } from "./utils/diedricPointIntersectLin
 import { DiedricCircle3Point } from "./utils/diedricCircle3Point";
 import { DiedricPointMid2Point } from "./utils/diedricPointMid2Point";
 import { DiedricPlanePointPerpendicularLine } from "./utils/diedricPlanePointPerpendicularLine";
+import { Unfold } from "./utils/unfold";
 
 type PosibleExpressions = DiedricLine2Point | DiedricPlane3Point | DiedricPoint | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPlane2Line | DiedricLine2Plane
 
@@ -41,6 +42,8 @@ const DiedricObjects = [
     DiedricPlanePointPerpendicularLine,
 
     DiedricCircle3Point,
+    
+    Unfold
 ]
 
 interface Expression {
@@ -450,9 +453,8 @@ export default function App() {
     const [diedric, setDiedric] = useState<Diedric>()
     const [expressions, setExpressions] = useState<Expression[]>([])
 
-    const savedExpressionsIndex = 1;
+    const savedExpressionsIndex = 4;
     const savedExpressions = JSON.parse(localStorage.getItem("expressions") || "[]")[savedExpressionsIndex] as Expression[]
-    console.log(savedExpressions)
 
     const canvas3dRef = useRef<HTMLCanvasElement>(null)
     const canvas2dRef = useRef<HTMLCanvasElement>(null)

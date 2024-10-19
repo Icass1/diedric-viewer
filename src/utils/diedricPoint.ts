@@ -34,7 +34,7 @@ export class DiedricPoint {
     private _c: number | undefined
 
     private _color: THREE.ColorRepresentation
-    children: (DiedricPlane3Point | DiedricLine2Point | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPointMidLinePoint | DiedricLinePointPerpendicularPlane | DiedricCircle3Point | DiedricPointMid2Point|DiedricPlanePointPerpendicularLine)[] = []
+    children: (DiedricPlane3Point | DiedricLine2Point | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPointMidLinePoint | DiedricLinePointPerpendicularPlane | DiedricCircle3Point | DiedricPointMid2Point | DiedricPlanePointPerpendicularLine)[] = []
 
     static params: any = { "o": "number", "a": "number", "c": "number" }
     static type = "point"
@@ -42,6 +42,8 @@ export class DiedricPoint {
 
     private _hidden = false;
     private _exists = false;
+
+    private _name: string
 
     constructor({ diedric, o, a, c, color }: { diedric: Diedric, o: number | undefined, a: number | undefined, c: number | undefined, color: THREE.ColorRepresentation }) {
 
@@ -55,6 +57,8 @@ export class DiedricPoint {
             dashSize: 3,
             gapSize: 3,
         });
+
+        this._name = ""
 
         this.lineToY0Geometry = new THREE.BufferGeometry().setFromPoints([]);
         this.lineToY0Line = new THREE.Line(this.lineToY0Geometry, lineMaterial);
@@ -209,5 +213,10 @@ export class DiedricPoint {
     set name(name: string) {
         this.verticalProjectionLabel.text = name + "''"
         this.horizontalProjectionLabel.text = name + "'"
+        this._name = name
     }
+    get name() {
+        return this._name
+    }
+
 }

@@ -151,13 +151,13 @@ export class Diedric {
         this.canvas2d.add(line)
 
         line = new TWO.Line({ color: "black" })
-        line.start = new THREE.Vector2(-this.size, 10)
-        line.end = new THREE.Vector2(-this.size + 15, 10)
+        line.start = new THREE.Vector2(-this.size + 3, 6)
+        line.end = new THREE.Vector2(-this.size + 15, 6)
         this.canvas2d.add(line)
 
         line = new TWO.Line({ color: "black" })
-        line.start = new THREE.Vector2(this.size, 10)
-        line.end = new THREE.Vector2(this.size - 15, 10)
+        line.start = new THREE.Vector2(this.size - 3, 6)
+        line.end = new THREE.Vector2(this.size - 15, 6)
         this.canvas2d.add(line)
 
         line = new TWO.Line({ color: "black" })
