@@ -34,6 +34,9 @@ export class DiedricPlane {
     private horizontalProjectionLine2d: TWO.Line
     private verticalProjectionLine2d: TWO.Line
 
+    private horizontalProjectionLine2dDashed: TWO.Line
+    private verticalProjectionLine2dDashed: TWO.Line
+
     constructor(diedric: Diedric, normal: THREE.Vector3 | undefined, d: number | undefined, color: THREE.ColorRepresentation) {
 
         this.diedric = diedric
@@ -62,12 +65,18 @@ export class DiedricPlane {
         // Add the plane to the scene.
         this.diedric.scene.add(this.plane);
 
-        this.horizontalProjectionLine2d = new TWO.Line({ color: color.toString(), width: 2, dashed: true })
+        this.horizontalProjectionLine2d = new TWO.Line({ color: color.toString(), width: 2 })
         this.verticalProjectionLine2d = new TWO.Line({ color: color.toString(), width: 2 })
+        this.horizontalProjectionLine2dDashed = new TWO.Line({ color: color.toString(), width: 2, dashed: true })
+        this.verticalProjectionLine2dDashed = new TWO.Line({ color: color.toString(), width: 2, dashed: true })
 
         this.diedric.canvas2d.add(this.horizontalProjectionLine2d)
         this.diedric.canvas2d.add(this.verticalProjectionLine2d)
+
+        this.diedric.canvas2d.add(this.horizontalProjectionLine2dDashed)
+        this.diedric.canvas2d.add(this.verticalProjectionLine2dDashed)
     }
+
 
     calc() {
         console.log("DiedricPlane calc")
@@ -176,11 +185,62 @@ export class DiedricPlane {
                 }
             }
 
-            this.horizontalProjectionLine2d.start = new THREE.Vector2(horizontalProjectionPoints[0].x, horizontalProjectionPoints[0].z)
-            this.horizontalProjectionLine2d.end = new THREE.Vector2(horizontalProjectionPoints[1].x, horizontalProjectionPoints[1].z)
+            let m = (horizontalProjectionPoints[1].z - horizontalProjectionPoints[0].z) / (horizontalProjectionPoints[1].x - horizontalProjectionPoints[0].x)
+            let n = horizontalProjectionPoints[0].z - m * horizontalProjectionPoints[0].x
 
-            this.verticalProjectionLine2d.start = new THREE.Vector2(verticalProjectionPoints[0].x, -verticalProjectionPoints[0].y)
-            this.verticalProjectionLine2d.end = new THREE.Vector2(verticalProjectionPoints[1].x, -verticalProjectionPoints[1].y)
+            let x = -n / m
+
+            if (horizontalProjectionPoints[0].z > 0) {
+                this.horizontalProjectionLine2d.start = new THREE.Vector2(horizontalProjectionPoints[0].x, horizontalProjectionPoints[0].z)
+                this.horizontalProjectionLine2d.end = new THREE.Vector2(x, 0)
+
+                this.horizontalProjectionLine2dDashed.start = new THREE.Vector2(x, 0)
+                this.horizontalProjectionLine2dDashed.end = new THREE.Vector2(horizontalProjectionPoints[1].x, horizontalProjectionPoints[1].z)
+
+            } else if (horizontalProjectionPoints[0].z < 0) {
+                console.warn("Implementation missing 1")
+                this.horizontalProjectionLine2d.start = new THREE.Vector2(x, 0)
+                this.horizontalProjectionLine2d.end = new THREE.Vector2(horizontalProjectionPoints[1].x, horizontalProjectionPoints[1].z)
+
+                this.horizontalProjectionLine2dDashed.start = new THREE.Vector2(horizontalProjectionPoints[0].x, horizontalProjectionPoints[0].z)
+                this.horizontalProjectionLine2dDashed.end = new THREE.Vector2(x, 0)
+
+            } else {
+                console.warn("Implementation missing 2")
+                this.horizontalProjectionLine2d.start = new THREE.Vector2(horizontalProjectionPoints[0].x, horizontalProjectionPoints[0].z)
+                this.horizontalProjectionLine2d.end = new THREE.Vector2(horizontalProjectionPoints[1].x, horizontalProjectionPoints[1].z)
+
+                this.horizontalProjectionLine2dDashed.start = new THREE.Vector2(0, 0)
+                this.horizontalProjectionLine2dDashed.end = new THREE.Vector2(0, 0)
+            }
+
+            if (-verticalProjectionPoints[0].y > 0) {
+                console.warn("Implementation missing 3")
+                this.verticalProjectionLine2d.start = new THREE.Vector2(verticalProjectionPoints[0].x, -verticalProjectionPoints[0].y)
+                this.verticalProjectionLine2d.end = new THREE.Vector2(verticalProjectionPoints[1].x, -verticalProjectionPoints[1].y)
+
+                this.verticalProjectionLine2dDashed.start = new THREE.Vector2(0, 0)
+                this.verticalProjectionLine2dDashed.end = new THREE.Vector2(0, 0)
+
+            } else if (-verticalProjectionPoints[0].y < 0) {
+                this.verticalProjectionLine2d.start = new THREE.Vector2(verticalProjectionPoints[0].x, -verticalProjectionPoints[0].y)
+                this.verticalProjectionLine2d.end = new THREE.Vector2(x, 0)
+
+                this.verticalProjectionLine2dDashed.start = new THREE.Vector2(x, 0)
+                this.verticalProjectionLine2dDashed.end = new THREE.Vector2(verticalProjectionPoints[1].x, -verticalProjectionPoints[1].y)
+
+            } else {
+                console.warn("Implementation missing 4")
+                this.verticalProjectionLine2d.start = new THREE.Vector2(verticalProjectionPoints[0].x, -verticalProjectionPoints[0].y)
+                this.verticalProjectionLine2d.end = new THREE.Vector2(verticalProjectionPoints[1].x, -verticalProjectionPoints[1].y)
+
+                this.verticalProjectionLine2dDashed.start = new THREE.Vector2(0, 0)
+                this.verticalProjectionLine2dDashed.end = new THREE.Vector2(0, 0)
+            }
+
+
+
+
 
             this.horizontalProjectionGeometry.setFromPoints(horizontalProjectionPoints)
             this.verticalProjectionGeometry.setFromPoints(verticalProjectionPoints)
@@ -281,6 +341,15 @@ export class DiedricPlane {
             }
 
             this.children.map(child => child.update())
+
+
+
+
+
+
+
+
+
         } else {
             this._exists = false
         }
