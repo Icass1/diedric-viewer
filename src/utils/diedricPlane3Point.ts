@@ -13,7 +13,9 @@ export class DiedricPlane3Point extends DiedricPlane {
     static type = "plane-3-pto"
     public type = "plane-3-pto"
 
+
     constructor({ diedric, point1, point2, point3, color }: { diedric: Diedric, point1: DiedricPoint | undefined, point2: DiedricPoint | undefined, point3: DiedricPoint | undefined, color: THREE.ColorRepresentation }) {
+        console.log("constructor DiedricPlane3Point")
         super(diedric, undefined, undefined, color)
 
         this._color = color
@@ -24,6 +26,7 @@ export class DiedricPlane3Point extends DiedricPlane {
         this._point1?.children.push(this)
         this._point2?.children.push(this)
         this._point3?.children.push(this)
+
 
         this.update()
         this.calc()
@@ -60,7 +63,7 @@ export class DiedricPlane3Point extends DiedricPlane {
             super.normal = new THREE.Vector3().crossVectors(vector1, vector2).normalize();
 
             super.d = super.normal.x * pointA.x + super.normal.y * pointA.y + super.normal.z * pointA.z
-
+            super.calc()
         } else {
             super.normal = undefined
             super.d = undefined
