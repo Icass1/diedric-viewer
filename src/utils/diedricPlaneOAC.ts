@@ -15,6 +15,8 @@ export class DiedricPlaneOAC extends DiedricPlane3Point {
     private _a: number | undefined
     private _c: number | undefined
 
+    private __diedric: Diedric
+
     static params: any = {
         'o': "number",
         'a': "number",
@@ -23,6 +25,8 @@ export class DiedricPlaneOAC extends DiedricPlane3Point {
 
     constructor({ diedric, o, a, c, color }: { diedric: Diedric, o: number | undefined, a: number | undefined, c: number | undefined, color: THREE.ColorRepresentation }) {
         super({ diedric: diedric, point1: undefined, point2: undefined, point3: undefined, color: color })
+
+        this.__diedric = diedric
 
         this._pointO = new DiedricPoint({ diedric: diedric, o: o, a: 0, c: 0, color: color })
         this._pointO.hidden = true
@@ -59,13 +63,11 @@ export class DiedricPlaneOAC extends DiedricPlane3Point {
     }
 
     update() {
-        console.log("DiedricPlaneOAC update")
+        this.__diedric.log("DiedricPlaneOAC update")
         super.update()
         super.calc()
     }
-    get color() {
-        return super.color
-    }
+
 
     get o() {
         return this._o

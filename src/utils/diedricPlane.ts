@@ -5,6 +5,7 @@ import { Diedric } from './diedric';
 import { DiedricLine2Plane } from './diedricLine2Plane';
 import { DiedricLinePointPerpendicularPlane } from './diedricLinePointPerpendicularPlane';
 import { DiedricPointIntersectLinePlane } from './diedricPointIntersectLinePlane';
+import { DiedricLinePointPlaneLineAngle } from './diedricLinePointPlaneLineAngle';
 
 export class DiedricPlane {
     private size: number
@@ -14,6 +15,7 @@ export class DiedricPlane {
     private _d: number | undefined
 
     private material: THREE.MeshBasicMaterial
+    private projectionMaterial: THREE.LineBasicMaterial
     private diedric: Diedric
 
     private horizontalProjectionGeometry;
@@ -23,7 +25,12 @@ export class DiedricPlane {
     private horizontalProjectionLine: THREE.Line<THREE.BufferGeometry<THREE.NormalBufferAttributes>, THREE.LineBasicMaterial, THREE.Object3DEventMap>
     private plane: THREE.Mesh<THREE.BufferGeometry<THREE.NormalBufferAttributes>, THREE.MeshBasicMaterial, THREE.Object3DEventMap>
 
-    children: (DiedricLine2Plane | DiedricLinePointPerpendicularPlane | DiedricPointIntersectLinePlane)[] = []
+    children: (
+        DiedricLine2Plane |
+        DiedricLinePointPerpendicularPlane |
+        DiedricPointIntersectLinePlane |
+        DiedricLinePointPlaneLineAngle
+    )[] = []
 
     static type = "plane"
     public type = "plane"
@@ -46,14 +53,14 @@ export class DiedricPlane {
         this._normal = normal
         this._d = d
 
-        const projectionMaterial = new THREE.LineBasicMaterial({ color: color, });
+        this.projectionMaterial = new THREE.LineBasicMaterial({ color: color, });
 
         this.horizontalProjectionGeometry = new THREE.BufferGeometry().setFromPoints([]);
-        this.horizontalProjectionLine = new THREE.Line(this.horizontalProjectionGeometry, projectionMaterial);
+        this.horizontalProjectionLine = new THREE.Line(this.horizontalProjectionGeometry, this.projectionMaterial);
         this.diedric.scene.add(this.horizontalProjectionLine);
 
         this.verticalProjectionGeometry = new THREE.BufferGeometry().setFromPoints([]);
-        this.verticalProjectionLine = new THREE.Line(this.verticalProjectionGeometry, projectionMaterial);
+        this.verticalProjectionLine = new THREE.Line(this.verticalProjectionGeometry, this.projectionMaterial);
         this.diedric.scene.add(this.verticalProjectionLine);
 
         // Create a material.
@@ -79,7 +86,7 @@ export class DiedricPlane {
 
 
     calc() {
-        console.log("DiedricPlane calc")
+        this.diedric.log("DiedricPlane calc")
         if (this._d !== undefined && this._normal?.x !== undefined && this._normal?.y !== undefined && this._normal?.z !== undefined) {
             this._exists = true
 
@@ -198,7 +205,7 @@ export class DiedricPlane {
                 this.horizontalProjectionLine2dDashed.end = new THREE.Vector2(horizontalProjectionPoints[1].x, horizontalProjectionPoints[1].z)
 
             } else if (horizontalProjectionPoints[0].z < 0) {
-                console.warn("Implementation missing 1")
+                this.diedric.warn("Implementation missing 1")
                 this.horizontalProjectionLine2d.start = new THREE.Vector2(x, 0)
                 this.horizontalProjectionLine2d.end = new THREE.Vector2(horizontalProjectionPoints[1].x, horizontalProjectionPoints[1].z)
 
@@ -206,7 +213,7 @@ export class DiedricPlane {
                 this.horizontalProjectionLine2dDashed.end = new THREE.Vector2(x, 0)
 
             } else {
-                console.warn("Implementation missing 2")
+                this.diedric.warn("Implementation missing 2")
                 this.horizontalProjectionLine2d.start = new THREE.Vector2(horizontalProjectionPoints[0].x, horizontalProjectionPoints[0].z)
                 this.horizontalProjectionLine2d.end = new THREE.Vector2(horizontalProjectionPoints[1].x, horizontalProjectionPoints[1].z)
 
@@ -215,7 +222,7 @@ export class DiedricPlane {
             }
 
             if (-verticalProjectionPoints[0].y > 0) {
-                console.warn("Implementation missing 3")
+                this.diedric.warn("Implementation missing 3")
                 this.verticalProjectionLine2d.start = new THREE.Vector2(verticalProjectionPoints[0].x, -verticalProjectionPoints[0].y)
                 this.verticalProjectionLine2d.end = new THREE.Vector2(verticalProjectionPoints[1].x, -verticalProjectionPoints[1].y)
 
@@ -230,17 +237,13 @@ export class DiedricPlane {
                 this.verticalProjectionLine2dDashed.end = new THREE.Vector2(verticalProjectionPoints[1].x, -verticalProjectionPoints[1].y)
 
             } else {
-                console.warn("Implementation missing 4")
+                this.diedric.warn("Implementation missing 4")
                 this.verticalProjectionLine2d.start = new THREE.Vector2(verticalProjectionPoints[0].x, -verticalProjectionPoints[0].y)
                 this.verticalProjectionLine2d.end = new THREE.Vector2(verticalProjectionPoints[1].x, -verticalProjectionPoints[1].y)
 
                 this.verticalProjectionLine2dDashed.start = new THREE.Vector2(0, 0)
                 this.verticalProjectionLine2dDashed.end = new THREE.Vector2(0, 0)
             }
-
-
-
-
 
             this.horizontalProjectionGeometry.setFromPoints(horizontalProjectionPoints)
             this.verticalProjectionGeometry.setFromPoints(verticalProjectionPoints)
@@ -259,7 +262,7 @@ export class DiedricPlane {
 
                     let newPoint = borderPoints.find(point => (point.x == size && !finalBorderPoints.includes(point)))
                     if (!newPoint) {
-                        console.warn("This should never happen", borderPoints, currentPoint)
+                        this.diedric.warn("This should never happen", borderPoints, currentPoint)
                         continue
                     }
                     finalBorderPoints.push(newPoint)
@@ -269,7 +272,7 @@ export class DiedricPlane {
 
                     let newPoint = borderPoints.find(point => (point.x == -size && !finalBorderPoints.includes(point)))
                     if (!newPoint) {
-                        console.warn("This should never happen", borderPoints, currentPoint)
+                        this.diedric.warn("This should never happen", borderPoints, currentPoint)
                         continue
                     }
                     finalBorderPoints.push(newPoint)
@@ -279,7 +282,7 @@ export class DiedricPlane {
                 } else if (currentPoint.y == size && !facesDone.includes("C")) {
                     let newPoint = borderPoints.find(point => (point.y == size && !finalBorderPoints.includes(point)))
                     if (!newPoint) {
-                        console.warn("This should never happen", borderPoints, currentPoint)
+                        this.diedric.warn("This should never happen", borderPoints, currentPoint)
                         continue
                     }
                     finalBorderPoints.push(newPoint)
@@ -290,7 +293,7 @@ export class DiedricPlane {
                 } else if (currentPoint.y == -size && !facesDone.includes("D")) {
                     let newPoint = borderPoints.find(point => (point.y == -size && !finalBorderPoints.includes(point)))
                     if (!newPoint) {
-                        console.warn("This should never happen", borderPoints, currentPoint)
+                        this.diedric.warn("This should never happen", borderPoints, currentPoint)
                         continue
                     }
                     finalBorderPoints.push(newPoint)
@@ -300,7 +303,7 @@ export class DiedricPlane {
                 } else if (currentPoint.z == size && !facesDone.includes("E")) {
                     let newPoint = borderPoints.find(point => (point.z == size && !finalBorderPoints.includes(point)))
                     if (!newPoint) {
-                        console.warn("This should never happen", borderPoints, currentPoint)
+                        this.diedric.warn("This should never happen", borderPoints, currentPoint)
                         continue
                     }
                     finalBorderPoints.push(newPoint)
@@ -310,7 +313,7 @@ export class DiedricPlane {
                 } else if (currentPoint.z == -size && !facesDone.includes("F")) {
                     let newPoint = borderPoints.find(point => (point.z == -size && !finalBorderPoints.includes(point)))
                     if (!newPoint) {
-                        console.warn("This should never happen", borderPoints, currentPoint)
+                        this.diedric.warn("This should never happen", borderPoints, currentPoint)
                         continue
                     }
                     finalBorderPoints.push(newPoint)
@@ -373,7 +376,9 @@ export class DiedricPlane {
             this.diedric.scene.add(this.plane)
 
             this.diedric.canvas2d.add(this.horizontalProjectionLine2d)
+            this.diedric.canvas2d.add(this.horizontalProjectionLine2dDashed)
             this.diedric.canvas2d.add(this.verticalProjectionLine2d)
+            this.diedric.canvas2d.add(this.verticalProjectionLine2dDashed)
 
         } else {
             this.diedric.scene.remove(this.horizontalProjectionLine)
@@ -381,7 +386,9 @@ export class DiedricPlane {
             this.diedric.scene.remove(this.plane)
 
             this.diedric.canvas2d.remove(this.horizontalProjectionLine2d)
+            this.diedric.canvas2d.remove(this.horizontalProjectionLine2dDashed)
             this.diedric.canvas2d.remove(this.verticalProjectionLine2d)
+            this.diedric.canvas2d.remove(this.verticalProjectionLine2dDashed)
         }
     }
     set d(d: number | undefined) {
@@ -404,4 +411,14 @@ export class DiedricPlane {
         this._hidden = value
         this.updateView()
     }
+    set color(color: string) {
+        this.material.color = new THREE.Color(color)
+        this.projectionMaterial.color = new THREE.Color(color)
+        this.verticalProjectionLine2d.color = color
+        this.verticalProjectionLine2dDashed.color = color
+        this.horizontalProjectionLine2d.color = color
+        this.horizontalProjectionLine2dDashed.color = color
+
+    }
+
 }

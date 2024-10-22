@@ -11,6 +11,7 @@ import { DiedricLinePointPerpendicularPlane } from './diedricLinePointPerpendicu
 import { DiedricCircle3Point } from './diedricCircle3Point';
 import { DiedricPointMid2Point } from './diedricPointMid2Point';
 import { DiedricPlanePointPerpendicularLine } from './diedricPlanePointPerpendicularLine';
+import { DiedricLinePointPlaneLineAngle } from './diedricLinePointPlaneLineAngle';
 
 export class DiedricPoint {
     private bPoint: THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial, THREE.Object3DEventMap>
@@ -34,7 +35,18 @@ export class DiedricPoint {
     private _c: number | undefined
 
     private _color: THREE.ColorRepresentation
-    children: (DiedricPlane3Point | DiedricLine2Point | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPointMidLinePoint | DiedricLinePointPerpendicularPlane | DiedricCircle3Point | DiedricPointMid2Point | DiedricPlanePointPerpendicularLine)[] = []
+    children: (
+        DiedricPlane3Point |
+        DiedricLine2Point |
+        DiedricPlanePointLine |
+        DiedricLinePointParallelLine |
+        DiedricPointMidLinePoint |
+        DiedricLinePointPerpendicularPlane |
+        DiedricCircle3Point |
+        DiedricPointMid2Point |
+        DiedricPlanePointPerpendicularLine |
+        DiedricLinePointPlaneLineAngle
+    )[] = []
 
     static params: any = { "o": "number", "a": "number", "c": "number" }
     static type = "point"
@@ -101,7 +113,7 @@ export class DiedricPoint {
     }
 
     calc() {
-        console.log("DiedricPoint calc")
+        this.diedric.log("DiedricPoint calc")
 
         if (this._o !== undefined && this._a !== undefined && this._c !== undefined) {
             this._exists = true
@@ -160,7 +172,6 @@ export class DiedricPoint {
 
     setAttributes(attr: { o?: number, a?: number, c?: number, color?: THREE.ColorRepresentation }) {
         if (attr.o == this.o && attr.a == this.a && attr.c == this.c && attr.color == this._color) { return }
-        console.log(attr)
         Object.entries(attr).map(attrEntry => {
             // @ts-ignore
             this[attrEntry[0]] = attrEntry[1]
@@ -169,11 +180,15 @@ export class DiedricPoint {
     }
 
     remove() {
-        console.warn("Remove from 2d canvas")
         this.diedric.scene.remove(this.bPoint)
         this.diedric.scene.remove(this.lineToX0Line)
         this.diedric.scene.remove(this.lineToY0Line)
         this.diedric.scene.remove(this.lineToZ0Line)
+
+        this.diedric.canvas2d.remove(this.horizontalProjection)
+        this.diedric.canvas2d.remove(this.horizontalProjectionLabel)
+        this.diedric.canvas2d.remove(this.verticalProjection)
+        this.diedric.canvas2d.remove(this.verticalProjectionLabel)
 
         this.children.map((child => child.removeParent(this)))
     }
@@ -204,6 +219,10 @@ export class DiedricPoint {
 
     set color(color: string) {
         this.material.color = new THREE.Color(color)
+        this.horizontalProjection.color = color
+        this.verticalProjection.color = color
+        this.verticalProjectionLabel.color = color
+        this.horizontalProjectionLabel.color = color
     }
 
     get color(): THREE.ColorRepresentation {

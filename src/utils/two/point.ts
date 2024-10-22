@@ -2,21 +2,21 @@ import { Vector2 } from "three"
 import { Canvas } from "./canvas"
 
 export class Point {
-    private color: string
+    private _color: string
     private radius: number
     pos: Vector2
 
 
     constructor({ color = "red", radius = 2 }: { color?: string, radius?: number }) {
-        this.color = color
+        this._color = color
         this.radius = radius
 
         this.pos = new Vector2(0, 0)
     }
     render(canvas: Canvas) {
         canvas.ctx.save();
-        canvas.ctx.fillStyle = this.color;
-        canvas.ctx.strokeStyle = this.color;
+        canvas.ctx.fillStyle = this._color;
+        canvas.ctx.strokeStyle = this._color;
 
         canvas.ctx.beginPath();
         canvas.ctx.arc(
@@ -26,5 +26,9 @@ export class Point {
         );
         canvas.ctx.fill();
         canvas.ctx.restore();
+    }
+    set color(color: string) {
+        this._color = color
+
     }
 }

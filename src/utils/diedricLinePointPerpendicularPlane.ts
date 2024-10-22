@@ -6,9 +6,9 @@ import * as THREE from 'three';
 
 export class DiedricLinePointPerpendicularPlane extends DiedricLine {
 
-    private _color: THREE.ColorRepresentation
     private _point: DiedricPoint | undefined
     private _plane: DiedricPlane | undefined
+    private _diedric: Diedric
 
     static type = 'line-pto-per-plane'
     public type = 'line-pto-per-plane'
@@ -20,10 +20,10 @@ export class DiedricLinePointPerpendicularPlane extends DiedricLine {
     constructor({ diedric, point, plane, color }: { diedric: Diedric, point: DiedricPoint | undefined, plane: DiedricPlane | undefined, color: THREE.ColorRepresentation }) {
 
         super(diedric, undefined, undefined, color)
+        this._diedric = diedric
 
         this._point = point
         this._plane = plane
-        this._color = color
 
         this._point?.children.push(this)
         this._plane?.children.push(this)
@@ -44,7 +44,7 @@ export class DiedricLinePointPerpendicularPlane extends DiedricLine {
         super.remove()
     }
     update() {
-        console.log("DiedricLinePointPerpendicularPlane update")
+        this._diedric.log("DiedricLinePointPerpendicularPlane update")
 
         if (this._point?.o !== undefined && this._point?.a !== undefined && this._point?.c !== undefined && this._plane?.normal) {
 
@@ -105,9 +105,5 @@ export class DiedricLinePointPerpendicularPlane extends DiedricLine {
 
     get plane() {
         return this._plane
-    }
-
-    get color() {
-        return this._color
     }
 }

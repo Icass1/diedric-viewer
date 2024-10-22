@@ -9,6 +9,8 @@ import * as TWO from "./two";
 import { DiedricPointMidLinePoint } from "./diedricPointMidLinePoint";
 import { DiedricPointIntersectLinePlane } from "./diedricPointIntersectLinePlane";
 import { DiedricPlanePointPerpendicularLine } from "./diedricPlanePointPerpendicularLine";
+import { DiedricLinePointPlaneLineAngle } from "./diedricLinePointPlaneLineAngle";
+import { DiedricPoint2Line } from "./diedricPoint2Line";
 
 export class DiedricLine {
     private diedric: Diedric
@@ -20,16 +22,20 @@ export class DiedricLine {
     private verticalProjectionLine2d: TWO.Line
 
     children: (
-        DiedricPlanePointLine | 
-        DiedricLinePointParallelLine | 
-        DiedricPlane2Line | 
-        DiedricPointMidLinePoint | 
-        DiedricPointIntersectLinePlane | 
-        DiedricPlanePointPerpendicularLine
+        DiedricPlanePointLine |
+        DiedricLinePointParallelLine |
+        DiedricPlane2Line |
+        DiedricPointMidLinePoint |
+        DiedricPointIntersectLinePlane |
+        DiedricPlanePointPerpendicularLine |
+        DiedricLinePointPlaneLineAngle |
+        DiedricPoint2Line
     )[] = []
 
     private _exists: boolean = false
     private _hidden: boolean = false
+
+    private material: THREE.MeshBasicMaterial
 
     constructor(diedric: Diedric, point: THREE.Vector3 | undefined, vector: THREE.Vector3 | undefined, color: THREE.ColorRepresentation) {
 
@@ -40,10 +46,10 @@ export class DiedricLine {
         const geometry = new THREE.CylinderGeometry()
 
         // Create the cylinder material
-        const material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 1 });
+        this.material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 1 });
 
         // Create the cylinder mesh
-        this.cylinder = new THREE.Mesh(geometry, material);
+        this.cylinder = new THREE.Mesh(geometry, this.material);
 
         this.horizontalProjectionLine2d = new TWO.Line({ color: color.toString(), width: 1 })
         this.verticalProjectionLine2d = new TWO.Line({ color: color.toString(), width: 1 })
@@ -54,7 +60,8 @@ export class DiedricLine {
         this.diedric.canvas2d.add(this.verticalProjectionLine2d)
     }
     calc() {
-        console.log("DiedricLine calc")
+
+        this.diedric.log("DiedricLine calc")
         if (this._vector && this.__point) {
 
             this._exists = true
@@ -81,8 +88,8 @@ export class DiedricLine {
                 if (y >= -this.diedric.size && y <= this.diedric.size && z >= -this.diedric.size && z <= this.diedric.size) points.push(new THREE.Vector3(x, y, z))
 
                 // For 2D line
-                if (y >= -this.diedric.size && y <= this.diedric.size) { verticalProjectionPoints.push(new THREE.Vector2(x, -y)); console.log("1", x, -y) }
-                if (z >= -this.diedric.size && z <= this.diedric.size) { horizontalProjectionPoints.push(new THREE.Vector2(x, z)); console.log("2", x, z) }
+                if (y >= -this.diedric.size && y <= this.diedric.size) { verticalProjectionPoints.push(new THREE.Vector2(x, -y)) }
+                if (z >= -this.diedric.size && z <= this.diedric.size) { horizontalProjectionPoints.push(new THREE.Vector2(x, z)) }
 
                 x = -this.diedric.size
                 y = this._vector.y * lambda2 + this.__point.y
@@ -91,8 +98,8 @@ export class DiedricLine {
                 if (y >= -this.diedric.size && y <= this.diedric.size && z >= -this.diedric.size && z <= this.diedric.size) points.push(new THREE.Vector3(x, y, z))
 
                 // For 2D line
-                if (y >= -this.diedric.size && y <= this.diedric.size) { verticalProjectionPoints.push(new THREE.Vector2(x, -y)); console.log("3", x, -y) }
-                if (z >= -this.diedric.size && z <= this.diedric.size) { horizontalProjectionPoints.push(new THREE.Vector2(x, z)); console.log("4", x, z) }
+                if (y >= -this.diedric.size && y <= this.diedric.size) { verticalProjectionPoints.push(new THREE.Vector2(x, -y)) }
+                if (z >= -this.diedric.size && z <= this.diedric.size) { horizontalProjectionPoints.push(new THREE.Vector2(x, z)) }
             }
             if (this._vector.y != 0) {
                 lambda1 = (this.diedric.size - this.__point.y) / this._vector.y
@@ -112,10 +119,8 @@ export class DiedricLine {
                 if (x >= -this.diedric.size && x <= this.diedric.size) {
                     if (z >= -this.diedric.size && z <= this.diedric.size) {
                         // horizontalProjectionPoints.push(new THREE.Vector2(x, z))
-                        console.log("5", x, z)
                     }
                     verticalProjectionPoints.push(new THREE.Vector2(x, -y))
-                    console.log("6", x, -y)
 
                 }
 
@@ -172,10 +177,6 @@ export class DiedricLine {
 
             const pointA = points[0]
             const pointB = points[1]
-
-
-            console.log("verticalProjectionPoints", verticalProjectionPoints)
-            console.log("horizontalProjectionPoints", horizontalProjectionPoints)
 
             this.verticalProjectionLine2d.start = verticalProjectionPoints[0]
             this.verticalProjectionLine2d.end = verticalProjectionPoints[1]
@@ -235,7 +236,7 @@ export class DiedricLine {
         this.diedric.canvas2d.remove(this.horizontalProjectionLine2d)
 
         this.children.map((child => {
-            console.log(child)
+            this.diedric.log(child)
             child.removeParent(this)
         }))
     }
@@ -259,4 +260,11 @@ export class DiedricLine {
     get bVector(): THREE.Vector3 | undefined {
         return this._vector
     }
+
+    set color(color: string) {
+        this.material.color = new THREE.Color(color)
+        this.horizontalProjectionLine2d.color = color
+        this.verticalProjectionLine2d.color = color
+    }
+
 }

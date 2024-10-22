@@ -1,5 +1,5 @@
 import { ChangeEvent, createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
-import { Trash2, Plus, Save, TriangleAlert, RotateCw, ChevronRight } from 'lucide-react';
+import { Trash2, Plus, Save, TriangleAlert, RotateCw, ChevronRight, EyeOff, Eye } from 'lucide-react';
 
 import * as THREE from 'three';
 
@@ -10,7 +10,6 @@ import { DiedricLinePointParallelLine } from "./utils/diedricLinePointParallelLi
 import { DiedricLine2Plane } from "./utils/diedricLine2Plane";
 import { DiedricLinePointPerpendicularPlane } from "./utils/diedricLinePointPerpendicularPlane";
 
-import { DiedricPlane } from "./utils/diedricPlane";
 import { DiedricPlane3Point } from "./utils/diedricPlane3Point";
 import { DiedricPlanePointLine } from "./utils/diedricPlanePointLine";
 import { DiedricPlane2Line } from "./utils/diedricPlane2Line";
@@ -25,6 +24,15 @@ import { DiedricPointMid2Point } from "./utils/diedricPointMid2Point";
 import { DiedricCircle3Point } from "./utils/diedricCircle3Point";
 
 import { Unfold } from "./utils/unfold";
+import { DiedricLinePointPlaneLineAngle } from "./utils/diedricLinePointPlaneLineAngle";
+import { DiedricPoint2Line } from "./utils/diedricPoint2Line";
+
+
+
+// let path = "./utils/unfold"
+// const a = await import(path)
+// console.log(a)
+
 
 type PosibleExpressions = DiedricLine2Point | DiedricPlane3Point | DiedricPoint | DiedricPlanePointLine | DiedricLinePointParallelLine | DiedricPlane2Line | DiedricLine2Plane
 
@@ -33,11 +41,13 @@ const DiedricObjects = [
     DiedricPointMidLinePoint,
     DiedricPointIntersectLinePlane,
     DiedricPointMid2Point,
+    DiedricPoint2Line,
 
     DiedricLine2Point,
     DiedricLine2Plane,
     DiedricLinePointParallelLine,
     DiedricLinePointPerpendicularPlane,
+    DiedricLinePointPlaneLineAngle,
 
     DiedricPlanePointLine,
     DiedricPlane3Point,
@@ -105,6 +115,7 @@ function Expression({ expression }: { expression: Expression }) {
     const [numericValue, setNumericValue] = useState<number | undefined>(undefined)
 
     const removeExpression = () => {
+        expression.value?.remove()
         const expressionsCopy = [...expressions]
         delete expressionsCopy[expressions.indexOf(expression)]
         setExpressions(expressionsCopy.filter(expressionsCopy => expressionsCopy))
@@ -399,10 +410,6 @@ function Expression({ expression }: { expression: Expression }) {
     }
     useEffect(() => {
 
-        // console.log("======================")
-        // console.log("Use Effect")
-        // console.log("======================")
-
         setHidden(expression.params.hidden)
         Object.values(expressionObjects.current).map(exp => { (exp as PosibleExpressions).hidden = expression.params.hidden })
 
@@ -425,12 +432,18 @@ function Expression({ expression }: { expression: Expression }) {
                         <TriangleAlert className="h-6 w-6 relative mx-auto text-neutral-900/40"></TriangleAlert>
                         :
                         <div
-                            onClick={toggleHidden}
-                            className={"h-8 w-8 rounded-full relative mx-auto " + (hidden && ' border-4 border-neutral-600')}
-                            style={{ backgroundColor: hidden ? '' : expression?.params.color?.toString() }}
-                        />
+                            onClick={(e) => { (e.target as HTMLDivElement).querySelector("input")?.click() }}
+                            className={"h-6 w-6 rounded-full relative mx-auto cursor-pointer " + (hidden && ' border-2 border-neutral-600')}
+                            style={{ backgroundColor: hidden ? '' : expression?.params.color?.toString() }}>
+                            <input className="w-0 h-0" type="color" value={expression?.params.color?.toString()} onChange={(e) => { expression.value ? expression.value.color = e.target.value : ''; expression.params.color = e.target.value }}></input>
+                        </div>
                     }
-                    <RotateCw className="w-8 h-8 mx-auto text-neutral-500 cursor-pointer" onClick={() => { parseText(expression.expressionText) }}></RotateCw>
+                    {hidden ?
+                        <Eye className="w-6 h-6 mx-auto text-neutral-500 cursor-pointer" onClick={toggleHidden} />
+                        :
+                        <EyeOff className="w-6 h-6 mx-auto text-neutral-500 cursor-pointer" onClick={toggleHidden} />
+                    }
+                    <RotateCw className="w-6 h-6 mx-auto text-neutral-500 cursor-pointer" onClick={() => { parseText(expression.expressionText); expression.value?.update() }}></RotateCw>
                 </div>
             </div>
             <div className="relative w-full p-2 min-w-0 flex flex-col gap-1">
@@ -448,7 +461,7 @@ function Expression({ expression }: { expression: Expression }) {
                 )}
             </div>
             <Trash2 className="h-5 w-5 text-red-500 cursor-pointer hover:scale-105" onClick={removeExpression} />
-        </div>
+        </div >
     )
 }
 
@@ -457,14 +470,14 @@ export default function App() {
     const [diedric, setDiedric] = useState<Diedric>()
     const [expressions, setExpressions] = useState<Expression[]>([])
 
-    const savedExpressionsIndex = 5;
+    const savedExpressionsIndex = 3;
     const savedExpressions = JSON.parse(localStorage.getItem("expressions") || "[]")[savedExpressionsIndex] as Expression[]
 
     const canvas3dRef = useRef<HTMLCanvasElement>(null)
     const canvas2dRef = useRef<HTMLCanvasElement>(null)
 
-    const [point, setPoint] = useState<DiedricPoint>()
-    const [plane, setPlane] = useState<DiedricPlane>()
+    // const [point, setPoint] = useState<DiedricPoint>()
+    // const [plane, setPlane] = useState<DiedricPlane>()
 
 
     const [angle, setAngle] = useState<number>(0)
@@ -481,14 +494,14 @@ export default function App() {
 
 
 
-        let point = new DiedricPoint({ diedric: newDiedric, o: 40, a: 60, c: 10, color: "red" })
-        point.calc()
+        // let point = new DiedricPoint({ diedric: newDiedric, o: 40, a: 60, c: 10, color: "red" })
+        // point.calc()
 
-        let plane = new DiedricPlane(newDiedric, new THREE.Vector3(-20, 30, 60), 0, "red")
-        plane.calc()
+        // let plane = new DiedricPlane(newDiedric, new THREE.Vector3(-20, 30, 60), 0, "red")
+        // plane.calc()
 
-        setPoint(point)
-        setPlane(plane)
+        // setPoint(point)
+        // setPlane(plane)
 
 
 
@@ -500,73 +513,57 @@ export default function App() {
 
 
 
-    useEffect(() => {
-        if (
-            point?.o != undefined &&
-            point?.a != undefined &&
-            point?.c != undefined &&
-            plane?.normal?.x != undefined &&
-            plane?.normal?.y != undefined &&
-            plane?.normal?.z != undefined &&
-            plane?.d != undefined
-        ) {
+    // useEffect(() => {
+    //     if (
+    //         point?.o != undefined &&
+    //         point?.a != undefined &&
+    //         point?.c != undefined &&
+    //         plane?.normal?.x != undefined &&
+    //         plane?.normal?.y != undefined &&
+    //         plane?.normal?.z != undefined &&
+    //         plane?.d != undefined
+    //     ) {
 
+    //         // Define the point you want to rotate.
+    //         const _point = new THREE.Vector3(40, 60, 10); // Replace x, y, z with your point coordinates
 
-            // Define the point you want to rotate.
-            const _point = new THREE.Vector3(40, 60, 10); // Replace x, y, z with your point coordinates
+    //         // Define a point on the line (A) and the line's direction (L).
+    //         const linePoint = new THREE.Vector3(0, 0, 0); // Replace ax, ay, az with line point coordinates
+    //         // const lineDirection = new THREE.Vector3().copy(plane.normal).normalize(); // Replace lx, ly, lz with line direction
 
+    //         const lineDirection = new THREE.Vector3(0, 1, 0).cross(plane.normal).normalize()
 
+    //         // Translate the point relative to the line point.
+    //         const translatedPoint = _point.clone().sub(linePoint);
 
+    //         // Define a target position with y = 0 in the same x-z plane as the translated point.
+    //         const targetPoint = translatedPoint.clone();
+    //         targetPoint.y = 0; // We want the rotated point to end up with y = 0.
 
-            // Define a point on the line (A) and the line's direction (L).
-            const linePoint = new THREE.Vector3(0, 0, 0); // Replace ax, ay, az with line point coordinates
-            // const lineDirection = new THREE.Vector3().copy(plane.normal).normalize(); // Replace lx, ly, lz with line direction
+    //         // Step 1: Translate point to the origin relative to the line.
+    //         _point.sub(linePoint);
 
-            const lineDirection = new THREE.Vector3(0, 1, 0).cross(plane.normal).normalize()
+    //         // Step 2: Create a quaternion for rotation around the line direction.
+    //         const quaternion = new THREE.Quaternion();
+    //         quaternion.setFromAxisAngle(lineDirection, angle);
+    //         console.log(quaternion, lineDirection, angle)
+    //         let qw = Math.cos(angle / 2)
+    //         let qx = lineDirection.x * Math.sin(angle / 2)
+    //         let qy = lineDirection.y * Math.sin(angle / 2)
+    //         let qz = lineDirection.z * Math.sin(angle / 2)
+    //         console.log(qw, qx, qy, qz)
 
+    //         // Step 3: Apply the rotation to the point.
+    //         _point.applyQuaternion(quaternion);
 
-
-            // Translate the point relative to the line point.
-            const translatedPoint = _point.clone().sub(linePoint);
-
-            // Define a target position with y = 0 in the same x-z plane as the translated point.
-            const targetPoint = translatedPoint.clone();
-            targetPoint.y = 0; // We want the rotated point to end up with y = 0.
-
-
-
-            // Step 1: Translate point to the origin relative to the line.
-            _point.sub(linePoint);
-
-            // Step 2: Create a quaternion for rotation around the line direction.
-            const quaternion = new THREE.Quaternion();
-            quaternion.setFromAxisAngle(lineDirection, angle);
-
-            console.log(quaternion, lineDirection, angle)
-
-            let qw = Math.cos(angle / 2)
-            let qx = lineDirection.x * Math.sin(angle / 2)
-            let qy = lineDirection.y * Math.sin(angle / 2)
-            let qz = lineDirection.z * Math.sin(angle / 2)
-
-            console.log(qw, qx, qy, qz)
-
-
-            // Step 3: Apply the rotation to the point.
-            _point.applyQuaternion(quaternion);
-
-            // Step 4: Translate the point back to the original position.
-            _point.add(linePoint);
-
-            point.o = _point.x
-            point.c = _point.y
-            point.a = _point.z
-            point.calc()
-
-        }
-
-
-    }, [point, plane, angle])
+    //         // Step 4: Translate the point back to the original position.
+    //         _point.add(linePoint);
+    //         point.o = _point.x
+    //         point.c = _point.y
+    //         point.a = _point.z
+    //         point.calc()
+    //     }
+    // }, [point, plane, angle])
 
 
 
@@ -669,6 +666,7 @@ export default function App() {
 
                     {expressions.map(expression =>
                         <div key={expression.id} className="flex flex-col border border-neutral-400 rounded p-1">
+
                             <label className="font-semibold">{expression.expressionName} </label>
                             <label className="text-sm font-base pl-3">Type: {expression.value?.type || "---"}</label>
                             <div className="pl-3 flex flex-row gap-2 items-center">

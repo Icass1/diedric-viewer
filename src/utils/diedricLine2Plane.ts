@@ -5,9 +5,9 @@ import { DiedricLine } from './diedricLine';
 
 export class DiedricLine2Plane extends DiedricLine {
 
-    private _color: THREE.ColorRepresentation
     private _plane1: DiedricPlane | undefined
     private _plane2: DiedricPlane | undefined
+    private _diedric: Diedric
 
     static params: any = { 'plane1': DiedricPlane, 'plane2': DiedricPlane }
     static type = "line-2-plane"
@@ -17,9 +17,10 @@ export class DiedricLine2Plane extends DiedricLine {
 
         super(diedric, undefined, undefined, color)
 
+        this._diedric = diedric
+
         this._plane1 = plane1
         this._plane2 = plane2
-        this._color = color
 
         this._plane1?.children.push(this)
         this._plane2?.children.push(this)
@@ -40,7 +41,7 @@ export class DiedricLine2Plane extends DiedricLine {
         super.remove()
     }
     update() {
-        console.log("DiedricLine2Plane update")
+        this._diedric.log("DiedricLine2Plane update")
         if (this._plane1?.normal !== undefined && this._plane2?.normal !== undefined && this._plane1.d !== undefined && this._plane2.d !== undefined) {
             // super.bPoint = new THREE.Vector3(this._point.o, this._point.c, this._point.a)
             super.bVector = new THREE.Vector3().crossVectors(this._plane1?.normal, this._plane2.normal)
@@ -111,7 +112,5 @@ export class DiedricLine2Plane extends DiedricLine {
         return this._plane2
     }
 
-    get color() {
-        return this._color
-    }
+
 }

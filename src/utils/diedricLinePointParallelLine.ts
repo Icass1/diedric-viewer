@@ -5,9 +5,9 @@ import * as THREE from 'three';
 
 export class DiedricLinePointParallelLine extends DiedricLine {
 
-    private _color: THREE.ColorRepresentation
     private _point: DiedricPoint | undefined
     private _line: DiedricLine | undefined
+    private _diedric: Diedric
 
     static type = 'line-pto-par-line'
     public type = 'line-pto-par-line'
@@ -19,10 +19,10 @@ export class DiedricLinePointParallelLine extends DiedricLine {
     constructor({ diedric, point, line, color }: { diedric: Diedric, point: DiedricPoint | undefined, line: DiedricLine | undefined, color: THREE.ColorRepresentation }) {
 
         super(diedric, undefined, undefined, color)
+        this._diedric = diedric
 
         this._point = point
         this._line = line
-        this._color = color
 
         this._point?.children.push(this)
         this._line?.children.push(this)
@@ -43,7 +43,7 @@ export class DiedricLinePointParallelLine extends DiedricLine {
         super.remove()
     }
     update() {
-        console.log("DiedricLinePointParallelLine update")
+        this._diedric.log("DiedricLinePointParallelLine update")
         if (this._point && this._line?.bVector) {
             super.bPoint = new THREE.Vector3(this._point.o, this._point.c, this._point.a)
             super.bVector = new THREE.Vector3().copy(this._line.bVector)
@@ -95,9 +95,5 @@ export class DiedricLinePointParallelLine extends DiedricLine {
 
     get line() {
         return this._line
-    }
-
-    get color() {
-        return this._color
     }
 }

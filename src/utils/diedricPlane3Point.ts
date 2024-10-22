@@ -8,6 +8,7 @@ export class DiedricPlane3Point extends DiedricPlane {
     private _point1: DiedricPoint | undefined
     private _point2: DiedricPoint | undefined
     private _point3: DiedricPoint | undefined
+    private _diedric: Diedric
 
     static params: any = { 'point1': DiedricPoint, 'point2': DiedricPoint, 'point3': DiedricPoint }
     static type = "plane-3-pto"
@@ -15,8 +16,11 @@ export class DiedricPlane3Point extends DiedricPlane {
 
 
     constructor({ diedric, point1, point2, point3, color }: { diedric: Diedric, point1: DiedricPoint | undefined, point2: DiedricPoint | undefined, point3: DiedricPoint | undefined, color: THREE.ColorRepresentation }) {
-        console.log("constructor DiedricPlane3Point")
+        diedric.log("constructor DiedricPlane3Point")
+        
         super(diedric, undefined, undefined, color)
+        
+        this._diedric = diedric
 
         this._color = color
         this._point1 = point1
@@ -50,7 +54,7 @@ export class DiedricPlane3Point extends DiedricPlane {
     }
 
     update() {
-        console.log("DiedricPlane3Point update")
+        this._diedric.log("DiedricPlane3Point update")
 
         if (this._point1 && this._point2 && this._point3) {
             const pointA = new THREE.Vector3(this._point1.o, this._point1.c, this._point1.a)
@@ -69,9 +73,7 @@ export class DiedricPlane3Point extends DiedricPlane {
             super.d = undefined
         }
     }
-    get color(): THREE.ColorRepresentation {
-        return this._color
-    }
+
     set point1(point: DiedricPoint | undefined) {
 
 

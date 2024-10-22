@@ -79,6 +79,13 @@ export class Diedric {
         this.pb2.hidden = true
     }
 
+    log(...text: any[]) {
+
+    }
+    warn(...text: any[]) {
+
+    }
+
     animate() {
         requestAnimationFrame(this.animate.bind(this))
 

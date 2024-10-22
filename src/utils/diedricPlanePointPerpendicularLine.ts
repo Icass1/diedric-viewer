@@ -62,9 +62,7 @@ export class DiedricPlanePointPerpendicularLine extends DiedricPlane {
             super.d = undefined
         }
     }
-    get color() {
-        return this._color
-    }
+
     set point(point: DiedricPoint | undefined) {
         if (this._point) {
             let indexInChildren = this._point.children.indexOf(this)
