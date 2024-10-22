@@ -471,7 +471,7 @@ export default function App() {
     const [diedric, setDiedric] = useState<Diedric>()
     const [expressions, setExpressions] = useState<Expression[]>([])
 
-    const savedExpressionsIndex = 3;
+    const savedExpressionsIndex = 5;
     const savedExpressions = JSON.parse(localStorage.getItem("expressions") || "[]")[savedExpressionsIndex] as Expression[]
 
     const canvas3dRef = useRef<HTMLCanvasElement>(null)

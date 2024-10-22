@@ -80,10 +80,10 @@ export class Diedric {
     }
 
     log(...text: any[]) {
-
+        // console.log(...text)
     }
     warn(...text: any[]) {
-
+        console.warn(...text)
     }
 
     animate() {

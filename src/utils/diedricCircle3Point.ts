@@ -31,7 +31,6 @@ export class DiedricCircle3Point {
 
     ellipseResolution = 100
 
-
     constructor({ diedric, point1, point2, point3, color }: { diedric: Diedric, point1: DiedricPoint | undefined, point2: DiedricPoint | undefined, point3: DiedricPoint | undefined, color: THREE.ColorRepresentation }) {
 
         this.diedric = diedric
@@ -66,6 +65,11 @@ export class DiedricCircle3Point {
         } else if (this._point3 == parent) {
             this._point3 = undefined
         }
+    }
+    remove() {
+        this.diedric.scene.remove(this.circle)
+        this.diedric.canvas2d.remove(this.horizontalProjection)
+        this.diedric.canvas2d.remove(this.verticalProjection)
     }
     update() {
         let p1 = new THREE.Vector3(this._point1?.o, this._point1?.c, this._point1?.a)

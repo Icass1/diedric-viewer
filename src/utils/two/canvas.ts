@@ -39,7 +39,7 @@ export class Canvas {
             localStorage.setItem("camera2d", JSON.stringify({ zoom: this.zoom, center: { x: this.center.x, y: this.center.y } }))
 
         })
-        this.canvas.addEventListener("mouseup", () => {
+        document.addEventListener("mouseup", () => {
             this.lastMouseDownPos = undefined
         })
         this.canvas.addEventListener("wheel", (e) => {
