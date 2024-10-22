@@ -194,57 +194,96 @@ export class DiedricPlane {
                 }
             }
 
+            if (horizontalProjectionPoints.length < 2) {
+                this._exists = false
+                this.updateView()
+                return
+            }
+
             let m = (horizontalProjectionPoints[1].z - horizontalProjectionPoints[0].z) / (horizontalProjectionPoints[1].x - horizontalProjectionPoints[0].x)
             let n = horizontalProjectionPoints[0].z - m * horizontalProjectionPoints[0].x
 
             let x = -n / m
 
-            if (horizontalProjectionPoints[0].z > 0) {
-                this.horizontalProjectionLine2d.start = new THREE.Vector2(horizontalProjectionPoints[0].x, horizontalProjectionPoints[0].z)
-                this.horizontalProjectionLine2d.end = new THREE.Vector2(x, 0)
+            if (this._normal.x == 0) {
+                console.log("ASDF")
+                if (horizontalProjectionPoints[0].z > 0) {
+                    this.horizontalProjectionLine2d.start = new THREE.Vector2(horizontalProjectionPoints[0].x, horizontalProjectionPoints[0].z)
+                    this.horizontalProjectionLine2d.end = new THREE.Vector2(horizontalProjectionPoints[1].x, horizontalProjectionPoints[1].z)
 
-                this.horizontalProjectionLine2dDashed.start = new THREE.Vector2(x, 0)
-                this.horizontalProjectionLine2dDashed.end = new THREE.Vector2(horizontalProjectionPoints[1].x, horizontalProjectionPoints[1].z)
+                    this.horizontalProjectionLine2dDashed.start = new THREE.Vector2(0, 0)
+                    this.horizontalProjectionLine2dDashed.end = new THREE.Vector2(0, 0)
+                } else {
+                    this.horizontalProjectionLine2dDashed.start = new THREE.Vector2(horizontalProjectionPoints[0].x, horizontalProjectionPoints[0].z)
+                    this.horizontalProjectionLine2dDashed.end = new THREE.Vector2(horizontalProjectionPoints[1].x, horizontalProjectionPoints[1].z)
 
-            } else if (horizontalProjectionPoints[0].z < 0) {
-                this.diedric.warn("Implementation missing 1")
-                this.horizontalProjectionLine2d.start = new THREE.Vector2(x, 0)
-                this.horizontalProjectionLine2d.end = new THREE.Vector2(horizontalProjectionPoints[1].x, horizontalProjectionPoints[1].z)
+                    this.horizontalProjectionLine2d.start = new THREE.Vector2(0, 0)
+                    this.horizontalProjectionLine2d.end = new THREE.Vector2(0, 0)
+                }
 
-                this.horizontalProjectionLine2dDashed.start = new THREE.Vector2(horizontalProjectionPoints[0].x, horizontalProjectionPoints[0].z)
-                this.horizontalProjectionLine2dDashed.end = new THREE.Vector2(x, 0)
+                if (verticalProjectionPoints[0].y > 0) {
+                    this.verticalProjectionLine2d.start = new THREE.Vector2(verticalProjectionPoints[0].x, -verticalProjectionPoints[0].y)
+                    this.verticalProjectionLine2d.end = new THREE.Vector2(verticalProjectionPoints[1].x, -verticalProjectionPoints[1].y)
 
-            } else {
-                this.diedric.warn("Implementation missing 2")
-                this.horizontalProjectionLine2d.start = new THREE.Vector2(horizontalProjectionPoints[0].x, horizontalProjectionPoints[0].z)
-                this.horizontalProjectionLine2d.end = new THREE.Vector2(horizontalProjectionPoints[1].x, horizontalProjectionPoints[1].z)
+                    this.verticalProjectionLine2dDashed.start = new THREE.Vector2(0, 0)
+                    this.verticalProjectionLine2dDashed.end = new THREE.Vector2(0, 0)
+                } else {
+                    this.verticalProjectionLine2dDashed.start = new THREE.Vector2(verticalProjectionPoints[0].x, -verticalProjectionPoints[0].y)
+                    this.verticalProjectionLine2dDashed.end = new THREE.Vector2(verticalProjectionPoints[1].x, -verticalProjectionPoints[1].y)
 
-                this.horizontalProjectionLine2dDashed.start = new THREE.Vector2(0, 0)
-                this.horizontalProjectionLine2dDashed.end = new THREE.Vector2(0, 0)
-            }
-
-            if (-verticalProjectionPoints[0].y > 0) {
-                this.diedric.warn("Implementation missing 3")
-                this.verticalProjectionLine2d.start = new THREE.Vector2(verticalProjectionPoints[0].x, -verticalProjectionPoints[0].y)
-                this.verticalProjectionLine2d.end = new THREE.Vector2(verticalProjectionPoints[1].x, -verticalProjectionPoints[1].y)
-
-                this.verticalProjectionLine2dDashed.start = new THREE.Vector2(0, 0)
-                this.verticalProjectionLine2dDashed.end = new THREE.Vector2(0, 0)
-
-            } else if (-verticalProjectionPoints[0].y < 0) {
-                this.verticalProjectionLine2d.start = new THREE.Vector2(verticalProjectionPoints[0].x, -verticalProjectionPoints[0].y)
-                this.verticalProjectionLine2d.end = new THREE.Vector2(x, 0)
-
-                this.verticalProjectionLine2dDashed.start = new THREE.Vector2(x, 0)
-                this.verticalProjectionLine2dDashed.end = new THREE.Vector2(verticalProjectionPoints[1].x, -verticalProjectionPoints[1].y)
+                    this.verticalProjectionLine2d.start = new THREE.Vector2(0, 0)
+                    this.verticalProjectionLine2d.end = new THREE.Vector2(0, 0)
+                }
 
             } else {
-                this.diedric.warn("Implementation missing 4")
-                this.verticalProjectionLine2d.start = new THREE.Vector2(verticalProjectionPoints[0].x, -verticalProjectionPoints[0].y)
-                this.verticalProjectionLine2d.end = new THREE.Vector2(verticalProjectionPoints[1].x, -verticalProjectionPoints[1].y)
+                if (horizontalProjectionPoints[0].z > 0) {
+                    this.horizontalProjectionLine2d.start = new THREE.Vector2(horizontalProjectionPoints[0].x, horizontalProjectionPoints[0].z)
+                    this.horizontalProjectionLine2d.end = new THREE.Vector2(x, 0)
 
-                this.verticalProjectionLine2dDashed.start = new THREE.Vector2(0, 0)
-                this.verticalProjectionLine2dDashed.end = new THREE.Vector2(0, 0)
+                    this.horizontalProjectionLine2dDashed.start = new THREE.Vector2(x, 0)
+                    this.horizontalProjectionLine2dDashed.end = new THREE.Vector2(horizontalProjectionPoints[1].x, horizontalProjectionPoints[1].z)
+
+                } else if (horizontalProjectionPoints[0].z < 0) {
+                    console.log("2")
+                    this.diedric.warn("Implementation missing 1")
+                    this.horizontalProjectionLine2d.start = new THREE.Vector2(x, 0)
+                    this.horizontalProjectionLine2d.end = new THREE.Vector2(horizontalProjectionPoints[1].x, horizontalProjectionPoints[1].z)
+
+                    this.horizontalProjectionLine2dDashed.start = new THREE.Vector2(horizontalProjectionPoints[0].x, horizontalProjectionPoints[0].z)
+                    this.horizontalProjectionLine2dDashed.end = new THREE.Vector2(x, 0)
+
+                } else {
+                    this.diedric.warn("Implementation missing 2")
+                    this.horizontalProjectionLine2d.start = new THREE.Vector2(horizontalProjectionPoints[0].x, horizontalProjectionPoints[0].z)
+                    this.horizontalProjectionLine2d.end = new THREE.Vector2(horizontalProjectionPoints[1].x, horizontalProjectionPoints[1].z)
+
+                    this.horizontalProjectionLine2dDashed.start = new THREE.Vector2(0, 0)
+                    this.horizontalProjectionLine2dDashed.end = new THREE.Vector2(0, 0)
+                }
+
+                if (-verticalProjectionPoints[0].y > 0) {
+                    this.diedric.warn("Implementation missing 3")
+                    this.verticalProjectionLine2d.start = new THREE.Vector2(verticalProjectionPoints[0].x, -verticalProjectionPoints[0].y)
+                    this.verticalProjectionLine2d.end = new THREE.Vector2(verticalProjectionPoints[1].x, -verticalProjectionPoints[1].y)
+
+                    this.verticalProjectionLine2dDashed.start = new THREE.Vector2(0, 0)
+                    this.verticalProjectionLine2dDashed.end = new THREE.Vector2(0, 0)
+
+                } else if (-verticalProjectionPoints[0].y < 0) {
+                    this.verticalProjectionLine2d.start = new THREE.Vector2(verticalProjectionPoints[0].x, -verticalProjectionPoints[0].y)
+                    this.verticalProjectionLine2d.end = new THREE.Vector2(x, 0)
+
+                    this.verticalProjectionLine2dDashed.start = new THREE.Vector2(x, 0)
+                    this.verticalProjectionLine2dDashed.end = new THREE.Vector2(verticalProjectionPoints[1].x, -verticalProjectionPoints[1].y)
+
+                } else {
+                    this.diedric.warn("Implementation missing 4")
+                    this.verticalProjectionLine2d.start = new THREE.Vector2(verticalProjectionPoints[0].x, -verticalProjectionPoints[0].y)
+                    this.verticalProjectionLine2d.end = new THREE.Vector2(verticalProjectionPoints[1].x, -verticalProjectionPoints[1].y)
+
+                    this.verticalProjectionLine2dDashed.start = new THREE.Vector2(0, 0)
+                    this.verticalProjectionLine2dDashed.end = new THREE.Vector2(0, 0)
+                }
             }
 
             this.horizontalProjectionGeometry.setFromPoints(horizontalProjectionPoints)
@@ -367,6 +406,12 @@ export class DiedricPlane {
         this.diedric.scene.remove(this.plane)
         this.diedric.scene.remove(this.horizontalProjectionLine)
         this.diedric.scene.remove(this.verticalProjectionLine)
+
+        this.diedric.canvas2d.remove(this.verticalProjectionLine2d)
+        this.diedric.canvas2d.remove(this.verticalProjectionLine2dDashed)
+        this.diedric.canvas2d.remove(this.horizontalProjectionLine2d)
+        this.diedric.canvas2d.remove(this.horizontalProjectionLine2dDashed)
+
     }
     getSuper() {
         return this
