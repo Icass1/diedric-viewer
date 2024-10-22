@@ -27,13 +27,23 @@ export class DiedricCircle3Point {
     children = []
 
     private horizontalProjection: Path
+    private horizontalProjectionDashed: Path
     private verticalProjection: Path
+    private verticalProjectionDashed: Path
 
-    ellipseResolution = 100
+    ellipseResolution = 200
 
     constructor({ diedric, point1, point2, point3, color }: { diedric: Diedric, point1: DiedricPoint | undefined, point2: DiedricPoint | undefined, point3: DiedricPoint | undefined, color: THREE.ColorRepresentation }) {
 
         this.diedric = diedric
+
+        // this.slider = document.createElement("input")
+        // this.slider.type = "range"
+        // document.body.querySelector("div")?.querySelector("div")?.querySelector("div")?.querySelector("div").append(this.slider)
+        // this.slider.max = 0
+        // this.slider.max = this.ellipseResolution
+        // this.slider.value = this.ellipseResolution
+        // this.slider.oninput = () => { this.update() }
 
         this.geometry = new THREE.CircleGeometry(5, 32);
         this.material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 0.1 });
@@ -49,12 +59,18 @@ export class DiedricCircle3Point {
         this._point3?.children.push(this)
 
         this.horizontalProjection = new Path({ color: color.toString(), width: 1 })
+        this.horizontalProjectionDashed = new Path({ color: color.toString(), width: 1, dashed: true })
         this.diedric.canvas2d.add(this.horizontalProjection)
+        this.diedric.canvas2d.add(this.horizontalProjectionDashed)
 
         this.verticalProjection = new Path({ color: color.toString(), width: 1 })
+        this.verticalProjectionDashed = new Path({ color: color.toString(), width: 1, dashed: true })
         this.diedric.canvas2d.add(this.verticalProjection)
+        this.diedric.canvas2d.add(this.verticalProjectionDashed)
 
         this.update()
+
+
     }
 
     removeParent(parent: DiedricPoint) {
@@ -116,15 +132,85 @@ export class DiedricCircle3Point {
 
         this.horizontalProjection.points = []
         this.verticalProjection.points = []
+        this.horizontalProjectionDashed.points = []
+        this.verticalProjectionDashed.points = []
+
+
+        let unDashedPartAfterDashHorizontal: THREE.Vector2[] = []
+        let unDashedPartAfterDashVertical: THREE.Vector2[] = []
+
+        let dashedPartAfterHorizontal: THREE.Vector2[] = []
+        let dashedPartAfterVertical: THREE.Vector2[] = []
+
+        let dashedPart = false
+        // for (let i = 0; i < this.ellipseResolution; i++) {
+        //     let horizontal = new THREE.Vector3(Math.cos(i / this.ellipseResolution * 2 * Math.PI), Math.sin(i / this.ellipseResolution * 2 * Math.PI), 0)
+
+        //     let point = new THREE.Vector3().crossVectors(horizontal, normal).normalize().multiplyScalar(radius).addScaledVector(circumcenter, 1)
+
+        //     if ((point.z < 0 || point.y < 0) && dashedPart == false) {
+        //         this.horizontalProjection.points.push(new THREE.Vector2(point.x, -point.y))
+        //         this.verticalProjection.points.push(new THREE.Vector2(point.x, point.z))
+        //     }
+
+        //     if (point.z >= 0 && point.y >= 0) {
+        //         if (dashedPart) {
+        //             if (unDashedPartAfterDashHorizontal.length == 0) {
+        //                 unDashedPartAfterDashHorizontal.push(this.horizontalProjectionDashed.points[this.horizontalProjectionDashed.points.length - 1])
+        //                 unDashedPartAfterDashVertical.push(this.verticalProjectionDashed.points[this.verticalProjectionDashed.points.length - 1])
+        //             }
+        //             unDashedPartAfterDashHorizontal.push(new THREE.Vector2(point.x, -point.y))
+        //             unDashedPartAfterDashVertical.push(new THREE.Vector2(point.x, point.z))
+        //         } else {
+        //             this.horizontalProjection.points.push(new THREE.Vector2(point.x, -point.y))
+        //             this.verticalProjection.points.push(new THREE.Vector2(point.x, point.z))
+        //         }
+        //     } else {
+        //         dashedPart = true
+        //         this.horizontalProjectionDashed.points.push(new THREE.Vector2(point.x, -point.y))
+        //         this.verticalProjectionDashed.points.push(new THREE.Vector2(point.x, point.z))
+        //     }
+        // }
+
 
         for (let i = 0; i < this.ellipseResolution; i++) {
+        // for (let i = 0; i < this.slider.value; i++) {
             let horizontal = new THREE.Vector3(Math.cos(i / this.ellipseResolution * 2 * Math.PI), Math.sin(i / this.ellipseResolution * 2 * Math.PI), 0)
 
             let point = new THREE.Vector3().crossVectors(horizontal, normal).normalize().multiplyScalar(radius).addScaledVector(circumcenter, 1)
 
-            this.horizontalProjection.points.push(new THREE.Vector2(point.x, -point.y))
-            this.verticalProjection.points.push(new THREE.Vector2(point.x, point.z))
+
+            let pointHorizontal = new THREE.Vector2(point.x, -point.y)
+            let pointVertical = new THREE.Vector2(point.x, point.z)
+
+            if (point.z >= 0 && point.y >= 0) {
+                if (this.horizontalProjectionDashed.points.length == 0 && dashedPartAfterHorizontal.length == 0) {
+                    this.horizontalProjection.points.push(pointHorizontal)
+                    this.verticalProjection.points.push(pointVertical)
+                } else {
+                    unDashedPartAfterDashHorizontal.push(pointHorizontal)
+                    unDashedPartAfterDashVertical.push(pointVertical)
+                }
+
+            } else {
+                if (this.horizontalProjection.points.length == 0 && unDashedPartAfterDashHorizontal.length == 0) {
+                    this.horizontalProjectionDashed.points.push(pointHorizontal)
+                    this.verticalProjectionDashed.points.push(pointVertical)
+                } else {
+                    dashedPartAfterHorizontal.push(pointHorizontal)
+                    dashedPartAfterVertical.push(pointVertical)
+                }
+            }
+
 
         }
+
+        this.horizontalProjection.points = [...unDashedPartAfterDashHorizontal, ...this.horizontalProjection.points]
+        this.verticalProjection.points = [...unDashedPartAfterDashVertical, ...this.verticalProjection.points]
+
+        // this.horizontalProjectionDashed.points = [...this.horizontalProjectionDashed.points, ...dashedPartAfterHorizontal,]
+        this.horizontalProjectionDashed.points = [...dashedPartAfterHorizontal, ...this.horizontalProjectionDashed.points]
+        this.verticalProjectionDashed.points = [...dashedPartAfterVertical, ...this.verticalProjectionDashed.points]
+
     }
 }
