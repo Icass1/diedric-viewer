@@ -6,6 +6,7 @@ export class DiedricPointMid2Point extends DiedricPoint {
 
     private _point1: DiedricPoint | undefined
     private _point2: DiedricPoint | undefined
+    private _diedric: Diedric
 
     static type = "point-mid-2-point"
     public type = "point-mid-2-point"
@@ -17,6 +18,7 @@ export class DiedricPointMid2Point extends DiedricPoint {
     constructor({ diedric, point1, point2, color }: { diedric: Diedric, point1: DiedricPoint | undefined, point2: DiedricPoint | undefined, color: THREE.ColorRepresentation }) {
 
         super({ diedric: diedric, o: undefined, a: undefined, c: undefined, color: color })
+        this._diedric = diedric
 
         this._point1 = point1
         this._point2 = point2
@@ -42,7 +44,7 @@ export class DiedricPointMid2Point extends DiedricPoint {
     }
 
     update() {
-        console.log("DiedricPointMid2Point update")
+        this._diedric.log("DiedricPointMid2Point update")
 
         if (this._point1?.o !== undefined && this._point1?.a !== undefined && this._point1?.c !== undefined && this._point2?.o !== undefined && this._point2?.a !== undefined && this._point2?.c !== undefined) {
             super.o = (this._point1.o + this._point2.o) / 2

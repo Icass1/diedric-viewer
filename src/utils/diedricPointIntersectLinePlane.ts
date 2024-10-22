@@ -9,6 +9,7 @@ export class DiedricPointIntersectLinePlane extends DiedricPoint {
 
     private _plane: DiedricPlane | undefined
     private _line: DiedricLine | undefined
+    private _diedric: Diedric
 
     static type = "point-intersect-line-plane"
     public type = "point-intersect-line-plane"
@@ -20,6 +21,7 @@ export class DiedricPointIntersectLinePlane extends DiedricPoint {
     constructor({ diedric, line, plane, color }: { diedric: Diedric, plane: DiedricPlane | undefined, line: DiedricLine | undefined, color: THREE.ColorRepresentation }) {
 
         super({ diedric: diedric, o: undefined, a: undefined, c: undefined, color: color })
+        this._diedric = diedric
 
         this._plane = plane
         this._line = line
@@ -43,7 +45,7 @@ export class DiedricPointIntersectLinePlane extends DiedricPoint {
     }
 
     update() {
-        console.log("DiedricPointIntersectLinePlane update")
+        this._diedric.log("DiedricPointIntersectLinePlane update")
         if (this._plane?.normal && this._plane?.d && this._line?.bPoint && this._line.bVector) {
 
             let result = intersectionLinePlane(this._line, this._plane)

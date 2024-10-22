@@ -7,6 +7,7 @@ export class DiedricPointMidLinePoint extends DiedricPoint {
 
     private _point: DiedricPoint | undefined
     private _line: DiedricLine | undefined
+    private _diedric: Diedric
 
     static type = "point-mid-line-point"
     public type = "point-mid-line-point"
@@ -18,6 +19,7 @@ export class DiedricPointMidLinePoint extends DiedricPoint {
     constructor({ diedric, point, line, color }: { diedric: Diedric, point: DiedricPoint | undefined, line: DiedricLine | undefined, color: THREE.ColorRepresentation }) {
 
         super({ diedric: diedric, o: undefined, a: undefined, c: undefined, color: color })
+        this._diedric = diedric
 
         this._point = point
         this._line = line
@@ -43,7 +45,7 @@ export class DiedricPointMidLinePoint extends DiedricPoint {
     }
 
     update() {
-        console.log("DiedricPointMidLinePoint update")
+        this._diedric.log("DiedricPointMidLinePoint update")
 
         if (this._point?.o !== undefined && this._point?.a !== undefined && this._point?.c !== undefined && this._line?.bVector !== undefined && this._line?.bPoint !== undefined) {
             this._point.o

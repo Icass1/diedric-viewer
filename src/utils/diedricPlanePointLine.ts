@@ -6,9 +6,9 @@ import { Diedric } from './diedric';
 
 export class DiedricPlanePointLine extends DiedricPlane {
 
-    private _color: THREE.ColorRepresentation
     private _point: DiedricPoint | undefined
     private _line: DiedricLine | undefined
+    private _diedric: Diedric
 
     static type = "plane-point-line"
     public type = "plane-point-line"
@@ -18,7 +18,8 @@ export class DiedricPlanePointLine extends DiedricPlane {
 
         super(diedric, undefined, undefined, color)
 
-        this._color = color
+        this._diedric = diedric
+
         this._point = point
         this._line = line
 
@@ -41,7 +42,7 @@ export class DiedricPlanePointLine extends DiedricPlane {
     }
 
     update() {
-        console.log("DiedricPlanePointLine update")
+        this._diedric.log("DiedricPlanePointLine update")
 
         if (this._point && this._line?.bPoint && this._line?.bVector) {
 

@@ -12,6 +12,7 @@ import { DiedricCircle3Point } from './diedricCircle3Point';
 import { DiedricPointMid2Point } from './diedricPointMid2Point';
 import { DiedricPlanePointPerpendicularLine } from './diedricPlanePointPerpendicularLine';
 import { DiedricLinePointPlaneLineAngle } from './diedricLinePointPlaneLineAngle';
+import { DiedricPointUnfold } from './diedricPointUnfold';
 
 export class DiedricPoint {
     private bPoint: THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial, THREE.Object3DEventMap>
@@ -45,7 +46,8 @@ export class DiedricPoint {
         DiedricCircle3Point |
         DiedricPointMid2Point |
         DiedricPlanePointPerpendicularLine |
-        DiedricLinePointPlaneLineAngle
+        DiedricLinePointPlaneLineAngle |
+        DiedricPointUnfold
     )[] = []
 
     static params: any = { "o": "number", "a": "number", "c": "number" }

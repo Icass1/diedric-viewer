@@ -6,6 +6,7 @@ import { DiedricLine2Plane } from './diedricLine2Plane';
 import { DiedricLinePointPerpendicularPlane } from './diedricLinePointPerpendicularPlane';
 import { DiedricPointIntersectLinePlane } from './diedricPointIntersectLinePlane';
 import { DiedricLinePointPlaneLineAngle } from './diedricLinePointPlaneLineAngle';
+import { DiedricPointUnfold } from './diedricPointUnfold';
 
 export class DiedricPlane {
     private size: number
@@ -29,7 +30,8 @@ export class DiedricPlane {
         DiedricLine2Plane |
         DiedricLinePointPerpendicularPlane |
         DiedricPointIntersectLinePlane |
-        DiedricLinePointPlaneLineAngle
+        DiedricLinePointPlaneLineAngle |
+        DiedricPointUnfold
     )[] = []
 
     static type = "plane"

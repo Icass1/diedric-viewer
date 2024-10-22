@@ -23,7 +23,7 @@ import { DiedricPointMid2Point } from "./utils/diedricPointMid2Point";
 
 import { DiedricCircle3Point } from "./utils/diedricCircle3Point";
 
-import { Unfold } from "./utils/unfold";
+import { DiedricPointUnfold } from "./utils/diedricPointUnfold";
 import { DiedricLinePointPlaneLineAngle } from "./utils/diedricLinePointPlaneLineAngle";
 import { DiedricPoint2Line } from "./utils/diedricPoint2Line";
 
@@ -43,6 +43,8 @@ const DiedricObjects = [
     DiedricPointMid2Point,
     DiedricPoint2Line,
 
+    DiedricPointUnfold,
+
     DiedricLine2Point,
     DiedricLine2Plane,
     DiedricLinePointParallelLine,
@@ -57,7 +59,6 @@ const DiedricObjects = [
 
     DiedricCircle3Point,
 
-    Unfold
 ]
 
 interface Expression {
@@ -635,11 +636,6 @@ export default function App() {
             </div>
             <div className="relative">
                 <canvas ref={canvas2dRef} className="absolute top-0 w-full min-w-0 h-full min-h-0"></canvas>
-            </div>
-
-            <div className="fixed left-[600px] top-10">
-                <input type="range" min={0} max={2 * Math.PI} step={0.1} value={angle} onInput={(e) => { setAngle(e.target?.value || 0) }}></input>
-                <label className="p-2 bg-black">{angle}</label>
             </div>
 
             <div style={{ background: "transparent", minWidth: '0px', width: '0px' }} id="object-info-panel" className="fixed bg-white shadow-lg p-1 transition-all max-h-[calc(100%_-_2.5rem)] min-w-52 text-black text-sm font-base rounded-lg top-5 right-5 flex flex-col gap-2">
